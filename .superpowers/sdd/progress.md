@@ -8,3 +8,4 @@ Task B2: complete (0001_merqo_core.sql + schema test 5/5; db push+seed PENDING-U
 Task C1: complete (metrics-schema + metrics-client, 6/6)
 Task C2: complete (team gate, registry read, overview totals, /team page, ProductCard + tests 4/4; build green)
 Task C3: complete (contract test 2/2, hand-authored sample pending live qkit capture)
+Task D1: complete (vendor.ts mergeCatalog/requireVendor/resolveVendorCatalog/addToWaitlist, 2/2)
