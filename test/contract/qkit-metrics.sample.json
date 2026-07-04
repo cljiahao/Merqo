@@ -1,0 +1,15 @@
+{
+  "product": "qkit",
+  "generated_at": "2026-07-04T12:00:00.000Z",
+  "revenue_cents_30d": 12000,
+  "revenue_cents_all": 89000,
+  "gmv_cents_30d": 450000,
+  "active_vendors": 6,
+  "orders_7d": 42,
+  "orders_prev_7d": 31,
+  "signups_7d": 4,
+  "pro_vendors": 3,
+  "total_vendors": 11,
+  "pending_upgrade_requests": 2,
+  "funnel": { "signed_up": 11, "with_booth": 8, "with_order": 6, "pro": 3 }
+}
