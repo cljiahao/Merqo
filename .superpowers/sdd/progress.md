@@ -10,3 +10,4 @@ Task C2: complete (team gate, registry read, overview totals, /team page, Produc
 Task C3: complete (contract test 2/2, hand-authored sample pending live qkit capture)
 Task D1: complete (vendor.ts mergeCatalog/requireVendor/resolveVendorCatalog/addToWaitlist, 2/2)
 Task D2: complete (/(vendor)/products page + join-waitlist action, 2/2; build green)
+Task D3: complete (playwright config + gated smoke; full suite 21/21, tsc clean, eslint clean). Browser e2e PENDING-USER (playwright install + seeded auth).

@@ -18,8 +18,8 @@ describe("0001_merqo_core migration", () => {
     expect(sql).toContain("security definer");
   });
   it("constrains product status and vendor_link status", () => {
-    expect(sql).toMatch(/status[^;]*check[^;]*'live'[^;]*'coming_soon'/s);
-    expect(sql).toMatch(/status[^;]*check[^;]*'active'[^;]*'waitlist'/s);
+    expect(sql).toMatch(/status[^;]*check[^;]*'live'[^;]*'coming_soon'/);
+    expect(sql).toMatch(/status[^;]*check[^;]*'active'[^;]*'waitlist'/);
   });
   it("enforces one link per (email, product_slug)", () => {
     expect(sql).toMatch(/unique\s*\(\s*email\s*,\s*product_slug\s*\)/);
