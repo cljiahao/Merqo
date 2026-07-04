@@ -6,3 +6,4 @@ Adaptations: Phase A (qkit endpoint) DEFERRED — qkit off-limits this session; 
 Task B1: complete (scaffold + supabase auth boilerplate + login; build green)
 Task B2: complete (0001_merqo_core.sql + schema test 5/5; db push+seed PENDING-USER)
 Task C1: complete (metrics-schema + metrics-client, 6/6)
+Task C2: complete (team gate, registry read, overview totals, /team page, ProductCard + tests 4/4; build green)
