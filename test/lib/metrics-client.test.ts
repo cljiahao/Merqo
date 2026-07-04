@@ -63,6 +63,14 @@ describe("fetchProductMetrics", () => {
     expect(r).toMatchObject({ ok: false, reason: "bad_shape" });
   });
 
+  it("reason=bad_shape when a 200 body is not parseable JSON", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("<html>502 from a proxy</html>", { status: 200 }),
+    );
+    const r = await fetchProductMetrics(row);
+    expect(r).toMatchObject({ ok: false, reason: "bad_shape" });
+  });
+
   it("reason=unreachable when the registry row lacks a url or secret", async () => {
     const r = await fetchProductMetrics({
       slug: "x",

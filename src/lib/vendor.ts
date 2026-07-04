@@ -29,10 +29,13 @@ export async function requireVendor(): Promise<{ user: User; email: string }> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user || !user.email) notFound();
-  return { user, email: user.email };
+  // GoTrue stores emails lowercased; normalize so every downstream link lookup
+  // matches regardless of the casing an email arrived in.
+  return { user, email: user.email.toLowerCase() };
 }
 
 export async function resolveVendorCatalog(email: string): Promise<CatalogEntry[]> {
+  const key = email.toLowerCase();
   const supabase = await createServiceClient();
   const productsRes = await supabase
     .from("products")
@@ -42,7 +45,7 @@ export async function resolveVendorCatalog(email: string): Promise<CatalogEntry[
   const linksRes = await supabase
     .from("vendor_links")
     .select("product_slug, status")
-    .eq("email", email);
+    .eq("email", key);
   if (linksRes.error) throw new Error(`links read: ${linksRes.error.message}`);
   return mergeCatalog(
     (productsRes.data ?? []) as ProductRow[],
@@ -55,7 +58,7 @@ export async function addToWaitlist(email: string, productSlug: string): Promise
   const { error } = await supabase
     .from("vendor_links")
     .upsert(
-      { email, product_slug: productSlug, status: "waitlist" },
+      { email: email.toLowerCase(), product_slug: productSlug, status: "waitlist" },
       { onConflict: "email,product_slug", ignoreDuplicates: true },
     );
   if (error) throw new Error(`waitlist upsert: ${error.message}`);

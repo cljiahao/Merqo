@@ -30,7 +30,15 @@ export async function fetchProductMetrics(
     if (res.status === 401) return { ok: false, product: p.slug, reason: "auth" };
     if (!res.ok) return { ok: false, product: p.slug, reason: "unreachable" };
 
-    const json = await res.json();
+    // Past a 200, a body we can't read/validate is a product-side problem
+    // (bad_shape), not a network outage (unreachable) — keep them distinct so
+    // on-call debugging points at the right layer.
+    let json: unknown;
+    try {
+      json = await res.json();
+    } catch {
+      return { ok: false, product: p.slug, reason: "bad_shape" };
+    }
     const parsed = metricsPayloadSchema.safeParse(json);
     if (!parsed.success) return { ok: false, product: p.slug, reason: "bad_shape" };
     return { ok: true, product: p.slug, data: parsed.data };
