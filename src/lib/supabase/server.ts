@@ -31,7 +31,12 @@ export async function createServerClient() {
   return createSSRClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    { cookies: cookieMethods(cookieStore) },
+    {
+      // Shared project (arch-v2 §2): merqo's tables live in the `merqo` schema,
+      // qkit's in `public`. Default every .from() to merqo. auth.* is unaffected.
+      db: { schema: "merqo" },
+      cookies: cookieMethods(cookieStore),
+    },
   );
 }
 
@@ -44,6 +49,7 @@ export async function createServiceClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SECRET_KEY!,
     {
+      db: { schema: "merqo" },
       cookies: { getAll: () => [], setAll: () => {} },
       auth: {
         autoRefreshToken: false,

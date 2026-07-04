@@ -12,3 +12,4 @@ Task D1: complete (vendor.ts mergeCatalog/requireVendor/resolveVendorCatalog/add
 Task D2: complete (/(vendor)/products page + join-waitlist action, 2/2; build green)
 Task D3: complete (playwright config + gated smoke; full suite 21/21, tsc clean, eslint clean). Browser e2e PENDING-USER (playwright install + seeded auth).
 Final review: no Critical. Fixed 2 Important — (1) 200-unparseable body now bad_shape not unreachable (+test, 22/22); (2) email lowercased in requireVendor/resolveVendorCatalog/addToWaitlist. Minor #4 (untyped casts) accepted. #3 email-confirm = PROVISIONING gate flagged to user.
+REWORK (shared Supabase): 1 project, schema-per-kit. merqo tables moved public->merqo schema; clients db.schema=merqo; grants (authenticated=merqo_team select only, service_role all, execute is_merqo_team); env=qkit shared keys. metrics stays HTTP API. 24/24, tsc/build clean.

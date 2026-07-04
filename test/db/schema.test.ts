@@ -8,14 +8,20 @@ const sql = readFileSync(
 ).toLowerCase();
 
 describe("0001_merqo_core migration", () => {
-  it("creates the three core tables", () => {
-    expect(sql).toContain("create table public.merqo_team");
-    expect(sql).toContain("create table public.products");
-    expect(sql).toContain("create table public.vendor_links");
+  it("creates a dedicated merqo schema (one project, schema per kit)", () => {
+    expect(sql).toMatch(/create schema (if not exists )?merqo/);
+  });
+  it("creates the three core tables in the merqo schema", () => {
+    expect(sql).toContain("create table merqo.merqo_team");
+    expect(sql).toContain("create table merqo.products");
+    expect(sql).toContain("create table merqo.vendor_links");
   });
   it("defines is_merqo_team as security definer", () => {
-    expect(sql).toMatch(/create (or replace )?function public\.is_merqo_team/);
+    expect(sql).toMatch(/create (or replace )?function merqo\.is_merqo_team/);
     expect(sql).toContain("security definer");
+  });
+  it("exposes the schema to the data-api roles (usage grant)", () => {
+    expect(sql).toMatch(/grant usage on schema merqo to[^;]*service_role/);
   });
   it("constrains product status and vendor_link status", () => {
     expect(sql).toMatch(/status[^;]*check[^;]*'live'[^;]*'coming_soon'/);
