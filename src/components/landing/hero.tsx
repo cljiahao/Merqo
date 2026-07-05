@@ -1,5 +1,5 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { QKIT_URL } from "@/lib/kits";
 import { ArrowRight } from "lucide-react";
 
 const TRUST = ["No app", "No hardware", "Free to start"];
@@ -63,10 +63,10 @@ export function Hero() {
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button asChild size="lg">
-            <a href={QKIT_URL}>
-              Open qkit
+            <Link href="/login">
+              Go to dashboard
               <ArrowRight className="size-4" />
-            </a>
+            </Link>
           </Button>
           <Button asChild size="lg" variant="outline">
             <a href="#kits">See the kits</a>

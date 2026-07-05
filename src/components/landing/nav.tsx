@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { QKIT_URL } from "@/lib/kits";
 import { Wordmark } from "./wordmark";
 
 export function Nav() {
@@ -22,7 +21,7 @@ export function Nav() {
             Kits
           </Link>
           <Button asChild size="sm">
-            <a href={QKIT_URL}>Open qkit</a>
+            <Link href="/login">Log in</Link>
           </Button>
         </div>
       </nav>

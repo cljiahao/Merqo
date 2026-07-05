@@ -6,7 +6,7 @@ import { HowItWorks } from "@/components/landing/how-it-works";
 import { Cta } from "@/components/landing/cta";
 import { Footer } from "@/components/landing/footer";
 import { Button } from "@/components/ui/button";
-import { QKIT_URL } from "@/lib/kits";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -23,7 +23,7 @@ export default function Home() {
       {/* Sticky mobile CTA — one persistent action on small screens. */}
       <div className="sticky bottom-0 z-40 border-t bg-background/90 p-3 backdrop-blur sm:hidden">
         <Button asChild size="lg" className="w-full">
-          <a href={QKIT_URL}>Open qkit</a>
+          <Link href="/login">Log in</Link>
         </Button>
       </div>
     </>
