@@ -44,7 +44,9 @@ export default async function VendorProductsPage() {
               <span>
                 <span className="font-medium">{c.name}</span>
                 {c.status === "coming_soon" && (
-                  <span className="ml-2 text-xs text-gray-500">Coming soon</span>
+                  <span className="ml-2 text-xs text-gray-500">
+                    Coming soon
+                  </span>
                 )}
               </span>
               {c.owned === "waitlist" ? (

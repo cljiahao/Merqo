@@ -3,7 +3,9 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const sql = readFileSync(
-  fileURLToPath(new URL("../../supabase/migrations/0001_merqo_core.sql", import.meta.url)),
+  fileURLToPath(
+    new URL("../../supabase/migrations/0001_merqo_core.sql", import.meta.url),
+  ),
   "utf8",
 ).toLowerCase();
 
@@ -31,6 +33,8 @@ describe("0001_merqo_core migration", () => {
     expect(sql).toMatch(/unique\s*\(\s*email\s*,\s*product_slug\s*\)/);
   });
   it("enables RLS on all three tables", () => {
-    expect((sql.match(/enable row level security/g) ?? []).length).toBeGreaterThanOrEqual(3);
+    expect(
+      (sql.match(/enable row level security/g) ?? []).length,
+    ).toBeGreaterThanOrEqual(3);
   });
 });

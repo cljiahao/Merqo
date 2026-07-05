@@ -13,9 +13,9 @@ of git — it lives only in Vercel env + the DB row.
 
 1. **Rename** the project to `merqo` (Settings → General). Cosmetic — ref/URL/keys unchanged.
 2. **Keys** (Settings → API): note Project URL, publishable (anon) key, secret (service_role) key.
-3. **Expose the merqo schema**: Settings → API → *Exposed schemas* → add `merqo` → Save.
+3. **Expose the merqo schema**: Settings → API → _Exposed schemas_ → add `merqo` → Save.
    (Without this, supabase-js returns PGRST106 for `merqo.*`.)
-4. **Auth**: enable *Confirm email* (Auth → Providers/Settings). Security gate — without
+4. **Auth**: enable _Confirm email_ (Auth → Providers/Settings). Security gate — without
    it, someone can sign up as another vendor's email and inherit their `vendor_links`.
 5. **Apply the merqo migration** (from the merqo repo):
    ```bash

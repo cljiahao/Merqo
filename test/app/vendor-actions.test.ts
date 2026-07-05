@@ -1,10 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { requireVendorMock, addToWaitlistMock, revalidateMock } = vi.hoisted(() => ({
-  requireVendorMock: vi.fn(),
-  addToWaitlistMock: vi.fn(),
-  revalidateMock: vi.fn(),
-}));
+const { requireVendorMock, addToWaitlistMock, revalidateMock } = vi.hoisted(
+  () => ({
+    requireVendorMock: vi.fn(),
+    addToWaitlistMock: vi.fn(),
+    revalidateMock: vi.fn(),
+  }),
+);
 vi.mock("@/lib/vendor", () => ({
   requireVendor: requireVendorMock,
   addToWaitlist: addToWaitlistMock,
@@ -16,7 +18,10 @@ import { joinWaitlistAction } from "@/app/(vendor)/products/actions";
 describe("joinWaitlistAction", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    requireVendorMock.mockResolvedValue({ user: { id: "u" }, email: "v@x.com" });
+    requireVendorMock.mockResolvedValue({
+      user: { id: "u" },
+      email: "v@x.com",
+    });
   });
 
   it("adds the vendor's email to the product waitlist and revalidates", async () => {

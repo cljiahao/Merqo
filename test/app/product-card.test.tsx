@@ -33,13 +33,23 @@ describe("ProductCard", () => {
   });
 
   it("renders a degraded Unavailable state and no metric rows when the product is down", () => {
-    render(<ProductCard name="Queue" result={{ ok: false, product: "qkit", reason: "unreachable" }} />);
+    render(
+      <ProductCard
+        name="Queue"
+        result={{ ok: false, product: "qkit", reason: "unreachable" }}
+      />,
+    );
     expect(screen.getByText("Unavailable")).toBeInTheDocument();
     expect(screen.queryByText("Revenue (30d)")).not.toBeInTheDocument();
   });
 
   it("labels an auth failure distinctly", () => {
-    render(<ProductCard name="Queue" result={{ ok: false, product: "qkit", reason: "auth" }} />);
+    render(
+      <ProductCard
+        name="Queue"
+        result={{ ok: false, product: "qkit", reason: "auth" }}
+      />,
+    );
     expect(screen.getByText("Auth error")).toBeInTheDocument();
   });
 });

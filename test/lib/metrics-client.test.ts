@@ -29,16 +29,22 @@ describe("fetchProductMetrics", () => {
   it("sends the bearer and returns ok on a valid payload", async () => {
     const fetchSpy = vi
       .spyOn(globalThis, "fetch")
-      .mockResolvedValue(new Response(JSON.stringify(goodPayload), { status: 200 }));
+      .mockResolvedValue(
+        new Response(JSON.stringify(goodPayload), { status: 200 }),
+      );
     const r = await fetchProductMetrics(row);
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.data.active_vendors).toBe(4);
     const init = fetchSpy.mock.calls[0][1] as RequestInit;
-    expect((init.headers as Record<string, string>).Authorization).toBe("Bearer s");
+    expect((init.headers as Record<string, string>).Authorization).toBe(
+      "Bearer s",
+    );
   });
 
   it("reason=auth on 401", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}", { status: 401 }));
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("{}", { status: 401 }),
+    );
     const r = await fetchProductMetrics(row);
     expect(r).toMatchObject({ ok: false, reason: "auth" });
   });
@@ -50,7 +56,9 @@ describe("fetchProductMetrics", () => {
   });
 
   it("reason=unreachable on 503", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}", { status: 503 }));
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("{}", { status: 503 }),
+    );
     const r = await fetchProductMetrics(row);
     expect(r).toMatchObject({ ok: false, reason: "unreachable" });
   });

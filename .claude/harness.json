@@ -1,0 +1,34 @@
+{
+  "templatecentral_version": "5.7.0",
+  "stack": "nextjs",
+  "adapted": "Next 16 + Supabase (auth/db) — shared project, schema per kit; not better-auth/Drizzle",
+  "seeded_at": "2026-07-06",
+  "adopted_via": "templatecentral:migrate (light adoption + harness ported from qkit 5.7.0 reference)",
+  "adoption_note": "Hand-crafted from qkit boilerplate, then adopted. settings.json omits the broad permissions.allow list (auto-mode self-modification guard); deny + ask retained. Not adopted (same divergences as qkit): lefthook, pino route-logging, tc CI/harness-verifier layer, better-auth/Drizzle. No .harness-base (adopted post-hoc) so migrate Phase-5 re-sync is N/A.",
+  "seeded_files": {
+    "AGENTS.md": {
+      "origin_hash": "d8b2cbc78258bb60be5b268a8e08b4f6743655850b4cc16ef7c5fdb3cdf1153c",
+      "path": "AGENTS.md"
+    },
+    "CLAUDE.md": {
+      "origin_hash": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49",
+      "path": "CLAUDE.md"
+    },
+    ".claude/settings.json": {
+      "origin_hash": "36d61ee6461741a4a3f97656e7320c042fb5ece06fb75bddff1ef0e2ea309d8e",
+      "path": ".claude/settings.json"
+    },
+    ".claude/hooks/verify.sh": {
+      "origin_hash": "ccf4bb6c4cec18d0210387a608c1bfff84348719d09fe2efc959561d10f86ac6",
+      "path": ".claude/hooks/verify.sh"
+    },
+    ".claude/skills/next-verify/SKILL.md": {
+      "origin_hash": "bce9095dcc32ca4e80409d009e99c3980d9cf52664bfbe8ba74d97e48fe31a80",
+      "path": ".claude/skills/next-verify/SKILL.md"
+    },
+    ".claude/skills/supabase-migrate/SKILL.md": {
+      "origin_hash": "1b2a2963ef427b22f7d2ff8d7c7c3e6cb4b2757acfb2c1de5b79a8e57b96d15b",
+      "path": ".claude/skills/supabase-migrate/SKILL.md"
+    }
+  }
+}

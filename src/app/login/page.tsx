@@ -67,7 +67,9 @@ export default function LoginPage() {
         onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
         className="mt-3 text-sm text-blue-600 underline"
       >
-        {mode === "signin" ? "Need an account? Sign up" : "Have an account? Sign in"}
+        {mode === "signin"
+          ? "Need an account? Sign up"
+          : "Have an account? Sign in"}
       </button>
     </main>
   );

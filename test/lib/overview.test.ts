@@ -26,8 +26,18 @@ const ok = (slug: string, over: Partial<MetricsPayload>): MetricsResult => {
 describe("summarizeOverview", () => {
   it("sums numeric fields across ok products and ignores failed ones", () => {
     const results: MetricsResult[] = [
-      ok("qkit", { revenue_cents_all: 1000, active_vendors: 3, pending_upgrade_requests: 2, orders_7d: 5 }),
-      ok("loopkit", { revenue_cents_all: 500, active_vendors: 2, pending_upgrade_requests: 1, orders_7d: 4 }),
+      ok("qkit", {
+        revenue_cents_all: 1000,
+        active_vendors: 3,
+        pending_upgrade_requests: 2,
+        orders_7d: 5,
+      }),
+      ok("loopkit", {
+        revenue_cents_all: 500,
+        active_vendors: 2,
+        pending_upgrade_requests: 1,
+        orders_7d: 4,
+      }),
       { ok: false, product: "down", reason: "unreachable" },
     ];
     const t = summarizeOverview(results);
