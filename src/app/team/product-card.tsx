@@ -1,8 +1,13 @@
 import type { MetricsResult } from "@/lib/metrics-client";
+import { money } from "@/lib/format";
 
-const money = (cents: number) => `$${(cents / 100).toLocaleString()}`;
-
-export function ProductCard({ name, result }: { name: string; result: MetricsResult }) {
+export function ProductCard({
+  name,
+  result,
+}: {
+  name: string;
+  result: MetricsResult;
+}) {
   if (!result.ok) {
     const label =
       result.reason === "auth"

@@ -1,18 +1,28 @@
-import { metricsPayloadSchema, type MetricsPayload } from "@/lib/metrics-schema";
+import {
+  metricsPayloadSchema,
+  type MetricsPayload,
+} from "@/lib/metrics-schema";
+// Type-only import: the canonical registry row lives in products.ts. `import
+// type` erases at runtime, so metrics-client stays free of the supabase/server
+// (next/headers) dependency and remains trivially unit-testable. We only need
+// the metrics-endpoint fields, so take a Pick — a full RegistryRow still fits.
+import type { RegistryRow } from "@/lib/products";
+
+type MetricsSource = Pick<
+  RegistryRow,
+  "slug" | "name" | "metrics_url" | "metrics_secret"
+>;
 
 export type MetricsResult =
   | { ok: true; product: string; data: MetricsPayload }
-  | { ok: false; product: string; reason: "auth" | "unreachable" | "bad_shape" };
-
-type RegistryRow = {
-  slug: string;
-  name: string;
-  metrics_url: string | null;
-  metrics_secret: string | null;
-};
+  | {
+      ok: false;
+      product: string;
+      reason: "auth" | "unreachable" | "bad_shape";
+    };
 
 export async function fetchProductMetrics(
-  p: RegistryRow,
+  p: MetricsSource,
   opts: { timeoutMs?: number } = {},
 ): Promise<MetricsResult> {
   if (!p.metrics_url || !p.metrics_secret) {
@@ -27,7 +37,8 @@ export async function fetchProductMetrics(
       cache: "no-store",
       signal: controller.signal,
     });
-    if (res.status === 401) return { ok: false, product: p.slug, reason: "auth" };
+    if (res.status === 401)
+      return { ok: false, product: p.slug, reason: "auth" };
     if (!res.ok) return { ok: false, product: p.slug, reason: "unreachable" };
 
     // Past a 200, a body we can't read/validate is a product-side problem
@@ -40,7 +51,8 @@ export async function fetchProductMetrics(
       return { ok: false, product: p.slug, reason: "bad_shape" };
     }
     const parsed = metricsPayloadSchema.safeParse(json);
-    if (!parsed.success) return { ok: false, product: p.slug, reason: "bad_shape" };
+    if (!parsed.success)
+      return { ok: false, product: p.slug, reason: "bad_shape" };
     return { ok: true, product: p.slug, data: parsed.data };
   } catch {
     return { ok: false, product: p.slug, reason: "unreachable" };

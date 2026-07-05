@@ -18,7 +18,10 @@ type ProductRow = {
 };
 type LinkRow = { product_slug: string; status: "active" | "waitlist" };
 
-export function mergeCatalog(products: ProductRow[], links: LinkRow[]): CatalogEntry[] {
+export function mergeCatalog(
+  products: ProductRow[],
+  links: LinkRow[],
+): CatalogEntry[] {
   const bySlug = new Map(links.map((l) => [l.product_slug, l.status]));
   return products.map((p) => ({ ...p, owned: bySlug.get(p.slug) ?? null }));
 }
@@ -34,18 +37,24 @@ export async function requireVendor(): Promise<{ user: User; email: string }> {
   return { user, email: user.email.toLowerCase() };
 }
 
-export async function resolveVendorCatalog(email: string): Promise<CatalogEntry[]> {
+export async function resolveVendorCatalog(
+  email: string,
+): Promise<CatalogEntry[]> {
   const key = email.toLowerCase();
   const supabase = await createServiceClient();
-  const productsRes = await supabase
-    .from("products")
-    .select("slug, name, status, app_url")
-    .order("created_at");
-  if (productsRes.error) throw new Error(`products read: ${productsRes.error.message}`);
-  const linksRes = await supabase
-    .from("vendor_links")
-    .select("product_slug, status")
-    .eq("email", key);
+  // Independent reads — fan out in parallel (one round-trip, not two).
+  const [productsRes, linksRes] = await Promise.all([
+    supabase
+      .from("products")
+      .select("slug, name, status, app_url")
+      .order("created_at"),
+    supabase
+      .from("vendor_links")
+      .select("product_slug, status")
+      .eq("email", key),
+  ]);
+  if (productsRes.error)
+    throw new Error(`products read: ${productsRes.error.message}`);
   if (linksRes.error) throw new Error(`links read: ${linksRes.error.message}`);
   return mergeCatalog(
     (productsRes.data ?? []) as ProductRow[],
@@ -53,13 +62,18 @@ export async function resolveVendorCatalog(email: string): Promise<CatalogEntry[
   );
 }
 
-export async function addToWaitlist(email: string, productSlug: string): Promise<void> {
+export async function addToWaitlist(
+  email: string,
+  productSlug: string,
+): Promise<void> {
   const supabase = await createServiceClient();
-  const { error } = await supabase
-    .from("vendor_links")
-    .upsert(
-      { email: email.toLowerCase(), product_slug: productSlug, status: "waitlist" },
-      { onConflict: "email,product_slug", ignoreDuplicates: true },
-    );
+  const { error } = await supabase.from("vendor_links").upsert(
+    {
+      email: email.toLowerCase(),
+      product_slug: productSlug,
+      status: "waitlist",
+    },
+    { onConflict: "email,product_slug", ignoreDuplicates: true },
+  );
   if (error) throw new Error(`waitlist upsert: ${error.message}`);
 }

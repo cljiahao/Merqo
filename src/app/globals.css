@@ -1,26 +1,111 @@
 @import "tailwindcss";
 
+/* ── Merqo — "Market Ledger" ───────────────────────────────────────────────
+   House brand for modular SG small-business tools. Green + gold: pine for
+   trust/growth, marigold for value. Porcelain canvas, not cream. Distinct
+   from qkit's warm food-stall ember theme. */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: oklch(0.985 0.004 140);
+  --foreground: oklch(0.24 0.021 162);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.24 0.021 162);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.24 0.021 162);
+  --primary: oklch(0.42 0.065 162);
+  --primary-foreground: oklch(0.98 0.012 110);
+  --secondary: oklch(0.94 0.012 150);
+  --secondary-foreground: oklch(0.3 0.03 160);
+  --muted: oklch(0.955 0.006 145);
+  --muted-foreground: oklch(0.52 0.016 158);
+  --accent: oklch(0.93 0.03 96);
+  --accent-foreground: oklch(0.3 0.03 160);
+  --destructive: oklch(0.55 0.2 27);
+  --border: oklch(0.9 0.008 148);
+  --input: oklch(0.9 0.008 148);
+  --ring: oklch(0.42 0.065 162);
+  --radius: 0.625rem;
+
+  /* marigold — value accent for status stamps, live badges, highlights */
+  --gold: oklch(0.77 0.13 78);
+  --gold-foreground: oklch(0.28 0.05 70);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* dusk ledger — deep pine-charcoal canvas, warm cream ink, gold stays hot */
+    --background: oklch(0.19 0.015 165);
+    --foreground: oklch(0.95 0.01 105);
+    --card: oklch(0.23 0.018 165);
+    --card-foreground: oklch(0.95 0.01 105);
+    --popover: oklch(0.23 0.018 165);
+    --popover-foreground: oklch(0.95 0.01 105);
+    --primary: oklch(0.64 0.09 158);
+    --primary-foreground: oklch(0.18 0.02 165);
+    --secondary: oklch(0.28 0.02 165);
+    --secondary-foreground: oklch(0.92 0.01 105);
+    --muted: oklch(0.27 0.018 165);
+    --muted-foreground: oklch(0.7 0.015 140);
+    --accent: oklch(0.3 0.025 160);
+    --accent-foreground: oklch(0.95 0.01 105);
+    --destructive: oklch(0.62 0.2 27);
+    --border: oklch(0.31 0.02 165);
+    --input: oklch(0.33 0.02 165);
+    --ring: oklch(0.64 0.09 158);
+    --gold: oklch(0.8 0.13 80);
+    --gold-foreground: oklch(0.2 0.03 70);
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-bricolage);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--border);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
