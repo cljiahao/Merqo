@@ -71,7 +71,16 @@ export default function LoginPage() {
     const supabase = createClient();
 
     if (mode === "signup") {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      // Land the confirmation-email link back on merqo — the project's Site URL
+      // points at another kit (shared Supabase), so without this the confirm
+      // link would bounce the vendor to the wrong app.
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
       setBusy(false);
       if (error) {
         setError(error.message);
