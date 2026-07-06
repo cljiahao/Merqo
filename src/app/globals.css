@@ -118,20 +118,29 @@ body {
   }
 }
 
-/* flow-journey: a token travels the pipeline to show an order moving through */
-.flow-token {
-  animation: flow-token 2.8s linear infinite;
+/* graph edges: an ambient pulse rides each connection (offset-path, GPU) */
+.edge-flow {
+  offset-rotate: 0deg;
+  animation: offset-travel 2.4s linear infinite;
 }
-@keyframes flow-token {
+/* the customer-journey token traces the current hop once, then the next hop
+   restarts it (via a changing React key). */
+.journey-token {
+  offset-rotate: 0deg;
+  animation: offset-travel 0.7s ease-in-out forwards;
+}
+@keyframes offset-travel {
   from {
-    left: -10px;
+    offset-distance: 0%;
   }
   to {
-    left: 100%;
+    offset-distance: 100%;
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .flow-token {
+  /* calm static state — no traveling dots */
+  .edge-flow,
+  .journey-token {
     display: none;
   }
 }

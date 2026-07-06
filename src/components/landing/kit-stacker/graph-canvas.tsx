@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 const NODE_W = 98;
 const NODE_H = 48;
 
+export type Journey = { from: string; to: string; step: number };
+
 function neighborsOf(slug: string): Set<string> {
   const out = new Set<string>();
   for (const e of KIT_EDGES) {
@@ -18,14 +20,24 @@ function neighborsOf(slug: string): Set<string> {
   return out;
 }
 
+function edgePath(from: string, to: string): string {
+  const a = nodeBySlug(from)!;
+  const b = nodeBySlug(to)!;
+  return `M ${a.x} ${a.y} L ${b.x} ${b.y}`;
+}
+
 export function GraphCanvas({
   stacked,
   highlight,
   onHighlight,
+  journey = null,
+  litNodes,
 }: {
   stacked: ReadonlySet<string>;
   highlight: string | null;
   onHighlight: (slug: string | null) => void;
+  journey?: Journey | null;
+  litNodes?: ReadonlySet<string>;
 }) {
   const hotNeighbors = highlight ? neighborsOf(highlight) : null;
 
@@ -41,7 +53,7 @@ export function GraphCanvas({
         A diagram of the Merqo kits and how each connects through the queue.
       </desc>
 
-      {KIT_EDGES.map((e) => {
+      {KIT_EDGES.map((e, i) => {
         if (!stacked.has(e.from) || !stacked.has(e.to)) return null;
         const a = nodeBySlug(e.from)!;
         const b = nodeBySlug(e.to)!;
@@ -60,10 +72,19 @@ export function GraphCanvas({
             )}
           >
             <path
-              d={`M ${a.x} ${a.y} L ${b.x} ${b.y}`}
+              d={edgePath(e.from, e.to)}
               strokeWidth={2}
               strokeLinecap="round"
-              className="edge-draw fill-none stroke-primary/55"
+              className="edge-draw fill-none stroke-primary/45"
+            />
+            {/* ambient pulse flowing along the connection */}
+            <circle
+              r={3}
+              className="edge-flow fill-primary/70"
+              style={{
+                offsetPath: `path("${edgePath(e.from, e.to)}")`,
+                animationDelay: `${(i % 5) * 0.55}s`,
+              }}
             />
             <g className="edge-label">
               <rect
@@ -93,6 +114,7 @@ export function GraphCanvas({
         const dim =
           highlight && highlight !== n.slug && !hotNeighbors?.has(n.slug);
         const live = n.status === "live";
+        const lit = litNodes?.has(n.slug);
         return (
           <g
             key={n.slug}
@@ -105,6 +127,17 @@ export function GraphCanvas({
               dim && "opacity-25",
             )}
           >
+            {lit && (
+              <rect
+                x={-4}
+                y={-4}
+                width={NODE_W + 8}
+                height={NODE_H + 8}
+                rx={16}
+                className="fill-none stroke-gold"
+                strokeWidth={3}
+              />
+            )}
             <rect
               width={NODE_W}
               height={NODE_H}
@@ -152,6 +185,19 @@ export function GraphCanvas({
           </g>
         );
       })}
+
+      {/* the customer-journey token, tracing the current hop */}
+      {journey && (
+        <circle
+          key={`journey-${journey.step}`}
+          r={7}
+          className="journey-token fill-gold stroke-card"
+          strokeWidth={2}
+          style={{
+            offsetPath: `path("${edgePath(journey.from, journey.to)}")`,
+          }}
+        />
+      )}
     </svg>
   );
 }
