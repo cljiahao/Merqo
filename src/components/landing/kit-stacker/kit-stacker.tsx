@@ -2,8 +2,7 @@
 import { useState } from "react";
 import { KIT_NODES, HUB_SLUG } from "@/lib/ecosystem";
 import { Button } from "@/components/ui/button";
-import { GraphCanvas } from "./graph-canvas";
-import { BlockTower } from "./block-tower";
+import { FlowJourney } from "./flow-journey";
 import { ModuleList } from "./module-list";
 import { StackerA11ySummary } from "./stacker-a11y-summary";
 import { Timeline } from "./timeline";
@@ -35,11 +34,11 @@ export function KitStacker() {
           Stack your kit
         </p>
         <h2 className="mt-3 max-w-2xl text-balance font-display text-3xl font-bold tracking-tight sm:text-4xl">
-          One queue. Click a kit to see how it snaps on.
+          Watch an order move through your stack.
         </h2>
         <p className="mt-4 max-w-xl text-muted-foreground">
-          Everything flows through qkit. Add the tools you need and watch them
-          connect — one account, one bill.
+          Everything flows through qkit. Add the tools you need and see how an
+          order travels through them — one account, one bill.
         </p>
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
@@ -66,16 +65,8 @@ export function KitStacker() {
                 </Button>
               </div>
             </div>
-            {/* graph on desktop; the block tower reads better on phones */}
-            <div className="mt-3 hidden lg:block">
-              <GraphCanvas
-                stacked={stacked}
-                highlight={highlight}
-                onHighlight={setHighlight}
-              />
-            </div>
-            <div className="mt-4 lg:hidden">
-              <BlockTower
+            <div className="mt-3">
+              <FlowJourney
                 stacked={stacked}
                 highlight={highlight}
                 onHighlight={setHighlight}

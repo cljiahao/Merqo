@@ -1,6 +1,11 @@
 import { KIT_NODES } from "@/lib/ecosystem";
 import { cn } from "@/lib/utils";
-import type { VizProps } from "./stacker-shell";
+
+type FlowProps = {
+  stacked: ReadonlySet<string>;
+  highlight?: string | null;
+  onHighlight: (slug: string | null) => void;
+};
 
 // Flow order: inputs → the queue → outputs. Only stacked kits appear.
 const FLOW = ["shopkit", "slotkit", "qkit", "tapkit", "loopkit"];
@@ -63,7 +68,7 @@ function Hop({ label }: { label: string }) {
   );
 }
 
-export function FlowJourney({ stacked, onHighlight }: VizProps) {
+export function FlowJourney({ stacked, onHighlight }: FlowProps) {
   const kits = FLOW.filter((s) => stacked.has(s));
   return (
     <div className="overflow-x-auto pb-2">
