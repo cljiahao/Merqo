@@ -25,7 +25,9 @@ test("landing renders with a Log in action", async ({ page }) => {
     page.getByRole("link", { name: "Log in" }).first(),
   ).toBeVisible();
   // the interactive kit stacker is the centerpiece
-  await expect(page.getByRole("button", { name: "Stack all" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Stack all" }).first(),
+  ).toBeVisible();
 });
 
 // Authed areas need seeded users + a live Supabase project. Gated behind
