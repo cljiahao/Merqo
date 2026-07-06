@@ -61,10 +61,9 @@ export function GraphCanvas({
           >
             <path
               d={`M ${a.x} ${a.y} L ${b.x} ${b.y}`}
-              pathLength={1}
               strokeWidth={2}
               strokeLinecap="round"
-              className="edge-draw fill-none stroke-primary/45"
+              className="edge-draw fill-none stroke-primary/55"
             />
             <g className="edge-label">
               <rect

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { KIT_NODES, HUB_SLUG } from "@/lib/ecosystem";
 import { Button } from "@/components/ui/button";
 import { GraphCanvas } from "./graph-canvas";
+import { BlockTower } from "./block-tower";
 import { ModuleList } from "./module-list";
 import { StackerA11ySummary } from "./stacker-a11y-summary";
 import { Timeline } from "./timeline";
@@ -65,8 +66,16 @@ export function KitStacker() {
                 </Button>
               </div>
             </div>
-            <div className="mt-3">
+            {/* graph on desktop; the block tower reads better on phones */}
+            <div className="mt-3 hidden lg:block">
               <GraphCanvas
+                stacked={stacked}
+                highlight={highlight}
+                onHighlight={setHighlight}
+              />
+            </div>
+            <div className="mt-4 lg:hidden">
+              <BlockTower
                 stacked={stacked}
                 highlight={highlight}
                 onHighlight={setHighlight}

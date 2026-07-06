@@ -26,9 +26,10 @@ describe("KitStacker", () => {
       screen.getByRole("button", { name: /Add loopkit to the stack/i }),
     );
     expect(screen.getByText(/Your stack has 2 kits:/)).toBeInTheDocument();
+    // the relationship shows in the a11y summary and the block tower
     expect(
-      screen.getByText(/Finished orders earn loyalty points/i),
-    ).toBeInTheDocument();
+      screen.getAllByText(/Finished orders earn loyalty points/i).length,
+    ).toBeGreaterThan(0);
   });
 
   it("stacks every kit with Stack all", () => {

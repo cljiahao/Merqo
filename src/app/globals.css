@@ -103,22 +103,13 @@ body {
 
 /* kit-stacker graph: edges self-draw, then labels fade in just after.
    The reduced-motion block below collapses both to their final state. */
+/* Edges are solid + always painted (resting opacity 1); the animation only
+   plays a gentle appear on mount, so a stripped/disabled animation still leaves
+   the edge fully visible. (A dashoffset "draw-in" proved flaky with pathLength.) */
 .edge-draw {
-  stroke-dasharray: 1;
-  animation: edge-draw 0.6s ease-out both;
+  animation: edge-appear 0.45s ease-out;
 }
-@keyframes edge-draw {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-.edge-label {
-  animation: edge-fade 0.3s ease-out 0.45s both;
-}
-@keyframes edge-fade {
+@keyframes edge-appear {
   from {
     opacity: 0;
   }

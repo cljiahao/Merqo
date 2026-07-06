@@ -2,7 +2,6 @@ import { Nav } from "@/components/landing/nav";
 import { Hero } from "@/components/landing/hero";
 import { Benefits } from "@/components/landing/benefits";
 import { KitStacker } from "@/components/landing/kit-stacker/kit-stacker";
-import { BlockStacker } from "@/components/landing/kit-stacker/block-stacker";
 import { Cta } from "@/components/landing/cta";
 import { Footer } from "@/components/landing/footer";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,6 @@ export default function Home() {
         <Hero />
         <Benefits />
         <KitStacker />
-        <BlockStacker />
         <Cta />
       </main>
       <Footer />
