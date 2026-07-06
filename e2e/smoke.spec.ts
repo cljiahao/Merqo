@@ -4,8 +4,26 @@ import { test, expect } from "@playwright/test";
 // Supabase provisioning. Runnable with only `pnpm dev` + `playwright install`.
 test("login page renders", async ({ page }) => {
   await page.goto("/login");
-  await expect(page.getByRole("heading", { name: "Merqo" })).toBeVisible();
-  await expect(page.getByPlaceholder("Email")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Welcome back" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /Continue with Google/ }),
+  ).toBeVisible();
+  await expect(page.getByPlaceholder("you@business.sg")).toBeVisible();
+});
+
+// The landing renders and funnels to the dashboard.
+test("landing renders with a Log in action", async ({ page }) => {
+  await page.goto("/");
+  await expect(
+    page.getByRole("heading", {
+      name: /Simple tools to run your small business/,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Log in" }).first(),
+  ).toBeVisible();
 });
 
 // Authed areas need seeded users + a live Supabase project. Gated behind
