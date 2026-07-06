@@ -5,7 +5,13 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Override default ignores of eslint-config-next.
+  {
+    rules: {
+      // templateCentral 5.8 comment hygiene — non-blocking nudge for tenet 2
+      // (prefer own-line comments; trailing comments sparingly).
+      "no-inline-comments": "warn",
+    },
+  },
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",

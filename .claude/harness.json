@@ -1,13 +1,13 @@
 {
-  "templatecentral_version": "5.7.0",
+  "templatecentral_version": "5.8.0",
   "stack": "nextjs",
   "adapted": "Next 16 + Supabase (auth/db) — shared project, schema per kit; not better-auth/Drizzle",
   "seeded_at": "2026-07-06",
-  "adopted_via": "templatecentral:migrate (light adoption + harness ported from qkit 5.7.0 reference)",
-  "adoption_note": "Hand-crafted from qkit boilerplate, then adopted. settings.json omits the broad permissions.allow list (auto-mode self-modification guard); deny + ask retained. Not adopted (same divergences as qkit): lefthook, pino route-logging, tc CI/harness-verifier layer, better-auth/Drizzle. No .harness-base (adopted post-hoc) so migrate Phase-5 re-sync is N/A.",
+  "reviewed_at": "2026-07-06",
+  "review_note": "Adopted 5.7→5.8 delta: comment hygiene (no-inline-comments:warn + AGENTS.md doctrine), packageManager pnpm@11.10.0. NOT adopted (same divergence as qkit): lefthook + full tc harness-kit (husky + bespoke CI here), pino route-logging enforcement, verify-harness/.harness-base re-sync (none seeded), better-auth/Drizzle add-skills. settings.json omits broad permissions.allow (auto-mode self-grant guard).",
   "seeded_files": {
     "AGENTS.md": {
-      "origin_hash": "d8b2cbc78258bb60be5b268a8e08b4f6743655850b4cc16ef7c5fdb3cdf1153c",
+      "origin_hash": "3c5746168dcb6c5bf29007b644f9626bf0741952c573c744e9a82258c24c1bcb",
       "path": "AGENTS.md"
     },
     "CLAUDE.md": {

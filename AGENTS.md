@@ -1,4 +1,4 @@
-<!-- templateCentral: nextjs@5.7.0 (Supabase variant — shared project, schema per kit) -->
+<!-- templateCentral: nextjs@5.8.0 (Supabase variant — shared project, schema per kit) -->
 
 # AGENTS.md — Merqo
 
@@ -71,6 +71,10 @@ RLS default-deny; team-membership via `merqo.is_merqo_team()`. `products` +
 - Cross-kit data goes over the **HTTP metrics API** (bearer secret), never a direct
   cross-schema query. Never touch qkit's `public.*` from merqo.
 - After editing the schema, add a new numbered migration in `supabase/migrations/`.
+- **Comments (tc 5.8):** explain WHY not what; prefer own-line, trailing sparingly
+  (`no-inline-comments: warn`); no commented-out code; no change-narration
+  (`was X`, `added`, dates, ticket refs — that lives in the commit); JSDoc on
+  exports documents the contract, not the implementation.
 
 ## Skills
 
@@ -118,10 +122,13 @@ Manifest: `.claude/harness.json`
 
 ## Project-Specific Notes
 
-- Adopted into templateCentral (`nextjs@5.7.0` Supabase variant) via
+- Adopted into templateCentral (`nextjs@5.8.0` Supabase variant) via
   `templatecentral:migrate` on 2026-07-06 — hand-crafted from qkit boilerplate,
-  harness ported from the qkit reference. Not adopted (same divergences as qkit):
-  lefthook, pino route-logging, tc CI/harness-verifier layer, better-auth/Drizzle.
+  harness ported from the qkit reference. **5.7→5.8 delta adopted:** comment
+  hygiene (`no-inline-comments: warn` + the doctrine above), `packageManager`
+  currency (`pnpm@11.10.0`). **Not adopted** (same divergences as qkit): lefthook
+  - the full tc harness-kit (husky + bespoke CI here), pino route-logging,
+    harness-verifier / `.harness-base` re-sync layer, better-auth/Drizzle.
 - Landing design spec: `docs/superpowers/specs/2026-07-06-merqo-home-landing-design.md`.
 - Deploy runbook: `docs/DEPLOY.md`.
 

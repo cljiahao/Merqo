@@ -28,8 +28,9 @@ describe("ProductCard", () => {
   it("renders live metrics for an ok result", () => {
     render(<ProductCard name="Queue" result={okResult} />);
     expect(screen.getByText("Queue")).toBeInTheDocument();
-    expect(screen.getByText("$10")).toBeInTheDocument(); // revenue_cents_30d 1000 → $10
-    expect(screen.getByText("3")).toBeInTheDocument(); // active vendors
+    // revenue_cents_30d 1000 renders as $10
+    expect(screen.getByText("$10")).toBeInTheDocument();
+    expect(screen.getByText("3")).toBeInTheDocument();
   });
 
   it("renders a degraded Unavailable state and no metric rows when the product is down", () => {
