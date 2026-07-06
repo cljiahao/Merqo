@@ -118,6 +118,24 @@ body {
   }
 }
 
+/* flow-journey: a token travels the pipeline to show an order moving through */
+.flow-token {
+  animation: flow-token 2.8s linear infinite;
+}
+@keyframes flow-token {
+  from {
+    left: -10px;
+  }
+  to {
+    left: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-token {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
