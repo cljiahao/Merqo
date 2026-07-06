@@ -51,6 +51,12 @@ export const KITS: Kit[] = [
     tagline: "Collect PayNow and card payments in one place.",
     status: "planned",
   },
+  {
+    slug: "slotkit",
+    name: "slotkit",
+    tagline: "Take bookings and appointments that flow into your queue.",
+    status: "planned",
+  },
 ];
 
 export const LIVE_KITS = KITS.filter((k) => k.status === "live");
