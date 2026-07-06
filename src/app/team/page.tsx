@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireMerqoTeam } from "@/lib/team";
 import { listLiveProducts } from "@/lib/products";
 import { fetchProductMetrics } from "@/lib/metrics-client";
@@ -17,7 +18,12 @@ export default async function TeamPage() {
 
   return (
     <main className="mx-auto max-w-5xl p-6">
-      <h1 className="text-2xl font-bold">Merqo — Team Overview</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Merqo — Team Overview</h1>
+        <Link href="/admin" className="text-sm text-primary hover:underline">
+          Admin →
+        </Link>
+      </div>
       <p className="mt-1 text-sm text-gray-500">
         {totals.products_reporting} reporting
         {totals.products_down > 0
