@@ -1,4 +1,8 @@
+import { ArrowUpRight } from "lucide-react";
 import { requireVendor, resolveVendorCatalog } from "@/lib/vendor";
+import { DashHeader } from "@/components/dashboard/dash-header";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { joinWaitlistAction } from "./actions";
 
 export const revalidate = 0;
@@ -10,62 +14,76 @@ export default async function VendorProductsPage() {
   const rest = catalog.filter((c) => c.owned !== "active");
 
   return (
-    <main className="mx-auto max-w-3xl p-6">
-      <h1 className="text-2xl font-bold">Your Merqo products</h1>
+    <>
+      <DashHeader />
+      <main className="mx-auto max-w-3xl px-5 py-8">
+        <h1 className="font-display text-2xl font-bold tracking-tight">
+          Your products
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          The Merqo kits on your account.
+        </p>
 
-      <section className="mt-4">
-        <h2 className="font-semibold">Active</h2>
+        <h2 className="mt-8 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Active
+        </h2>
         {owned.length === 0 ? (
-          <p className="text-sm text-gray-500">No active products yet.</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            No active products yet.
+          </p>
         ) : (
-          <ul className="mt-2 space-y-2">
+          <ul className="mt-3 space-y-2">
             {owned.map((c) => (
-              <li key={c.slug} className="rounded border p-3">
-                <span className="font-medium">{c.name}</span>{" "}
+              <li
+                key={c.slug}
+                className="flex items-center justify-between gap-3 rounded-xl border bg-card p-4 shadow-sm"
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="font-medium">{c.name}</span>
+                  <Badge variant="success">Active</Badge>
+                </div>
                 {c.app_url && (
-                  <a className="text-blue-600 underline" href={c.app_url}>
-                    Open
-                  </a>
+                  <Button asChild variant="outline" size="sm">
+                    <a href={c.app_url}>
+                      Open
+                      <ArrowUpRight className="size-3.5" />
+                    </a>
+                  </Button>
                 )}
               </li>
             ))}
           </ul>
         )}
-      </section>
 
-      <section className="mt-6">
-        <h2 className="font-semibold">Add more</h2>
-        <ul className="mt-2 space-y-2">
+        <h2 className="mt-8 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          Add more
+        </h2>
+        <ul className="mt-3 space-y-2">
           {rest.map((c) => (
             <li
               key={c.slug}
-              className="flex items-center justify-between rounded border p-3"
+              className="flex items-center justify-between gap-3 rounded-xl border bg-card p-4 shadow-sm"
             >
-              <span>
+              <div className="flex items-center gap-2.5">
                 <span className="font-medium">{c.name}</span>
                 {c.status === "coming_soon" && (
-                  <span className="ml-2 text-xs text-gray-500">
-                    Coming soon
-                  </span>
+                  <Badge variant="muted">Coming soon</Badge>
                 )}
-              </span>
+              </div>
               {c.owned === "waitlist" ? (
-                <span className="text-sm text-green-600">On waitlist</span>
+                <Badge variant="secondary">On waitlist</Badge>
               ) : (
                 <form action={joinWaitlistAction}>
                   <input type="hidden" name="product_slug" value={c.slug} />
-                  <button
-                    className="rounded bg-black px-3 py-1 text-sm text-white"
-                    type="submit"
-                  >
+                  <Button type="submit" size="sm">
                     Join waitlist
-                  </button>
+                  </Button>
                 </form>
               )}
             </li>
           ))}
         </ul>
-      </section>
-    </main>
+      </main>
+    </>
   );
 }

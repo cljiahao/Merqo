@@ -1,57 +1,59 @@
 @import "tailwindcss";
 
-/* ── Merqo — "Market Ledger" ───────────────────────────────────────────────
-   House brand for modular SG small-business tools. Green + gold: pine for
-   trust/growth, marigold for value. Porcelain canvas, not cream. Distinct
-   from qkit's warm food-stall ember theme. */
+/* ── Merqo — "Control Room" ────────────────────────────────────────────────
+   The house brand + control portal over the kit family. A restrained, premium
+   NEUTRAL system (clean warm-greys, near-black ink) so the parent brand reads
+   as platform/infrastructure while each kit keeps its own personality. Pine
+   green + marigold gold appear only as ACCENTS — buttons, the brand "q", and
+   value/live moments. Light, not dark; posh, not cold. */
 
 :root {
-  --background: oklch(0.985 0.004 140);
-  --foreground: oklch(0.24 0.021 162);
+  --background: oklch(0.976 0.0015 100);
+  --foreground: oklch(0.205 0.006 95);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.24 0.021 162);
+  --card-foreground: oklch(0.205 0.006 95);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.24 0.021 162);
-  --primary: oklch(0.42 0.065 162);
-  --primary-foreground: oklch(0.98 0.012 110);
-  --secondary: oklch(0.94 0.012 150);
-  --secondary-foreground: oklch(0.3 0.03 160);
-  --muted: oklch(0.955 0.006 145);
-  --muted-foreground: oklch(0.52 0.016 158);
-  --accent: oklch(0.93 0.03 96);
-  --accent-foreground: oklch(0.3 0.03 160);
+  --popover-foreground: oklch(0.205 0.006 95);
+  --primary: oklch(0.43 0.07 162);
+  --primary-foreground: oklch(0.985 0.008 100);
+  --secondary: oklch(0.955 0.002 100);
+  --secondary-foreground: oklch(0.28 0.006 95);
+  --muted: oklch(0.965 0.0015 100);
+  --muted-foreground: oklch(0.475 0.005 96);
+  --accent: oklch(0.955 0.004 95);
+  --accent-foreground: oklch(0.25 0.006 95);
   --destructive: oklch(0.55 0.2 27);
-  --border: oklch(0.9 0.008 148);
-  --input: oklch(0.9 0.008 148);
-  --ring: oklch(0.42 0.065 162);
+  --border: oklch(0.912 0.002 100);
+  --input: oklch(0.912 0.002 100);
+  --ring: oklch(0.43 0.07 162);
   --radius: 0.625rem;
 
-  /* marigold — value accent for status stamps, live badges, highlights */
-  --gold: oklch(0.77 0.13 78);
-  --gold-foreground: oklch(0.28 0.05 70);
+  /* marigold — value accent for the brand "q", LIVE badges, key highlights */
+  --gold: oklch(0.76 0.125 78);
+  --gold-foreground: oklch(0.3 0.05 70);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* dusk ledger — deep pine-charcoal canvas, warm cream ink, gold stays hot */
-    --background: oklch(0.19 0.015 165);
-    --foreground: oklch(0.95 0.01 105);
-    --card: oklch(0.23 0.018 165);
-    --card-foreground: oklch(0.95 0.01 105);
-    --popover: oklch(0.23 0.018 165);
-    --popover-foreground: oklch(0.95 0.01 105);
-    --primary: oklch(0.64 0.09 158);
-    --primary-foreground: oklch(0.18 0.02 165);
-    --secondary: oklch(0.28 0.02 165);
-    --secondary-foreground: oklch(0.92 0.01 105);
-    --muted: oklch(0.27 0.018 165);
-    --muted-foreground: oklch(0.7 0.015 140);
-    --accent: oklch(0.3 0.025 160);
-    --accent-foreground: oklch(0.95 0.01 105);
-    --destructive: oklch(0.62 0.2 27);
-    --border: oklch(0.31 0.02 165);
-    --input: oklch(0.33 0.02 165);
-    --ring: oklch(0.64 0.09 158);
+    /* graphite control room — near-black neutral canvas, clean greys, accents stay */
+    --background: oklch(0.175 0.002 100);
+    --foreground: oklch(0.965 0.002 100);
+    --card: oklch(0.205 0.003 100);
+    --card-foreground: oklch(0.965 0.002 100);
+    --popover: oklch(0.205 0.003 100);
+    --popover-foreground: oklch(0.965 0.002 100);
+    --primary: oklch(0.66 0.1 158);
+    --primary-foreground: oklch(0.17 0.01 100);
+    --secondary: oklch(0.255 0.003 100);
+    --secondary-foreground: oklch(0.94 0.002 100);
+    --muted: oklch(0.245 0.003 100);
+    --muted-foreground: oklch(0.7 0.004 100);
+    --accent: oklch(0.27 0.003 100);
+    --accent-foreground: oklch(0.965 0.002 100);
+    --destructive: oklch(0.63 0.2 27);
+    --border: oklch(0.285 0.003 100);
+    --input: oklch(0.3 0.003 100);
+    --ring: oklch(0.66 0.1 158);
     --gold: oklch(0.8 0.13 80);
     --gold-foreground: oklch(0.2 0.03 70);
   }
