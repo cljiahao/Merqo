@@ -46,7 +46,7 @@ function LiveBoard() {
   );
 }
 
-export function Hero() {
+export function Hero({ authed = false }: { authed?: boolean }) {
   return (
     <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-16 sm:py-24 lg:grid-cols-2">
       <div>
@@ -63,8 +63,8 @@ export function Hero() {
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button asChild size="lg">
-            <Link href="/login">
-              Go to dashboard
+            <Link href={authed ? "/dashboard" : "/login"}>
+              {authed ? "Go to dashboard" : "Get started"}
               <ArrowRight className="size-4" />
             </Link>
           </Button>

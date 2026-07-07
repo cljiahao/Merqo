@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Wordmark } from "./wordmark";
 
-export function Nav() {
+export function Nav({ authed = false }: { authed?: boolean }) {
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
       <nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
@@ -21,7 +21,9 @@ export function Nav() {
             Kits
           </Link>
           <Button asChild size="sm">
-            <Link href="/login">Log in</Link>
+            <Link href={authed ? "/dashboard" : "/login"}>
+              {authed ? "Dashboard" : "Log in"}
+            </Link>
           </Button>
         </div>
       </nav>
