@@ -10,6 +10,7 @@ export type OnboardingCounts = {
  * Merqo-level onboarding funnel. `links` are flattened vendor↔kit grants;
  * `usingCount` is the sum of kits' reported active vendors (arrives over the
  * metrics API, so it's passed in rather than derived here).
+ * The three counts are distinct populations: `waitlisted` and `granted` are mutually-exclusive vendor_links statuses, while `using` comes from kits' own metrics (vendors don't log into Merqo in Phase 1), so `using` can exceed `granted` — Phase 2 reconciles this.
  */
 export function onboardingFunnel(
   links: { status: GrantStatus }[],

@@ -16,6 +16,7 @@ export function classifyHealth(
   now: number,
 ): HealthStatus {
   if (!result.ok) return "down";
+  // Latency at or over the threshold is already degraded; freshness only trips once data is strictly older than the window.
   if (result.durationMs >= LAGGING_MS) return "lagging";
   const generatedMs = Date.parse(result.data.generated_at);
   if (Number.isNaN(generatedMs)) return "lagging";
