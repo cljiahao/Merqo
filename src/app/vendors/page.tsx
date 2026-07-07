@@ -1,15 +1,14 @@
 import { requireMerqoTeam } from "@/lib/team";
 import { listVendorGrants, listProducts } from "@/lib/admin";
-import { grantKitAction, revokeKitAction } from "./actions";
+import { GrantForm } from "./grant-form";
+import { RevokeButton } from "./revoke-button";
 import { DashHeader } from "@/components/dashboard/dash-header";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 export const revalidate = 0;
 
 export default async function VendorsPage() {
-  await requireMerqoTeam();
+  const { user } = await requireMerqoTeam();
   const [grants, products] = await Promise.all([
     listVendorGrants(),
     listProducts(),
@@ -17,7 +16,7 @@ export default async function VendorsPage() {
 
   return (
     <>
-      <DashHeader />
+      <DashHeader email={user.email} />
       <main className="mx-auto max-w-4xl space-y-10 px-5 py-8">
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight">
@@ -34,38 +33,7 @@ export default async function VendorsPage() {
             Give a vendor active access — even if they never joined the
             waitlist.
           </p>
-          <form
-            action={grantKitAction}
-            className="mt-4 flex flex-col gap-2 sm:flex-row"
-          >
-            <label htmlFor="grant-email" className="sr-only">
-              Vendor email
-            </label>
-            <Input
-              id="grant-email"
-              name="email"
-              type="email"
-              required
-              placeholder="vendor@business.sg"
-              className="sm:max-w-xs"
-            />
-            <label htmlFor="grant-slug" className="sr-only">
-              Kit
-            </label>
-            <select
-              id="grant-slug"
-              name="slug"
-              required
-              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-            >
-              {products.map((p) => (
-                <option key={p.slug} value={p.slug}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-            <Button type="submit">Grant access</Button>
-          </form>
+          <GrantForm products={products} />
         </section>
 
         <section>
@@ -95,18 +63,7 @@ export default async function VendorsPage() {
                         >
                           {k.status}
                         </Badge>
-                        <form action={revokeKitAction}>
-                          <input type="hidden" name="email" value={v.email} />
-                          <input type="hidden" name="slug" value={k.slug} />
-                          <Button
-                            type="submit"
-                            variant="ghost"
-                            size="xs"
-                            className="text-muted-foreground hover:text-destructive"
-                          >
-                            Revoke
-                          </Button>
-                        </form>
+                        <RevokeButton email={v.email} slug={k.slug} />
                       </span>
                     ))}
                   </div>

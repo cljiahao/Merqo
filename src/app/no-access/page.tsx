@@ -37,6 +37,11 @@ export default async function NoAccessPage() {
             )}
           </p>
           <div className="mt-7 flex flex-col gap-2.5">
+            {user && (
+              <Button asChild className="h-11 w-full rounded-xl">
+                <Link href="/dashboard">Check again</Link>
+              </Button>
+            )}
             {user ? (
               <form action={signOutAction}>
                 <Button

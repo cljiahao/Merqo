@@ -1,9 +1,8 @@
 import { requireMerqoTeam } from "@/lib/team";
 import { listTeamMembers } from "@/lib/admin";
-import { removeTeamMemberAction } from "./actions";
 import { AddTeamForm } from "./add-team-form";
+import { RemoveMember } from "./remove-member";
 import { DashHeader } from "@/components/dashboard/dash-header";
-import { Button } from "@/components/ui/button";
 
 export const revalidate = 0;
 
@@ -13,7 +12,7 @@ export default async function TeamPage() {
 
   return (
     <>
-      <DashHeader />
+      <DashHeader email={user.email} />
       <main className="mx-auto max-w-4xl space-y-8 px-5 py-8">
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight">
@@ -51,17 +50,10 @@ export default async function TeamPage() {
                   )}
                 </span>
                 {m.user_id !== user.id && (
-                  <form action={removeTeamMemberAction}>
-                    <input type="hidden" name="user_id" value={m.user_id} />
-                    <Button
-                      type="submit"
-                      variant="ghost"
-                      size="sm"
-                      className="text-muted-foreground hover:text-destructive"
-                    >
-                      Remove
-                    </Button>
-                  </form>
+                  <RemoveMember
+                    userId={m.user_id}
+                    label={m.email ?? m.user_id}
+                  />
                 )}
               </li>
             ))}

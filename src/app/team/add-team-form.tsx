@@ -1,5 +1,6 @@
 "use client";
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
+import { toast } from "sonner";
 import { addTeamMemberAction } from "./actions";
 import { ADD_TEAM_IDLE } from "./state";
 import { Button } from "@/components/ui/button";
@@ -10,9 +11,24 @@ export function AddTeamForm() {
     addTeamMemberAction,
     ADD_TEAM_IDLE,
   );
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (state.status === "success") {
+      toast.success(state.message ?? "Added to the team.");
+      formRef.current?.reset();
+    } else if (state.status === "error") {
+      toast.error(state.message ?? "Something went wrong.");
+    }
+  }, [state]);
+
   return (
     <div>
-      <form action={action} className="flex flex-col gap-2 sm:flex-row">
+      <form
+        ref={formRef}
+        action={action}
+        className="flex flex-col gap-2 sm:flex-row"
+      >
         <label htmlFor="team-email" className="sr-only">
           Team member email
         </label>
