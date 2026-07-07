@@ -21,7 +21,7 @@ export function Nav({ authed = false }: { authed?: boolean }) {
             Kits
           </Link>
           <Button asChild size="sm">
-            <Link href={authed ? "/dashboard" : "/login"}>
+            <Link href={authed ? "/admin" : "/login"}>
               {authed ? "Dashboard" : "Log in"}
             </Link>
           </Button>

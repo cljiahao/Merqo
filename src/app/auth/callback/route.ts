@@ -11,9 +11,7 @@ export async function GET(request: Request) {
   // can't be used as an open redirect; default to the operator dashboard.
   const next = searchParams.get("next");
   const safeNext =
-    next && next.startsWith("/") && !next.startsWith("//")
-      ? next
-      : "/dashboard";
+    next && next.startsWith("/") && !next.startsWith("//") ? next : "/admin";
 
   if (!code) return NextResponse.redirect(`${origin}/login?error=oauth`);
 

@@ -39,20 +39,27 @@ test.describe("authed areas", () => {
     "needs seeded auth (set MERQO_E2E_AUTH=1)",
   );
 
-  test("dashboard overview renders product cards", async ({ page }) => {
-    await page.goto("/dashboard");
+  test("admin overview renders", async ({ page }) => {
+    await page.goto("/admin");
     await expect(page.getByRole("heading", { name: "Overview" })).toBeVisible();
   });
 
-  test("vendors page renders a grant control", async ({ page }) => {
-    await page.goto("/vendors");
+  test("admin vendors page renders a grant control", async ({ page }) => {
+    await page.goto("/admin/vendors");
     await expect(
       page.getByRole("heading", { name: "Grant a kit" }),
     ).toBeVisible();
   });
 
-  test("team page renders the member add form", async ({ page }) => {
-    await page.goto("/team");
+  test("admin products page renders", async ({ page }) => {
+    await page.goto("/admin/products");
+    await expect(
+      page.getByRole("heading", { name: "Products", exact: true }),
+    ).toBeVisible();
+  });
+
+  test("admin team page renders the member add form", async ({ page }) => {
+    await page.goto("/admin/team");
     await expect(
       page.getByRole("heading", { name: "Team", exact: true }),
     ).toBeVisible();
