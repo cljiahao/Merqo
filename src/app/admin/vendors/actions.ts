@@ -26,7 +26,7 @@ export async function grantKitAction(
   } catch {
     return { success: false, error: "Couldn't grant access. Try again." };
   }
-  revalidatePath("/vendors");
+  revalidatePath("/admin/vendors");
   return { success: true };
 }
 
@@ -46,6 +46,6 @@ export async function revokeKitAction(
   } catch {
     return { success: false, error: "Couldn't revoke access. Try again." };
   }
-  revalidatePath("/vendors");
+  revalidatePath("/admin/vendors");
   return { success: true };
 }
