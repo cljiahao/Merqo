@@ -88,4 +88,21 @@ describe("fetchProductMetrics", () => {
     });
     expect(r).toMatchObject({ ok: false, reason: "unreachable" });
   });
+
+  it("reports a numeric durationMs on success", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify(goodPayload), { status: 200 }),
+    );
+    const r = await fetchProductMetrics(row);
+    expect(typeof r.durationMs).toBe("number");
+    expect(r.durationMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it("reports durationMs even on failure", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("{}", { status: 401 }),
+    );
+    const r = await fetchProductMetrics(row);
+    expect(typeof r.durationMs).toBe("number");
+  });
 });
