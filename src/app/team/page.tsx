@@ -1,60 +1,71 @@
 import { requireMerqoTeam } from "@/lib/team";
-import { listLiveProducts } from "@/lib/products";
-import { fetchProductMetrics } from "@/lib/metrics-client";
-import { summarizeOverview } from "@/lib/overview";
-import { money } from "@/lib/format";
+import { listTeamMembers } from "@/lib/admin";
+import { removeTeamMemberAction } from "./actions";
+import { AddTeamForm } from "./add-team-form";
 import { DashHeader } from "@/components/dashboard/dash-header";
-import { StatCard } from "@/components/dashboard/stat-card";
-import { ProductCard } from "./product-card";
+import { Button } from "@/components/ui/button";
 
 export const revalidate = 0;
 
 export default async function TeamPage() {
-  await requireMerqoTeam();
-  const products = await listLiveProducts();
-  const results = await Promise.all(
-    products.map((p) => fetchProductMetrics(p)),
-  );
-  const totals = summarizeOverview(results);
+  const { user } = await requireMerqoTeam();
+  const team = await listTeamMembers();
 
   return (
     <>
-      <DashHeader isTeam />
-      <main className="mx-auto max-w-6xl px-5 py-8">
-        <h1 className="font-display text-2xl font-bold tracking-tight">
-          Overview
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {totals.products_reporting} reporting
-          {totals.products_down > 0
-            ? ` · ${totals.products_down} unavailable`
-            : ""}
-        </p>
+      <DashHeader />
+      <main className="mx-auto max-w-4xl space-y-8 px-5 py-8">
+        <div>
+          <h1 className="font-display text-2xl font-bold tracking-tight">
+            Team
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Merqo team members can see the overview, vendors, and this page.
+          </p>
+        </div>
 
-        <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard
-            label="Revenue (all)"
-            value={money(totals.revenue_cents_all)}
-            accent
-          />
-          <StatCard
-            label="Active vendors"
-            value={String(totals.active_vendors)}
-          />
-          <StatCard label="Orders (7d)" value={String(totals.orders_7d)} />
-          <StatCard
-            label="Upgrade requests"
-            value={String(totals.pending_upgrade_requests)}
-          />
+        <section>
+          <h2 className="font-display text-lg font-bold">Add a member</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Add by email — the person must have signed in once first.
+          </p>
+          <div className="mt-3">
+            <AddTeamForm />
+          </div>
         </section>
 
-        <h2 className="mt-10 font-display text-lg font-bold tracking-tight">
-          Products
-        </h2>
-        <section className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {products.map((p, i) => (
-            <ProductCard key={p.slug} name={p.name} result={results[i]} />
-          ))}
+        <section>
+          <h2 className="font-display text-lg font-bold">Members</h2>
+          <ul className="mt-3 space-y-2">
+            {team.map((m) => (
+              <li
+                key={m.user_id}
+                className="flex items-center justify-between rounded-xl border bg-card p-3.5 shadow-sm"
+              >
+                <span className="text-sm">
+                  {m.email ?? m.user_id}
+                  {m.user_id === user.id && (
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      (you)
+                    </span>
+                  )}
+                </span>
+                {m.user_id !== user.id && (
+                  <form action={removeTeamMemberAction}>
+                    <input type="hidden" name="user_id" value={m.user_id} />
+                    <Button
+                      type="submit"
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      Remove
+                    </Button>
+                  </form>
+                )}
+              </li>
+            ))}
+          </ul>
         </section>
       </main>
     </>

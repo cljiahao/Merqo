@@ -1,11 +1,6 @@
 import { requireMerqoTeam } from "@/lib/team";
-import { listVendorGrants, listProducts, listTeamMembers } from "@/lib/admin";
-import {
-  grantKitAction,
-  revokeKitAction,
-  removeTeamMemberAction,
-} from "./actions";
-import { AddTeamForm } from "./add-team-form";
+import { listVendorGrants, listProducts } from "@/lib/admin";
+import { grantKitAction, revokeKitAction } from "./actions";
 import { DashHeader } from "@/components/dashboard/dash-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,24 +8,23 @@ import { Input } from "@/components/ui/input";
 
 export const revalidate = 0;
 
-export default async function AdminPage() {
-  const { user } = await requireMerqoTeam();
-  const [grants, products, team] = await Promise.all([
+export default async function VendorsPage() {
+  await requireMerqoTeam();
+  const [grants, products] = await Promise.all([
     listVendorGrants(),
     listProducts(),
-    listTeamMembers(),
   ]);
 
   return (
     <>
-      <DashHeader isTeam />
+      <DashHeader />
       <main className="mx-auto max-w-4xl space-y-10 px-5 py-8">
         <div>
           <h1 className="font-display text-2xl font-bold tracking-tight">
-            Admin
+            Vendors
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Grant kit access and manage the Merqo team.
+            Grant kit access and see who owns what.
           </p>
         </div>
 
@@ -75,7 +69,7 @@ export default async function AdminPage() {
         </section>
 
         <section>
-          <h2 className="font-display text-lg font-bold">Vendors</h2>
+          <h2 className="font-display text-lg font-bold">All vendors</h2>
           {grants.length === 0 ? (
             <p className="mt-2 text-sm text-muted-foreground">
               No vendor links yet.
@@ -120,47 +114,6 @@ export default async function AdminPage() {
               ))}
             </ul>
           )}
-        </section>
-
-        <section>
-          <h2 className="font-display text-lg font-bold">Merqo team</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Team members can see the overview and admin. Add by email — the
-            person must have signed in once.
-          </p>
-          <div className="mt-3">
-            <AddTeamForm />
-          </div>
-          <ul className="mt-4 space-y-2">
-            {team.map((m) => (
-              <li
-                key={m.user_id}
-                className="flex items-center justify-between rounded-xl border bg-card p-3.5 shadow-sm"
-              >
-                <span className="text-sm">
-                  {m.email ?? m.user_id}
-                  {m.user_id === user.id && (
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      (you)
-                    </span>
-                  )}
-                </span>
-                {m.user_id !== user.id && (
-                  <form action={removeTeamMemberAction}>
-                    <input type="hidden" name="user_id" value={m.user_id} />
-                    <Button
-                      type="submit"
-                      variant="ghost"
-                      size="sm"
-                      className="text-muted-foreground hover:text-destructive"
-                    >
-                      Remove
-                    </Button>
-                  </form>
-                )}
-              </li>
-            ))}
-          </ul>
         </section>
       </main>
     </>

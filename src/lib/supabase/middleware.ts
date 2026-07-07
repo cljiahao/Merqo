@@ -2,14 +2,14 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import type { User } from "@supabase/supabase-js";
 
-// All dashboard areas require a session. Everything else (landing, /login) is
-// public. /admin additionally requires merqo_team membership, enforced in the
+// All operator areas require a session. Everything else (landing, /login,
+// /no-access) is public. Merqo-team membership is additionally enforced in each
 // page via requireMerqoTeam(); the proxy only guarantees a session.
 function isProtectedPath(path: string): boolean {
   return (
-    path.startsWith("/team") ||
-    path.startsWith("/products") ||
-    path.startsWith("/admin")
+    path.startsWith("/dashboard") ||
+    path.startsWith("/vendors") ||
+    path.startsWith("/team")
   );
 }
 

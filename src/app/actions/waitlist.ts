@@ -1,10 +1,10 @@
 "use server";
 import { z } from "zod";
-import { addToWaitlist } from "@/lib/vendor";
+import { addToWaitlist } from "@/lib/waitlist";
 import { WAITLISTABLE_SLUGS } from "@/lib/kits";
 
-/** Public landing waitlist. Email comes from the form (no auth), unlike the
- *  signed-in /products waitlist which reads the email from the session. */
+/** Public landing waitlist. Email comes from the form (no auth) — this is the
+ *  only waitlist entry point now that vendors have no self-serve surface. */
 const schema = z.object({
   email: z.string().trim().toLowerCase().email(),
   slug: z.enum(WAITLISTABLE_SLUGS as [string, ...string[]]),

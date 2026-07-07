@@ -10,7 +10,7 @@ import { Wordmark } from "@/components/landing/wordmark";
 
 // Reached from the password-reset email → /auth/callback establishes a recovery
 // session and forwards here. We update the password on that session, then land
-// the user in their dashboard.
+// the user on the dashboard.
 export default function ResetPasswordPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
@@ -33,7 +33,7 @@ export default function ResetPasswordPage() {
       setError(error.message);
       return;
     }
-    router.push("/products");
+    router.push("/dashboard");
     router.refresh();
   }
 

@@ -6,28 +6,26 @@ import { Wordmark } from "@/components/landing/wordmark";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const TEAM_LINKS = [
-  { href: "/team", label: "Overview" },
-  { href: "/products", label: "Products" },
-  { href: "/admin", label: "Admin" },
+const NAV_LINKS = [
+  { href: "/dashboard", label: "Overview" },
+  { href: "/vendors", label: "Vendors" },
+  { href: "/team", label: "Team" },
 ];
-const VENDOR_LINKS = [{ href: "/products", label: "Products" }];
 
-export function DashHeader({ isTeam = false }: { isTeam?: boolean }) {
+export function DashHeader() {
   const path = usePathname();
-  const links = isTeam ? TEAM_LINKS : VENDOR_LINKS;
   return (
     <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-5">
         <div className="flex items-center gap-5">
           <Link
-            href={isTeam ? "/team" : "/products"}
+            href="/dashboard"
             className="rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
             <Wordmark />
           </Link>
           <nav className="hidden items-center gap-1 sm:flex">
-            {links.map((l) => {
+            {NAV_LINKS.map((l) => {
               const active = path === l.href || path.startsWith(l.href + "/");
               return (
                 <Link

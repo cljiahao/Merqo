@@ -92,7 +92,7 @@ export default function LoginPage() {
         setSent({ email, kind: "signup" });
         return;
       }
-      router.push("/products");
+      router.push("/dashboard");
       router.refresh();
       return;
     }
@@ -106,7 +106,7 @@ export default function LoginPage() {
       setError(error.message);
       return;
     }
-    router.push("/products");
+    router.push("/dashboard");
     router.refresh();
   }
 

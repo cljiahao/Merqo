@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const { addToWaitlistMock } = vi.hoisted(() => ({
   addToWaitlistMock: vi.fn(),
 }));
-vi.mock("@/lib/vendor", () => ({ addToWaitlist: addToWaitlistMock }));
+vi.mock("@/lib/waitlist", () => ({ addToWaitlist: addToWaitlistMock }));
 
 import { joinKitWaitlist, WAITLIST_IDLE } from "@/app/actions/waitlist";
 

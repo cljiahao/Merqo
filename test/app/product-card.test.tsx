@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { ProductCard } from "@/app/team/product-card";
+import { ProductCard } from "@/app/dashboard/product-card";
 import type { MetricsResult } from "@/lib/metrics-client";
 
 const okResult: MetricsResult = {
