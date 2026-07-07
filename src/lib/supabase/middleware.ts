@@ -37,18 +37,21 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  if (!isProtectedPath(request.nextUrl.pathname)) return supabaseResponse;
-
+  // Refresh the session on EVERY request, not just protected ones. @supabase/ssr
+  // rotates the auth cookies as a side effect of getUser(); skipping it on public
+  // routes (the landing, /login) lets the access token age out with no refresh,
+  // which silently logs the user out when they return. Run getUser() first, then
+  // apply the login gate only for protected paths.
   let user: User | null = null;
   try {
     const { data } = await supabase.auth.getUser();
     user = data.user;
   } catch {
-    // Auth unreachable — degrade to unauthenticated and redirect rather than 500.
+    // Auth unreachable — degrade to unauthenticated.
     user = null;
   }
 
-  if (!user) {
+  if (!user && isProtectedPath(request.nextUrl.pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
