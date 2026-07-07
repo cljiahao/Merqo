@@ -7,7 +7,7 @@ export function Footer() {
     <footer className="border-t">
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-6 py-10 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-1">
-          <Wordmark />
+          <Wordmark className="text-xl" />
           <p className="text-xs text-muted-foreground">
             Simple tools for Singapore&rsquo;s small sellers.
           </p>
