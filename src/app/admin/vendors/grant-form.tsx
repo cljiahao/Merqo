@@ -14,9 +14,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export function GrantForm({ products }: { products: ProductOption[] }) {
+export function GrantForm({
+  products,
+  defaultEmail,
+}: {
+  products: ProductOption[];
+  defaultEmail?: string;
+}) {
   const { pending, run } = useAsyncAction();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(defaultEmail ?? "");
   const [slug, setSlug] = useState(products[0]?.slug ?? "");
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {

@@ -25,7 +25,7 @@ export async function removeTeamMemberAction(
   } catch {
     return { success: false, error: "Couldn't remove the member. Try again." };
   }
-  revalidatePath("/team");
+  revalidatePath("/admin/team");
   return { success: true };
 }
 
@@ -47,7 +47,7 @@ export async function addTeamMemberAction(
           "No Merqo account for that email yet — they must sign in once first.",
       };
     }
-    revalidatePath("/team");
+    revalidatePath("/admin/team");
     return { status: "success", message: `Added ${parsed.data} to the team.` };
   } catch {
     return { status: "error", message: "Something went wrong. Try again." };

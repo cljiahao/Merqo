@@ -1,12 +1,13 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { ProductCard } from "@/app/dashboard/product-card";
+import { ProductCard } from "@/app/admin/product-card";
 import type { MetricsResult } from "@/lib/metrics-client";
 
 const okResult: MetricsResult = {
   ok: true,
   product: "qkit",
+  durationMs: 0,
   data: {
     product: "qkit",
     generated_at: "t",
@@ -37,7 +38,12 @@ describe("ProductCard", () => {
     render(
       <ProductCard
         name="Queue"
-        result={{ ok: false, product: "qkit", reason: "unreachable" }}
+        result={{
+          ok: false,
+          product: "qkit",
+          reason: "unreachable",
+          durationMs: 0,
+        }}
       />,
     );
     expect(screen.getByText("Unavailable")).toBeInTheDocument();
@@ -48,7 +54,7 @@ describe("ProductCard", () => {
     render(
       <ProductCard
         name="Queue"
-        result={{ ok: false, product: "qkit", reason: "auth" }}
+        result={{ ok: false, product: "qkit", reason: "auth", durationMs: 0 }}
       />,
     );
     expect(screen.getByText("Auth error")).toBeInTheDocument();

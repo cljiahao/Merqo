@@ -30,6 +30,23 @@ export function groupVendorGrants(
   return [...byEmail.values()].sort((a, b) => a.email.localeCompare(b.email));
 }
 
+/** Find one vendor's grant entry by email (case-insensitive). Pure — tested. */
+export function findVendorGrant(
+  grants: VendorGrant[],
+  email: string,
+): VendorGrant | null {
+  const key = email.toLowerCase();
+  return grants.find((g) => g.email.toLowerCase() === key) ?? null;
+}
+
+/** One vendor's grants by email, or null. Gate callers with requireMerqoTeam(). */
+export async function getVendorGrant(
+  email: string,
+): Promise<VendorGrant | null> {
+  const grants = await listVendorGrants();
+  return findVendorGrant(grants, email);
+}
+
 export async function listVendorGrants(): Promise<VendorGrant[]> {
   const supabase = await createServiceClient();
   const [linksRes, productsRes] = await Promise.all([

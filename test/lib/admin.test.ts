@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { groupVendorGrants } from "@/lib/admin";
+import { groupVendorGrants, findVendorGrant } from "@/lib/admin";
 
 describe("groupVendorGrants", () => {
   const names = new Map([
@@ -42,5 +42,21 @@ describe("groupVendorGrants", () => {
       names,
     );
     expect(out.map((v) => v.email)).toEqual(["a@x.com", "z@x.com"]);
+  });
+});
+
+describe("findVendorGrant", () => {
+  const grants = [
+    {
+      email: "a@x.sg",
+      kits: [{ slug: "qkit", name: "qkit", status: "active" as const }],
+    },
+    { email: "b@x.sg", kits: [] },
+  ];
+  it("matches case-insensitively", () => {
+    expect(findVendorGrant(grants, "A@X.SG")?.email).toBe("a@x.sg");
+  });
+  it("returns null when absent", () => {
+    expect(findVendorGrant(grants, "nope@x.sg")).toBeNull();
   });
 });

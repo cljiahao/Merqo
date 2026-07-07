@@ -30,7 +30,7 @@ export default async function Home() {
       {/* Sticky mobile CTA — one persistent action on small screens. */}
       <div className="sticky bottom-0 z-40 border-t bg-background/90 p-3 backdrop-blur sm:hidden">
         <Button asChild size="lg" className="w-full">
-          <Link href={authed ? "/dashboard" : "/login"}>
+          <Link href={authed ? "/admin" : "/login"}>
             {authed ? "Go to dashboard" : "Log in"}
           </Link>
         </Button>

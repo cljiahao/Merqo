@@ -4,13 +4,10 @@ import type { User } from "@supabase/supabase-js";
 
 // All operator areas require a session. Everything else (landing, /login,
 // /no-access) is public. Merqo-team membership is additionally enforced in each
-// page via requireMerqoTeam(); the proxy only guarantees a session.
+// page via requireMerqoTeam(); the proxy only guarantees a session. Vendor
+// /dashboard (Phase 2) will join this list when it ships.
 function isProtectedPath(path: string): boolean {
-  return (
-    path.startsWith("/dashboard") ||
-    path.startsWith("/vendors") ||
-    path.startsWith("/team")
-  );
+  return path.startsWith("/admin");
 }
 
 export async function updateSession(request: NextRequest) {

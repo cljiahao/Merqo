@@ -20,7 +20,7 @@ const ok = (slug: string, over: Partial<MetricsPayload>): MetricsResult => {
     funnel: { signed_up: 0, with_booth: 0, with_order: 0, pro: 0 },
     ...over,
   };
-  return { ok: true, product: slug, data };
+  return { ok: true, product: slug, data, durationMs: 0 };
 };
 
 describe("summarizeOverview", () => {
@@ -38,7 +38,7 @@ describe("summarizeOverview", () => {
         pending_upgrade_requests: 1,
         orders_7d: 4,
       }),
-      { ok: false, product: "down", reason: "unreachable" },
+      { ok: false, product: "down", reason: "unreachable", durationMs: 0 },
     ];
     const t = summarizeOverview(results);
     expect(t.revenue_cents_all).toBe(1500);

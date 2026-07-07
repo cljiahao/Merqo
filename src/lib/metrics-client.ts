@@ -14,10 +14,11 @@ type MetricsSource = Pick<
 >;
 
 export type MetricsResult =
-  | { ok: true; product: string; data: MetricsPayload }
+  | { ok: true; product: string; durationMs: number; data: MetricsPayload }
   | {
       ok: false;
       product: string;
+      durationMs: number;
       reason: "auth" | "unreachable" | "bad_shape";
     };
 
@@ -25,8 +26,16 @@ export async function fetchProductMetrics(
   p: MetricsSource,
   opts: { timeoutMs?: number } = {},
 ): Promise<MetricsResult> {
+  const started = performance.now();
+  const took = () => Math.round(performance.now() - started);
+
   if (!p.metrics_url || !p.metrics_secret) {
-    return { ok: false, product: p.slug, reason: "unreachable" };
+    return {
+      ok: false,
+      product: p.slug,
+      durationMs: took(),
+      reason: "unreachable",
+    };
   }
 
   const controller = new AbortController();
@@ -38,8 +47,14 @@ export async function fetchProductMetrics(
       signal: controller.signal,
     });
     if (res.status === 401)
-      return { ok: false, product: p.slug, reason: "auth" };
-    if (!res.ok) return { ok: false, product: p.slug, reason: "unreachable" };
+      return { ok: false, product: p.slug, durationMs: took(), reason: "auth" };
+    if (!res.ok)
+      return {
+        ok: false,
+        product: p.slug,
+        durationMs: took(),
+        reason: "unreachable",
+      };
 
     // Past a 200, a body we can't read/validate is a product-side problem
     // (bad_shape), not a network outage (unreachable) — keep them distinct so
@@ -48,14 +63,34 @@ export async function fetchProductMetrics(
     try {
       json = await res.json();
     } catch {
-      return { ok: false, product: p.slug, reason: "bad_shape" };
+      return {
+        ok: false,
+        product: p.slug,
+        durationMs: took(),
+        reason: "bad_shape",
+      };
     }
     const parsed = metricsPayloadSchema.safeParse(json);
     if (!parsed.success)
-      return { ok: false, product: p.slug, reason: "bad_shape" };
-    return { ok: true, product: p.slug, data: parsed.data };
+      return {
+        ok: false,
+        product: p.slug,
+        durationMs: took(),
+        reason: "bad_shape",
+      };
+    return {
+      ok: true,
+      product: p.slug,
+      durationMs: took(),
+      data: parsed.data,
+    };
   } catch {
-    return { ok: false, product: p.slug, reason: "unreachable" };
+    return {
+      ok: false,
+      product: p.slug,
+      durationMs: took(),
+      reason: "unreachable",
+    };
   } finally {
     clearTimeout(timer);
   }
