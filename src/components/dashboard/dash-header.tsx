@@ -39,7 +39,7 @@ export function DashHeader({ email }: { email?: string }) {
             href="/dashboard"
             className="rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
-            <Wordmark />
+            <Wordmark className="text-2xl" />
           </Link>
           <nav className="hidden items-center gap-1 sm:flex">
             {NAV_LINKS.map((l) => (
