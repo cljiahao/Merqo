@@ -3,7 +3,7 @@
  * Static on purpose: no DB read keeps the landing's LCP fast and lets it render
  * even while Supabase is half-provisioned. Waitlist writes still hit the DB;
  * every `coming` kit here must have a matching `merqo.products` row (see
- * migration 0002_coming_kits.sql) for the vendor_links FK.
+ * migration 0004) for the vendor_links FK.
  */
 
 export type KitStatus = "live" | "coming" | "planned";
@@ -19,10 +19,14 @@ export type Kit = {
 };
 
 /** Where the live qkit product lives. Set NEXT_PUBLIC_QKIT_URL per environment
- *  to override (e.g. once qkit is on a custom domain). */
+ *  to override (e.g. a custom domain). */
 export const QKIT_URL =
-  process.env.NEXT_PUBLIC_QKIT_URL ?? "https://qkit-sg.vercel.app";
+  process.env.NEXT_PUBLIC_QKIT_URL ?? "https://qkit.vercel.app";
 
+// Canonical per-kit URLs (each kit is a standalone product on its own domain).
+// href is only wired for the live kit; the rest launch on:
+//   loopkit.vercel.app · shopkit.vercel.app · paykit.vercel.app
+//   stockkit.vercel.app · reachkit.vercel.app
 export const KITS: Kit[] = [
   {
     slug: "qkit",
@@ -35,26 +39,32 @@ export const KITS: Kit[] = [
   {
     slug: "loopkit",
     name: "loopkit",
-    tagline: "Stamp cards and points that bring customers back, automatically.",
+    tagline: "Stamp cards, points and tiers that bring customers back.",
     status: "coming",
   },
   {
     slug: "shopkit",
     name: "shopkit",
-    tagline:
-      "A simple storefront for pre-orders and pickup, wired to your queue.",
-    status: "coming",
-  },
-  {
-    slug: "tapkit",
-    name: "tapkit",
-    tagline: "Collect PayNow and card payments in one place.",
+    tagline: "A simple storefront for your catalog, checkout and pre-orders.",
     status: "planned",
   },
   {
-    slug: "slotkit",
-    name: "slotkit",
-    tagline: "Take bookings and appointments that flow into your queue.",
+    slug: "paykit",
+    name: "paykit",
+    tagline: "Collect PayNow, cards and cash — with receipts and e-invoices.",
+    status: "planned",
+  },
+  {
+    slug: "stockkit",
+    name: "stockkit",
+    tagline: "Track stock in and out, and know what each dish really costs.",
+    status: "planned",
+  },
+  {
+    slug: "reachkit",
+    name: "reachkit",
+    tagline:
+      "Reach customers by SMS, email and WhatsApp — and collect reviews.",
     status: "planned",
   },
 ];
