@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { loadVendorContext, resolveHome } from "@/lib/vendor";
+import {
+  hasRenderableActiveKit,
+  loadVendorContext,
+  resolveHome,
+} from "@/lib/vendor";
 
 // Single funnel for "where do I go after signing in?" — password sign-in, OAuth
 // callback, and password reset all send the user here so the role-routing logic
@@ -10,7 +14,7 @@ export async function GET(request: Request) {
   if (!user) return NextResponse.redirect(`${origin}/login`);
   const dest = resolveHome({
     isTeam,
-    hasActiveKit: links.some((l) => l.status === "active"),
+    hasActiveKit: hasRenderableActiveKit(links),
   });
   return NextResponse.redirect(`${origin}${dest}`);
 }

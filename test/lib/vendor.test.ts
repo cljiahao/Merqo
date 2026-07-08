@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { resolveHome, tilesForLinks } from "@/lib/vendor";
+import {
+  resolveHome,
+  tilesForLinks,
+  hasRenderableActiveKit,
+} from "@/lib/vendor";
 
 describe("resolveHome", () => {
   it("routes a team member to /admin regardless of kits", () => {
@@ -35,5 +39,23 @@ describe("tilesForLinks", () => {
     ]);
     expect(active).toEqual([]);
     expect(pending).toEqual([]);
+  });
+});
+
+describe("hasRenderableActiveKit", () => {
+  it("is true for an active link whose slug is in KITS", () => {
+    expect(
+      hasRenderableActiveKit([{ product_slug: "qkit", status: "active" }]),
+    ).toBe(true);
+  });
+  it("is false when the only active link has an unknown slug", () => {
+    expect(
+      hasRenderableActiveKit([{ product_slug: "ghostkit", status: "active" }]),
+    ).toBe(false);
+  });
+  it("is false when the only known kit is waitlist, not active", () => {
+    expect(
+      hasRenderableActiveKit([{ product_slug: "loopkit", status: "waitlist" }]),
+    ).toBe(false);
   });
 });

@@ -48,6 +48,16 @@ export function tilesForLinks(
   return { active, pending };
 }
 
+/** True when the vendor has at least one active kit that is renderable (its slug
+ *  is in KITS). Keeps the routing gate and the rendered tiles agreeing on what
+ *  "active" means, so an active link to an unknown slug routes to pending rather
+ *  than an empty dashboard. */
+export function hasRenderableActiveKit(
+  links: { product_slug: string; status: GrantStatus }[],
+): boolean {
+  return tilesForLinks(links).active.length > 0;
+}
+
 /** Read the signed-in user, team membership, and their own vendor_links (RLS
  *  scopes the rows to their email). Non-redirecting — callers decide routing. */
 export async function loadVendorContext(): Promise<{
@@ -94,8 +104,10 @@ export async function requireActiveVendor(): Promise<{
 }> {
   const { user, isTeam, links } = await loadVendorContext();
   if (!user) redirect("/login");
-  const hasActiveKit = links.some((l) => l.status === "active");
-  const dest = resolveHome({ isTeam, hasActiveKit });
+  const dest = resolveHome({
+    isTeam,
+    hasActiveKit: hasRenderableActiveKit(links),
+  });
   if (dest !== "/dashboard") redirect(dest);
   return { user, links };
 }
