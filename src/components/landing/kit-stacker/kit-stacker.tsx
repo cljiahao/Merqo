@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Play } from "lucide-react";
-import { KIT_NODES, HUB_SLUG } from "@/lib/ecosystem";
+import { KIT_NODES, DEFAULT_STACKED } from "@/lib/ecosystem";
 import { Button } from "@/components/ui/button";
 import { GraphCanvas, type Journey } from "./graph-canvas";
 import { BlockTower } from "./block-tower";
@@ -15,14 +15,14 @@ const ALL_SLUGS = KIT_NODES.map((n) => n.slug);
 const JOURNEY_STEPS = [
   { slug: "shopkit", caption: "A customer orders from your store." },
   { slug: "qkit", caption: "The order drops into your queue." },
-  { slug: "tapkit", caption: "Payment is taken on the spot." },
+  { slug: "paykit", caption: "Payment is taken on the spot." },
   { slug: "loopkit", caption: "They earn points — and come back." },
 ];
 const STEP_MS = 780;
 
 export function KitStacker() {
   const [stacked, setStacked] = useState<Set<string>>(
-    () => new Set([HUB_SLUG]),
+    () => new Set([DEFAULT_STACKED]),
   );
   const [highlight, setHighlight] = useState<string | null>(null);
   const [journey, setJourney] = useState<Journey | null>(null);
@@ -44,7 +44,6 @@ export function KitStacker() {
   }
 
   function toggle(slug: string) {
-    if (slug === HUB_SLUG) return;
     resetJourney();
     setStacked((prev) => {
       const next = new Set(prev);
@@ -112,8 +111,8 @@ export function KitStacker() {
           One queue. Watch how the kits connect.
         </h2>
         <p className="mt-4 max-w-xl text-muted-foreground">
-          Everything flows through qkit. Add the tools you need, then play the
-          journey to see an order move through them.
+          Each kit runs on its own — add the ones you need and see how they
+          connect, then play the journey to watch an order move through them.
         </p>
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[1.4fr_1fr]">
@@ -144,7 +143,7 @@ export function KitStacker() {
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={() => setStack([HUB_SLUG])}
+                  onClick={() => setStack([DEFAULT_STACKED])}
                 >
                   Reset
                 </Button>

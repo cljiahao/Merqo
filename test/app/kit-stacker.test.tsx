@@ -10,14 +10,15 @@ vi.mock("@/app/actions/waitlist", () => ({
 import { KitStacker } from "@/components/landing/kit-stacker/kit-stacker";
 
 describe("KitStacker", () => {
-  it("starts with only qkit and can't remove it", () => {
+  it("starts with only qkit stacked, but qkit is removable like any kit", () => {
     render(<KitStacker />);
     expect(screen.getByText(/Your stack has 1 kit:/)).toHaveTextContent(
       /Queue/,
     );
+    // no flagship: qkit's toggle is a normal, enabled button
     expect(
-      screen.getByRole("button", { name: /always in your stack/i }),
-    ).toBeDisabled();
+      screen.getByRole("button", { name: /Remove qkit from the stack/i }),
+    ).toBeEnabled();
   });
 
   it("adds a kit and surfaces its connection when a module is clicked", () => {
@@ -35,7 +36,15 @@ describe("KitStacker", () => {
   it("stacks every kit with Stack all", () => {
     render(<KitStacker />);
     fireEvent.click(screen.getByRole("button", { name: "Stack all" }));
-    expect(screen.getByText(/Your stack has 5 kits:/)).toBeInTheDocument();
+    expect(screen.getByText(/Your stack has 6 kits:/)).toBeInTheDocument();
+  });
+
+  it("removes qkit itself, since no kit is a required flagship", () => {
+    render(<KitStacker />);
+    fireEvent.click(
+      screen.getByRole("button", { name: /Remove qkit from the stack/i }),
+    );
+    expect(screen.getByText(/Your stack has 0 kits:/)).toBeInTheDocument();
   });
 
   it("removes a kit when toggled off again", () => {
