@@ -51,7 +51,7 @@ describe("joinKitWaitlist", () => {
     addToWaitlistMock.mockRejectedValue(new Error("db down"));
     const res = await joinKitWaitlist(
       WAITLIST_IDLE,
-      form({ email: "v@x.com", slug: "shopkit" }),
+      form({ email: "v@x.com", slug: "loopkit" }),
     );
     expect(res.status).toBe("error");
     expect(res.message).toMatch(/try again/i);
