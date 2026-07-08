@@ -33,7 +33,7 @@ export default function ResetPasswordPage() {
       setError(error.message);
       return;
     }
-    router.push("/admin");
+    router.push("/post-login");
     router.refresh();
   }
 
