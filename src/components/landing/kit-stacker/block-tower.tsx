@@ -1,12 +1,16 @@
 import { KIT_NODES, KIT_EDGES } from "@/lib/ecosystem";
 import { cn } from "@/lib/utils";
 
-// Bottom → top: qkit is the foundation, the rest stack on the queue.
-const STACK_ORDER = ["qkit", "loopkit", "shopkit", "tapkit", "slotkit"];
+// Bottom → top: qkit is the foundation, the rest stack on the queue, in the
+// same order as the landing graph (KIT_NODES) so both views stay in sync.
+const STACK_ORDER = [
+  "qkit",
+  ...KIT_NODES.map((n) => n.slug).filter((s) => s !== "qkit"),
+];
 
 const nodeBy = (slug: string) => KIT_NODES.find((n) => n.slug === slug)!;
 
-// A non-hub kit's relationship to the queue (its edge touching qkit).
+// A kit's relationship to the queue (its edge touching qkit), if it has one.
 function queueLink(slug: string): string {
   const e = KIT_EDGES.find(
     (e) =>
