@@ -1,5 +1,8 @@
+import { redirect } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 import { KITS } from "@/lib/kits";
 import type { GrantStatus } from "@/lib/admin";
+import { createServerClient } from "@/lib/supabase/server";
 
 export type HomeDestination = "/admin" | "/dashboard" | "/dashboard/pending";
 
@@ -9,6 +12,8 @@ export type KitTile = {
   tagline: string;
   href: string | null;
 };
+
+export type VendorLink = { product_slug: string; status: GrantStatus };
 
 /** Where a signed-in user belongs. Pure so it can be unit-tested; callers
  *  supply the two facts (team membership, whether any kit is active). */
@@ -41,4 +46,56 @@ export function tilesForLinks(
     (l.status === "active" ? active : pending).push(tile);
   }
   return { active, pending };
+}
+
+/** Read the signed-in user, team membership, and their own vendor_links (RLS
+ *  scopes the rows to their email). Non-redirecting — callers decide routing. */
+export async function loadVendorContext(): Promise<{
+  user: User | null;
+  isTeam: boolean;
+  links: VendorLink[];
+}> {
+  const supabase = await createServerClient();
+  let user: User | null = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    return { user: null, isTeam: false, links: [] };
+  }
+  if (!user) return { user: null, isTeam: false, links: [] };
+
+  const [teamRes, linksRes] = await Promise.all([
+    supabase
+      .from("merqo_team")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase.from("vendor_links").select("product_slug, status"),
+  ]);
+  // A read error here is a config/grant fault (e.g. PGRST106 or a missing grant),
+  // NOT "no kits" — surface it loudly rather than silently emptying the dashboard.
+  if (teamRes.error)
+    throw new Error(`merqo_team read failed: ${teamRes.error.message}`);
+  if (linksRes.error)
+    throw new Error(`vendor_links read failed: ${linksRes.error.message}`);
+
+  return {
+    user,
+    isTeam: !!teamRes.data,
+    links: (linksRes.data ?? []) as VendorLink[],
+  };
+}
+
+/** Gate a /dashboard page on active-vendor access. Mirrors requireMerqoTeam. */
+export async function requireActiveVendor(): Promise<{
+  user: User;
+  links: VendorLink[];
+}> {
+  const { user, isTeam, links } = await loadVendorContext();
+  if (!user) redirect("/login");
+  const hasActiveKit = links.some((l) => l.status === "active");
+  const dest = resolveHome({ isTeam, hasActiveKit });
+  if (dest !== "/dashboard") redirect(dest);
+  return { user, links };
 }
