@@ -30,6 +30,13 @@ test("landing renders with a Log in action", async ({ page }) => {
   ).toBeVisible();
 });
 
+// The vendor dashboard requires a session — signed-out visitors are bounced to
+// /login by the proxy guard.
+test("dashboard redirects a signed-out visitor to login", async ({ page }) => {
+  await page.goto("/dashboard");
+  await expect(page).toHaveURL(/\/login/);
+});
+
 // Authed areas need a seeded merqo_team user + a live Supabase project. Gated
 // behind MERQO_E2E_AUTH=1 (set once storage-state auth is wired). Skipped
 // otherwise so CI stays green pre-provisioning.

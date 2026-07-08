@@ -8,10 +8,12 @@ export async function GET(request: Request) {
   // Where to land after the session is established. Both OAuth sign-in and the
   // password-recovery link route through here; recovery passes ?next=/reset-password.
   // Only accept a same-origin relative path (leading "/", not "//") so the param
-  // can't be used as an open redirect; default to the operator dashboard.
+  // can't be used as an open redirect; default to the role-aware resolver.
   const next = searchParams.get("next");
   const safeNext =
-    next && next.startsWith("/") && !next.startsWith("//") ? next : "/admin";
+    next && next.startsWith("/") && !next.startsWith("//")
+      ? next
+      : "/post-login";
 
   if (!code) return NextResponse.redirect(`${origin}/login?error=oauth`);
 
