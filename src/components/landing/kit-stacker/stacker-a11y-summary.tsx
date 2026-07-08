@@ -25,7 +25,7 @@ export function StackerA11ySummary({
           ))}
         </ul>
       ) : (
-        <p>No connections yet — add another kit to see how it links to qkit.</p>
+        <p>No connections yet — add another kit to see how they connect.</p>
       )}
     </div>
   );

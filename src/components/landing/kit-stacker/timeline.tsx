@@ -1,12 +1,7 @@
+import { KITS } from "@/lib/kits";
 import { cn } from "@/lib/utils";
 
-const ORDER: { slug: string; status: "live" | "coming" | "planned" }[] = [
-  { slug: "qkit", status: "live" },
-  { slug: "loopkit", status: "coming" },
-  { slug: "shopkit", status: "coming" },
-  { slug: "tapkit", status: "planned" },
-  { slug: "slotkit", status: "planned" },
-];
+const ORDER = KITS.map((k) => ({ slug: k.slug, status: k.status }));
 
 export function Timeline() {
   return (

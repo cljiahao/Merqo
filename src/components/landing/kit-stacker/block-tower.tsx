@@ -1,12 +1,16 @@
 import { KIT_NODES, KIT_EDGES } from "@/lib/ecosystem";
 import { cn } from "@/lib/utils";
 
-// Bottom → top: qkit is the foundation, the rest stack on the queue.
-const STACK_ORDER = ["qkit", "loopkit", "shopkit", "tapkit", "slotkit"];
+// Bottom → top: qkit renders first if stacked, the rest follow in the same
+// order as the landing graph (KIT_NODES) so both views stay in sync.
+const STACK_ORDER = [
+  "qkit",
+  ...KIT_NODES.map((n) => n.slug).filter((s) => s !== "qkit"),
+];
 
 const nodeBy = (slug: string) => KIT_NODES.find((n) => n.slug === slug)!;
 
-// A non-hub kit's relationship to the queue (its edge touching qkit).
+// A kit's relationship to the queue (its edge touching qkit), if it has one.
 function queueLink(slug: string): string {
   const e = KIT_EDGES.find(
     (e) =>
@@ -68,13 +72,15 @@ export function BlockTower({
                 live ? "text-primary-foreground/80" : "text-muted-foreground",
               )}
             >
-              {live ? "Your queue — the foundation." : queueLink(slug)}
+              {live
+                ? "Your live queue."
+                : queueLink(slug) || "Runs on its own."}
             </p>
           </div>
         );
       })}
       <p className="mt-1 text-center text-xs text-muted-foreground">
-        Every kit stacks on the queue — one account, one bill.
+        Every kit runs on its own — one account, one bill.
       </p>
       {blocks.length === 1 && (
         <p className="mt-3 text-center text-xs text-muted-foreground">

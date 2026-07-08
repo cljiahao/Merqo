@@ -1,6 +1,5 @@
 import { Check, Plus } from "lucide-react";
 import { KITS, WAITLISTABLE_SLUGS, type Kit } from "@/lib/kits";
-import { HUB_SLUG } from "@/lib/ecosystem";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { WaitlistForm } from "../waitlist-form";
@@ -33,7 +32,6 @@ export function ModuleList({
             <ul className="mt-2 space-y-2">
               {kits.map((k) => {
                 const on = stacked.has(k.slug);
-                const isHub = k.slug === HUB_SLUG;
                 const waitlistable = WAITLISTABLE_SLUGS.includes(k.slug);
                 return (
                   <li
@@ -49,7 +47,6 @@ export function ModuleList({
                       <button
                         type="button"
                         aria-pressed={on}
-                        disabled={isHub}
                         onClick={() => onToggle(k.slug)}
                         className={cn(
                           "flex size-7 shrink-0 items-center justify-center rounded-full border outline-none transition-colors focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:opacity-100",
@@ -64,11 +61,9 @@ export function ModuleList({
                           <Plus className="size-4" />
                         )}
                         <span className="sr-only">
-                          {isHub
-                            ? `${k.name} is always in your stack`
-                            : on
-                              ? `Remove ${k.name} from the stack`
-                              : `Add ${k.name} to the stack`}
+                          {on
+                            ? `Remove ${k.name} from the stack`
+                            : `Add ${k.name} to the stack`}
                         </span>
                       </button>
                       <div className="min-w-0 flex-1">
@@ -76,7 +71,7 @@ export function ModuleList({
                           <span className="font-display font-bold">
                             {k.name}
                           </span>
-                          {isHub && (
+                          {k.status === "live" && (
                             <Badge
                               variant="gold"
                               className="px-1.5 py-0 text-[10px]"

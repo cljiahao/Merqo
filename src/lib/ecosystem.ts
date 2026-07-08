@@ -1,9 +1,9 @@
 /**
- * Data for the landing "kit stacker" graph — the curated hub-and-spoke layout of
- * the kit family and how each kit plugs into the queue. Positions are fixed (art-
- * directed, not physics) in a stable viewBox; edges render only when BOTH their
- * endpoints are stacked. Display-only; the waitlist source of truth stays in
- * kits.ts. Keep slugs in sync with kits.ts.
+ * Data for the landing "kit stacker" graph — six standalone kits and the optional
+ * integrations between them. Positions are fixed (art-directed, not physics) in a
+ * stable viewBox; edges render only when BOTH their endpoints are stacked. No kit
+ * is a required flagship — the graph shows connections, not dependencies.
+ * Display-only; the waitlist source of truth stays in kits.ts. Keep slugs in sync.
  */
 
 export type KitStatus = "live" | "coming" | "planned";
@@ -29,26 +29,15 @@ export type KitEdge = {
 export const GRAPH_VIEWBOX = { w: 520, h: 440 };
 
 export const KIT_NODES: KitNode[] = [
-  { slug: "qkit", short: "Queue", status: "live", x: 260, y: 220 },
-  { slug: "shopkit", short: "Store", status: "coming", x: 110, y: 108 },
-  { slug: "loopkit", short: "Loyalty", status: "coming", x: 410, y: 108 },
-  { slug: "tapkit", short: "Payments", status: "planned", x: 110, y: 332 },
-  { slug: "slotkit", short: "Bookings", status: "planned", x: 410, y: 332 },
+  { slug: "qkit", short: "Queue", status: "live", x: 260, y: 80 },
+  { slug: "shopkit", short: "Store", status: "planned", x: 120, y: 160 },
+  { slug: "loopkit", short: "Loyalty", status: "coming", x: 400, y: 160 },
+  { slug: "stockkit", short: "Stock", status: "planned", x: 120, y: 320 },
+  { slug: "paykit", short: "Payments", status: "planned", x: 260, y: 380 },
+  { slug: "reachkit", short: "Reach", status: "planned", x: 400, y: 320 },
 ];
 
 export const KIT_EDGES: KitEdge[] = [
-  {
-    from: "shopkit",
-    to: "qkit",
-    label: "orders",
-    desc: "Online orders drop into your queue.",
-  },
-  {
-    from: "slotkit",
-    to: "qkit",
-    label: "bookings",
-    desc: "Bookings join the same queue.",
-  },
   {
     from: "qkit",
     to: "loopkit",
@@ -56,21 +45,35 @@ export const KIT_EDGES: KitEdge[] = [
     desc: "Finished orders earn loyalty points.",
   },
   {
-    from: "tapkit",
+    from: "paykit",
     to: "qkit",
-    label: "payments",
+    label: "pay",
     desc: "Take payment as the order is placed.",
   },
   {
-    from: "tapkit",
+    from: "shopkit",
+    to: "qkit",
+    label: "orders",
+    desc: "Online orders drop into your queue.",
+  },
+  {
+    from: "paykit",
     to: "shopkit",
     label: "checkout",
     desc: "Powers checkout on your store.",
   },
+  {
+    from: "qkit",
+    to: "reachkit",
+    label: "reviews",
+    desc: "Ask for a review after a visit.",
+  },
 ];
 
-/** The anchor kit — always stacked, can't be removed (it's live + the hub). */
-export const HUB_SLUG = "qkit";
+/** The kit the stacker starts (and resets) with — qkit, the live one. It is a
+ *  sensible starting point, NOT a required anchor: it can be unstacked like any
+ *  other kit (no flagship). */
+export const DEFAULT_STACKED = "qkit";
 
 export function nodeBySlug(slug: string): KitNode | undefined {
   return KIT_NODES.find((n) => n.slug === slug);

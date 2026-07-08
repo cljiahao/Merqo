@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   KIT_NODES,
   KIT_EDGES,
-  HUB_SLUG,
+  DEFAULT_STACKED,
   activeEdges,
   nodeBySlug,
 } from "@/lib/ecosystem";
@@ -10,8 +10,16 @@ import {
 const slugs = new Set(KIT_NODES.map((n) => n.slug));
 
 describe("ecosystem graph config", () => {
-  it("has qkit as the hub node", () => {
-    expect(HUB_SLUG).toBe("qkit");
+  it("has the six kits and no retired slugs", () => {
+    expect(slugs).toEqual(
+      new Set(["qkit", "loopkit", "shopkit", "paykit", "stockkit", "reachkit"]),
+    );
+    expect(slugs.has("slotkit")).toBe(false);
+    expect(slugs.has("tapkit")).toBe(false);
+  });
+
+  it("defaults the stack to qkit (the live kit), but it is not special", () => {
+    expect(DEFAULT_STACKED).toBe("qkit");
     expect(nodeBySlug("qkit")?.status).toBe("live");
   });
 
@@ -24,11 +32,14 @@ describe("ecosystem graph config", () => {
     }
   });
 
-  it("connects every kit into the graph when all are stacked", () => {
-    const all = new Set(KIT_NODES.map((n) => n.slug));
-    const edges = activeEdges(all);
+  it("links every kit except the standalone stockkit when all are stacked", () => {
+    const edges = activeEdges(new Set(KIT_NODES.map((n) => n.slug)));
     const linked = new Set(edges.flatMap((e) => [e.from, e.to]));
-    for (const n of KIT_NODES) expect(linked.has(n.slug)).toBe(true);
+    for (const n of KIT_NODES) {
+      if (n.slug === "stockkit") continue; // stockkit stands alone by design
+      expect(linked.has(n.slug)).toBe(true);
+    }
+    expect(linked.has("stockkit")).toBe(false);
   });
 
   it("only shows an edge when both endpoints are stacked", () => {
