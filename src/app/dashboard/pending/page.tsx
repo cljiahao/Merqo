@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { loadVendorContext, tilesForLinks } from "@/lib/vendor";
+import {
+  loadVendorContext,
+  tilesForLinks,
+  hasRenderableActiveKit,
+} from "@/lib/vendor";
+import { syncVendorKits } from "@/lib/vendor-sync";
 import { signOutAction } from "@/app/actions/auth";
 import { Wordmark } from "@/components/landing/wordmark";
 import { Button } from "@/components/ui/button";
@@ -11,10 +16,20 @@ export const revalidate = 0;
 // (app) gate, so requireActiveVendor's redirect here can't loop. Sends anyone who
 // actually qualifies onward via /post-login.
 export default async function PendingPage() {
-  const { user, isTeam, links } = await loadVendorContext();
+  const { user, isTeam, links: initialLinks } = await loadVendorContext();
   if (!user) redirect("/login");
   if (isTeam) redirect("/admin");
-  if (links.some((l) => l.status === "active")) redirect("/dashboard");
+
+  // A vendor with zero links may have signed up directly on a kit — check
+  // before showing "no kits yet" (see vendor-sync.ts; best-effort, never
+  // throws, so a sync failure just leaves `links` as the empty array it
+  // already was).
+  const links =
+    initialLinks.length === 0 && user.email
+      ? await syncVendorKits(user.email)
+      : initialLinks;
+
+  if (hasRenderableActiveKit(links)) redirect("/dashboard");
 
   const { pending } = tilesForLinks(links);
 
