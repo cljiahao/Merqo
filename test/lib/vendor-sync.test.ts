@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { checkVendorStatus } from "@/lib/vendor-sync";
+import { checkVendorStatus, upsertsFromChecks } from "@/lib/vendor-sync";
 
 const kit = {
   slug: "qkit",
@@ -69,12 +69,46 @@ describe("checkVendorStatus", () => {
 
   it("ok:false when the kit has no app_url or metrics_secret (never calls fetch)", async () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch");
-    const r = await checkVendorStatus({
-      slug: "ghostkit",
-      app_url: null,
-      metrics_secret: null,
-    });
+    const r = await checkVendorStatus(
+      {
+        slug: "ghostkit",
+        app_url: null,
+        metrics_secret: null,
+      },
+      "a@x.com",
+    );
     expect(r).toEqual({ ok: false, slug: "ghostkit" });
     expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("upsertsFromChecks", () => {
+  it("keeps only active:true, ok:true checks, lowercases the email", () => {
+    const out = upsertsFromChecks(
+      "A@X.com",
+      [
+        { ok: true, slug: "qkit", active: true, plan: "pro" },
+        { ok: true, slug: "loopkit", active: false, plan: null },
+        { ok: false, slug: "shopkit" },
+      ],
+      "2026-07-09T00:00:00.000Z",
+    );
+    expect(out).toEqual([
+      {
+        email: "a@x.com",
+        product_slug: "qkit",
+        status: "active",
+        last_verified_at: "2026-07-09T00:00:00.000Z",
+      },
+    ]);
+  });
+
+  it("returns an empty array when nothing matched", () => {
+    const out = upsertsFromChecks(
+      "a@x.com",
+      [{ ok: false, slug: "qkit" }],
+      "2026-07-09T00:00:00.000Z",
+    );
+    expect(out).toEqual([]);
   });
 });
