@@ -83,7 +83,7 @@ describe("checkVendorStatus", () => {
 });
 
 describe("upsertsFromChecks", () => {
-  it("keeps only active:true, ok:true checks, lowercases the email", () => {
+  it("keeps only active:true, ok:true checks, lowercases the email, carries plan", () => {
     const out = upsertsFromChecks(
       "A@X.com",
       [
@@ -99,8 +99,18 @@ describe("upsertsFromChecks", () => {
         product_slug: "qkit",
         status: "active",
         last_verified_at: "2026-07-09T00:00:00.000Z",
+        plan: "pro",
       },
     ]);
+  });
+
+  it("carries a null plan through when the kit reports one", () => {
+    const out = upsertsFromChecks(
+      "a@x.com",
+      [{ ok: true, slug: "qkit", active: true, plan: null }],
+      "2026-07-09T00:00:00.000Z",
+    );
+    expect(out[0].plan).toBeNull();
   });
 
   it("returns an empty array when nothing matched", () => {

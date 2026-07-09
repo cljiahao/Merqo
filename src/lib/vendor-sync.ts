@@ -79,6 +79,7 @@ export function upsertsFromChecks(
   product_slug: string;
   status: "active";
   last_verified_at: string;
+  plan: string | null;
 }[] {
   return checks
     .filter(
@@ -89,6 +90,7 @@ export function upsertsFromChecks(
       product_slug: c.slug,
       status: "active" as const,
       last_verified_at: nowIso,
+      plan: c.plan,
     }));
 }
 
@@ -120,7 +122,7 @@ export async function syncVendorKits(email: string): Promise<VendorLink[]> {
 
     const { data, error: readError } = await supabase
       .from("vendor_links")
-      .select("product_slug, status")
+      .select("product_slug, status, plan")
       .eq("email", email.toLowerCase());
     if (readError) {
       console.error("vendor sync: read failed", readError.message);
