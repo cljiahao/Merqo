@@ -64,3 +64,10 @@ of git — it lives only in Vercel env + the DB row.
 
 - Rotate the secret by updating both the qkit Vercel env and `merqo.products.metrics_secret`.
 - A future qkit `public`→`qkit` schema move is invisible to merqo (HTTP boundary).
+- **Vendor membership sync**: apply `supabase/migrations/0005_vendor_link_sync.sql`
+  (`pnpm dlx supabase db push`) before or with the merqo deploy that ships
+  `syncVendorKits`. If the code ships first, the sync upsert fails on the
+  missing `last_verified_at` column — degrades safely (logs, returns `[]`,
+  vendor keeps seeing the existing empty state), but the feature is silently
+  inert until the column exists. No qkit/loopkit-side deploy ordering needed —
+  their `/api/merqo/vendor-status` endpoints are already live.
