@@ -8,12 +8,12 @@
 --    the status CHECK allows; the finer live/coming/planned split lives in kits.ts.
 --    on conflict updates name/app_url only, so an existing qkit 'live' status is kept.
 insert into merqo.products (slug, name, status, app_url) values
-  ('qkit',     'Merqo qkit — Orders',     'live',        'https://qkit.vercel.app'),
-  ('loopkit',  'Merqo loopkit — Loyalty', 'coming_soon', 'https://loopkit.vercel.app'),
-  ('shopkit',  'Merqo shopkit — Store',   'coming_soon', 'https://shopkit.vercel.app'),
-  ('paykit',   'Merqo paykit — Payments', 'coming_soon', 'https://paykit.vercel.app'),
-  ('stockkit', 'Merqo stockkit — Stock',  'coming_soon', 'https://stockkit.vercel.app'),
-  ('reachkit', 'Merqo reachkit — Reach',  'coming_soon', 'https://reachkit.vercel.app')
+  ('qkit',     'Merqo qkit — Orders',     'live',        'https://qkit-sg.vercel.app'),
+  ('loopkit',  'Merqo loopkit — Loyalty', 'coming_soon', 'https://loopkit-sg.vercel.app'),
+  ('shopkit',  'Merqo shopkit — Store',   'coming_soon', 'https://shopkit-sg.vercel.app'),
+  ('paykit',   'Merqo paykit — Payments', 'coming_soon', 'https://paykit-sg.vercel.app'),
+  ('stockkit', 'Merqo stockkit — Stock',  'coming_soon', 'https://stockkit-sg.vercel.app'),
+  ('reachkit', 'Merqo reachkit — Reach',  'coming_soon', 'https://reachkit-sg.vercel.app')
 on conflict (slug) do update
   set name = excluded.name, app_url = excluded.app_url;
 

@@ -21,7 +21,7 @@ describe("0004_kit_consolidation migration", () => {
 
   it("sets each kit's app_url", () => {
     expect(sql).toMatch(/app_url/);
-    expect(sql).toContain("qkit.vercel.app");
+    expect(sql).toContain("qkit-sg.vercel.app");
   });
 
   it("carries tapkit waitlist links onto paykit BEFORE dropping tapkit", () => {

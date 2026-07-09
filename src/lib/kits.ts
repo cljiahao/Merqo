@@ -21,12 +21,12 @@ export type Kit = {
 /** Where the live qkit product lives. Set NEXT_PUBLIC_QKIT_URL per environment
  *  to override (e.g. a custom domain). */
 export const QKIT_URL =
-  process.env.NEXT_PUBLIC_QKIT_URL ?? "https://qkit.vercel.app";
+  process.env.NEXT_PUBLIC_QKIT_URL ?? "https://qkit-sg.vercel.app";
 
 // Canonical per-kit URLs (each kit is a standalone product on its own domain).
 // href is only wired for the live kit; the rest launch on:
-//   loopkit.vercel.app · shopkit.vercel.app · paykit.vercel.app
-//   stockkit.vercel.app · reachkit.vercel.app
+//   loopkit-sg.vercel.app · shopkit-sg.vercel.app · paykit-sg.vercel.app
+//   stockkit-sg.vercel.app · reachkit-sg.vercel.app
 export const KITS: Kit[] = [
   {
     slug: "qkit",
