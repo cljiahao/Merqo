@@ -3,6 +3,7 @@ import {
   resolveHome,
   tilesForLinks,
   hasRenderableActiveKit,
+  addableKits,
 } from "@/lib/vendor";
 
 describe("resolveHome", () => {
@@ -57,5 +58,61 @@ describe("hasRenderableActiveKit", () => {
     expect(
       hasRenderableActiveKit([{ product_slug: "loopkit", status: "waitlist" }]),
     ).toBe(false);
+  });
+});
+
+describe("tilesForLinks plan passthrough", () => {
+  it("carries plan through on an active tile", () => {
+    const { active } = tilesForLinks([
+      { product_slug: "qkit", status: "active", plan: "pro" },
+    ]);
+    expect(active[0].plan).toBe("pro");
+  });
+
+  it("leaves plan undefined when the link has none", () => {
+    const { active } = tilesForLinks([
+      { product_slug: "qkit", status: "active" },
+    ]);
+    expect(active[0].plan).toBeUndefined();
+  });
+});
+
+describe("addableKits", () => {
+  const kits = [
+    {
+      slug: "qkit",
+      name: "qkit",
+      tagline: "Take orders and run your queue.",
+      status: "live" as const,
+      href: "https://qkit-sg.vercel.app",
+    },
+    {
+      slug: "loopkit",
+      name: "loopkit",
+      tagline: "Stamp cards and points.",
+      status: "coming" as const,
+    },
+    {
+      slug: "shopkit",
+      name: "shopkit",
+      tagline: "A simple storefront.",
+      status: "planned" as const,
+    },
+  ];
+
+  it("includes a live kit the vendor has no vendor_links row for", () => {
+    const out = addableKits([], kits);
+    expect(out.map((t) => t.slug)).toEqual(["qkit"]);
+    expect(out[0].href).toBe("https://qkit-sg.vercel.app");
+  });
+
+  it("excludes a live kit that already has any vendor_links row", () => {
+    expect(addableKits([{ product_slug: "qkit" }], kits)).toEqual([]);
+  });
+
+  it("never includes a non-live kit regardless of link state", () => {
+    const out = addableKits([], kits);
+    expect(out.map((t) => t.slug)).not.toContain("loopkit");
+    expect(out.map((t) => t.slug)).not.toContain("shopkit");
   });
 });

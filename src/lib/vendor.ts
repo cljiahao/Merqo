@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
-import { KITS } from "@/lib/kits";
+import { KITS, type Kit } from "@/lib/kits";
 import type { GrantStatus } from "@/lib/admin";
 import { createServerClient } from "@/lib/supabase/server";
 
@@ -11,9 +11,15 @@ export type KitTile = {
   name: string;
   tagline: string;
   href: string | null;
+  /** Only meaningful on an active tile — the tier the kit last reported. */
+  plan?: string | null;
 };
 
-export type VendorLink = { product_slug: string; status: GrantStatus };
+export type VendorLink = {
+  product_slug: string;
+  status: GrantStatus;
+  plan: string | null;
+};
 
 /** Where a signed-in user belongs. Pure so it can be unit-tested; callers
  *  supply the two facts (team membership, whether any kit is active). */
@@ -29,7 +35,11 @@ export function resolveHome(input: {
 /** Map a vendor's link rows onto display tiles via the static KITS config.
  *  KITS is the display allow-list — an unknown slug is dropped, not rendered. */
 export function tilesForLinks(
-  links: { product_slug: string; status: GrantStatus }[],
+  links: {
+    product_slug: string;
+    status: GrantStatus;
+    plan?: string | null;
+  }[],
 ): { active: KitTile[]; pending: KitTile[] } {
   const bySlug = new Map(KITS.map((k) => [k.slug, k]));
   const active: KitTile[] = [];
@@ -42,10 +52,29 @@ export function tilesForLinks(
       name: kit.name,
       tagline: kit.tagline,
       href: kit.href ?? null,
+      plan: l.status === "active" ? l.plan : undefined,
     };
     (l.status === "active" ? active : pending).push(tile);
   }
   return { active, pending };
+}
+
+/** Live kits the vendor has no vendor_links row for at all (not active, not
+ *  waitlist) — the "you haven't joined this yet" set for the self-serve
+ *  add-a-kit section. Pure — tested. */
+export function addableKits(
+  links: { product_slug: string }[],
+  kits: Kit[] = KITS,
+): KitTile[] {
+  const linked = new Set(links.map((l) => l.product_slug));
+  return kits
+    .filter((k) => k.status === "live" && !linked.has(k.slug))
+    .map((k) => ({
+      slug: k.slug,
+      name: k.name,
+      tagline: k.tagline,
+      href: k.href ?? null,
+    }));
 }
 
 /** True when the vendor has at least one active kit that is renderable (its slug
@@ -81,7 +110,7 @@ export async function loadVendorContext(): Promise<{
       .select("user_id")
       .eq("user_id", user.id)
       .maybeSingle(),
-    supabase.from("vendor_links").select("product_slug, status"),
+    supabase.from("vendor_links").select("product_slug, status, plan"),
   ]);
   // A read error here is a config/grant fault (e.g. PGRST106 or a missing grant),
   // NOT "no kits" — surface it loudly rather than silently emptying the dashboard.
