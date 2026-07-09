@@ -17,7 +17,7 @@ export function VendorKitCard({ tile }: { tile: KitTile }) {
       <div className="mt-4 flex flex-wrap items-center gap-3">
         {tile.href && (
           <Button asChild size="sm">
-            <a href={tile.href} target="_blank" rel="noreferrer">
+            <a href={`${tile.href}/dashboard`} target="_blank" rel="noreferrer">
               Open {tile.name}
             </a>
           </Button>

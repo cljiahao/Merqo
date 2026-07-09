@@ -77,7 +77,10 @@ export default async function DashboardPage() {
 
       <p className="mt-10 text-sm text-muted-foreground">
         More kits coming —{" "}
-        <Link href="/" className="font-medium text-foreground hover:underline">
+        <Link
+          href="/#kits"
+          className="font-medium text-foreground hover:underline"
+        >
           see the family
         </Link>
         .
