@@ -71,3 +71,9 @@ of git — it lives only in Vercel env + the DB row.
   vendor keeps seeing the existing empty state), but the feature is silently
   inert until the column exists. No qkit/loopkit-side deploy ordering needed —
   their `/api/merqo/vendor-status` endpoints are already live.
+- **Vendor tier display**: apply `supabase/migrations/0006_vendor_link_tier.sql`
+  (`pnpm dlx supabase db push`) strictly BEFORE deploying this branch's code
+  (not before-or-with, like 0005). `loadVendorContext()` now selects the `plan`
+  column and throws loudly on any read error, so shipping code before the
+  migration causes every login and `/dashboard` load to return 500, not a
+  silently-missing badge.
