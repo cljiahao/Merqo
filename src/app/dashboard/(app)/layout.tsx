@@ -1,4 +1,5 @@
 import { requireActiveVendor } from "@/lib/vendor";
+import { getAvatarUrl } from "@/lib/account";
 import { AccountMenu } from "@/components/account-menu";
 import { Wordmark } from "@/components/landing/wordmark";
 
@@ -17,6 +18,7 @@ export default async function DashboardLayout({
           <Wordmark className="text-2xl" />
           <AccountMenu
             email={user.email}
+            avatarUrl={getAvatarUrl(user)}
             switchTo={
               isTeam ? { href: "/admin", label: "Go to admin" } : undefined
             }

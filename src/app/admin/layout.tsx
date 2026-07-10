@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireMerqoTeam } from "@/lib/team";
 import { hasActiveVendorAccess } from "@/lib/vendor";
+import { getAvatarUrl } from "@/lib/account";
 import { AccountMenu } from "@/components/account-menu";
 import { Wordmark } from "@/components/landing/wordmark";
 import { AdminNav } from "./admin-nav";
@@ -31,6 +32,7 @@ export default async function AdminLayout({
           </Link>
           <AccountMenu
             email={user.email}
+            avatarUrl={getAvatarUrl(user)}
             switchTo={
               canSwitch
                 ? { href: "/dashboard", label: "View vendor dashboard" }
