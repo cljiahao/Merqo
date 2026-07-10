@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   resolveHome,
+  dashboardGateDestination,
   tilesForLinks,
   hasRenderableActiveKit,
   addableKits,
@@ -21,6 +22,21 @@ describe("resolveHome", () => {
     expect(resolveHome({ isTeam: false, hasActiveKit: false })).toBe(
       "/dashboard/pending",
     );
+  });
+});
+
+describe("dashboardGateDestination", () => {
+  it("allows /dashboard for a dual-role account (team + active kit)", () => {
+    expect(dashboardGateDestination(true, true)).toBe("/dashboard");
+  });
+  it("allows /dashboard for a plain active vendor", () => {
+    expect(dashboardGateDestination(false, true)).toBe("/dashboard");
+  });
+  it("blocks to /admin for a team member with no active kit", () => {
+    expect(dashboardGateDestination(true, false)).toBe("/admin");
+  });
+  it("blocks to /dashboard/pending for a non-team user with no active kit", () => {
+    expect(dashboardGateDestination(false, false)).toBe("/dashboard/pending");
   });
 });
 

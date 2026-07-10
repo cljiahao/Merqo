@@ -32,6 +32,20 @@ export function resolveHome(input: {
   return "/dashboard/pending";
 }
 
+/** Where `requireActiveVendor` redirects AWAY to when the signed-in user
+ *  has no active kit. Unlike resolveHome (which always sends a team member
+ *  to /admin as the post-login default), this only blocks /dashboard for
+ *  the absence of an active kit — a dual-role account (team + active kit)
+ *  is never blocked here, even though resolveHome would still land them on
+ *  /admin fresh from login. */
+export function dashboardGateDestination(
+  isTeam: boolean,
+  hasActiveKit: boolean,
+): HomeDestination {
+  if (hasActiveKit) return "/dashboard";
+  return isTeam ? "/admin" : "/dashboard/pending";
+}
+
 /** Map a vendor's link rows onto display tiles via the static KITS config.
  *  KITS is the display allow-list — an unknown slug is dropped, not rendered. */
 export function tilesForLinks(
@@ -137,17 +151,33 @@ export async function loadVendorContext(): Promise<{
   };
 }
 
-/** Gate a /dashboard page on active-vendor access. Mirrors requireMerqoTeam. */
+/** Gate a /dashboard page on active-vendor access. Also returns isTeam so
+ *  callers (the dashboard layout) can offer a switch link to /admin for
+ *  dual-role accounts. */
 export async function requireActiveVendor(): Promise<{
   user: User;
   links: VendorLink[];
+  isTeam: boolean;
 }> {
   const { user, isTeam, links } = await loadVendorContext();
   if (!user) redirect("/login");
-  const dest = resolveHome({
-    isTeam,
-    hasActiveKit: hasRenderableActiveKit(links),
-  });
+  const dest = dashboardGateDestination(isTeam, hasRenderableActiveKit(links));
   if (dest !== "/dashboard") redirect(dest);
-  return { user, links };
+  return { user, links, isTeam };
+}
+
+/** Whether the signed-in user also has any active vendor kit — used only
+ *  by the admin layout to decide whether to show a "view vendor dashboard"
+ *  switch link. Best-effort: a read error hides the link rather than
+ *  breaking the whole /admin page over a decorative affordance, unlike
+ *  loadVendorContext's own links read, which throws loudly because it
+ *  gates real access. RLS scopes vendor_links to the caller's own rows,
+ *  same as loadVendorContext's own (also unfiltered) query. */
+export async function hasActiveVendorAccess(): Promise<boolean> {
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("vendor_links")
+    .select("product_slug, status");
+  if (error) return false;
+  return hasRenderableActiveKit((data ?? []) as VendorLink[]);
 }
