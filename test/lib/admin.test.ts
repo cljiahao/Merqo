@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { groupVendorGrants, findVendorGrant } from "@/lib/admin";
+import {
+  groupVendorGrants,
+  findVendorGrant,
+  filterVendorGrants,
+} from "@/lib/admin";
 
 describe("groupVendorGrants", () => {
   const names = new Map([
@@ -58,5 +62,61 @@ describe("findVendorGrant", () => {
   });
   it("returns null when absent", () => {
     expect(findVendorGrant(grants, "nope@x.sg")).toBeNull();
+  });
+});
+
+describe("filterVendorGrants", () => {
+  const grants = [
+    {
+      email: "alice@x.sg",
+      kits: [
+        { slug: "qkit", name: "QKit", status: "active" as const },
+        { slug: "loopkit", name: "LoopKit", status: "waitlist" as const },
+      ],
+    },
+    {
+      email: "bob@x.sg",
+      kits: [{ slug: "loopkit", name: "LoopKit", status: "active" as const }],
+    },
+    { email: "carol@x.sg", kits: [] },
+  ];
+
+  it("returns everything when no filters are set", () => {
+    expect(filterVendorGrants(grants, {})).toEqual(grants);
+  });
+
+  it("filters by email substring, case-insensitively", () => {
+    expect(filterVendorGrants(grants, { query: "ALICE" })).toEqual([grants[0]]);
+  });
+
+  it("filters by status across any kit", () => {
+    expect(filterVendorGrants(grants, { status: "waitlist" })).toEqual([
+      grants[0],
+    ]);
+  });
+
+  it("filters by kit slug", () => {
+    expect(filterVendorGrants(grants, { slug: "loopkit" })).toEqual([
+      grants[0],
+      grants[1],
+    ]);
+  });
+
+  it("combines slug and status — must be the same kit entry", () => {
+    expect(
+      filterVendorGrants(grants, { slug: "loopkit", status: "active" }),
+    ).toEqual([grants[1]]);
+  });
+
+  it("excludes vendors with zero kits once any filter is active", () => {
+    expect(filterVendorGrants(grants, { status: "active" })).not.toContainEqual(
+      grants[2],
+    );
+  });
+
+  it("combines query with status/slug filters", () => {
+    expect(
+      filterVendorGrants(grants, { query: "bob", status: "active" }),
+    ).toEqual([grants[1]]);
   });
 });

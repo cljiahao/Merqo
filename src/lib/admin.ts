@@ -39,6 +39,27 @@ export function findVendorGrant(
   return grants.find((g) => g.email.toLowerCase() === key) ?? null;
 }
 
+/** Narrow the vendor list by email substring, kit status, and/or kit slug for
+ *  the /admin/vendors search UI. When status and slug are both set, they must
+ *  match the same kit entry (not just any two kits on the vendor). Pure — tested. */
+export function filterVendorGrants(
+  grants: VendorGrant[],
+  filters: { query?: string; status?: GrantStatus | "all"; slug?: string },
+): VendorGrant[] {
+  const query = (filters.query ?? "").trim().toLowerCase();
+  const status = filters.status ?? "all";
+  const slug = filters.slug ?? "all";
+  return grants.filter((g) => {
+    if (query && !g.email.toLowerCase().includes(query)) return false;
+    if (status === "all" && slug === "all") return true;
+    return g.kits.some(
+      (k) =>
+        (slug === "all" || k.slug === slug) &&
+        (status === "all" || k.status === status),
+    );
+  });
+}
+
 /** One vendor's grants by email, or null. Gate callers with requireMerqoTeam(). */
 export async function getVendorGrant(
   email: string,
