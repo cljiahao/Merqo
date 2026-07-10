@@ -31,12 +31,14 @@ describe("summarizeOverview", () => {
         active_vendors: 3,
         pending_upgrade_requests: 2,
         orders_7d: 5,
+        orders_prev_7d: 4,
       }),
       ok("loopkit", {
         revenue_cents_all: 500,
         active_vendors: 2,
         pending_upgrade_requests: 1,
         orders_7d: 4,
+        orders_prev_7d: 6,
       }),
       { ok: false, product: "down", reason: "unreachable", durationMs: 0 },
     ];
@@ -45,6 +47,7 @@ describe("summarizeOverview", () => {
     expect(t.active_vendors).toBe(5);
     expect(t.pending_upgrade_requests).toBe(3);
     expect(t.orders_7d).toBe(9);
+    expect(t.orders_prev_7d).toBe(10);
     expect(t.products_reporting).toBe(2);
     expect(t.products_down).toBe(1);
   });
