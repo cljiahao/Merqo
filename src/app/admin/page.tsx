@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DollarSign, ShoppingCart, TrendingUp, Users } from "lucide-react";
 import { requireMerqoTeam } from "@/lib/team";
 import { listLiveProducts } from "@/lib/products";
 import { listVendorGrants } from "@/lib/admin";
@@ -6,10 +7,11 @@ import { fetchProductMetrics } from "@/lib/metrics-client";
 import { summarizeOverview } from "@/lib/overview";
 import { classifyHealth } from "@/lib/health";
 import { onboardingFunnel } from "@/lib/funnel";
-import { money } from "@/lib/format";
+import { money, computeTrend } from "@/lib/format";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { OnboardingFunnelView } from "./onboarding-funnel";
-import { ProductCard } from "./product-card";
+import { ProductTile } from "./product-tile";
+import { StatusBanner } from "./status-banner";
 
 export const revalidate = 0;
 
@@ -48,12 +50,13 @@ export default async function AdminOverviewPage() {
         <h1 className="font-display text-2xl font-bold tracking-tight">
           Overview
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {totals.products_reporting} reporting
-          {lagging > 0 ? ` · ${lagging} lagging` : ""}
-          {totals.products_down > 0 ? ` · ${totals.products_down} down` : ""}
-        </p>
       </div>
+
+      <StatusBanner
+        reporting={totals.products_reporting}
+        lagging={lagging}
+        down={totals.products_down}
+      />
 
       {attention > 0 && (
         <section className="mt-6 space-y-3">
@@ -100,13 +103,24 @@ export default async function AdminOverviewPage() {
             label="Revenue (all)"
             value={money(totals.revenue_cents_all)}
             accent
+            icon={DollarSign}
           />
-          <StatCard label="GMV (30d)" value={money(totals.gmv_cents_30d)} />
+          <StatCard
+            label="GMV (30d)"
+            value={money(totals.gmv_cents_30d)}
+            icon={TrendingUp}
+          />
           <StatCard
             label="Active vendors"
             value={String(totals.active_vendors)}
+            icon={Users}
           />
-          <StatCard label="Orders (7d)" value={String(totals.orders_7d)} />
+          <StatCard
+            label="Orders (7d)"
+            value={String(totals.orders_7d)}
+            icon={ShoppingCart}
+            trend={computeTrend(totals.orders_7d, totals.orders_prev_7d)}
+          />
         </section>
       )}
 
@@ -127,7 +141,12 @@ export default async function AdminOverviewPage() {
       ) : (
         <section className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {products.map((p, i) => (
-            <ProductCard key={p.slug} name={p.name} result={results[i]} />
+            <ProductTile
+              key={p.slug}
+              name={p.name}
+              result={results[i]}
+              now={now}
+            />
           ))}
         </section>
       )}

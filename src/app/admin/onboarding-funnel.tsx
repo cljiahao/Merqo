@@ -1,4 +1,5 @@
 import type { OnboardingCounts } from "@/lib/funnel";
+import { Users } from "lucide-react";
 
 const STAGES = [
   { key: "waitlisted", label: "Waitlisted" },
@@ -11,7 +12,8 @@ export function OnboardingFunnelView({ counts }: { counts: OnboardingCounts }) {
   const top = Math.max(counts.waitlisted, counts.granted, counts.using, 1);
   return (
     <section className="rounded-xl border bg-card p-5 shadow-sm">
-      <h2 className="mb-5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+      <h2 className="mb-5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <Users className="size-3.5" />
         Onboarding
       </h2>
       <div className="space-y-3">
