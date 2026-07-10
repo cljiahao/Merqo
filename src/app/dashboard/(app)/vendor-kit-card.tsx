@@ -1,6 +1,7 @@
 import type { KitTile } from "@/lib/vendor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { UpgradeButton } from "./upgrade-button";
 
 export function VendorKitCard({ tile }: { tile: KitTile }) {
   return (
@@ -22,16 +23,7 @@ export function VendorKitCard({ tile }: { tile: KitTile }) {
             </a>
           </Button>
         )}
-        {tile.plan === "free" && tile.href && (
-          <a
-            href={`${tile.href}/dashboard/plan`}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm font-medium text-foreground hover:underline"
-          >
-            Upgrade to Pro
-          </a>
-        )}
+        {tile.plan === "free" && <UpgradeButton slug={tile.slug} />}
       </div>
     </div>
   );
