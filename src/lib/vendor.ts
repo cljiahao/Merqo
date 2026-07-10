@@ -75,20 +75,27 @@ export function tilesForLinks(
 
 /** Live kits the vendor has no vendor_links row for at all (not active, not
  *  waitlist) — the "you haven't joined this yet" set for the self-serve
- *  add-a-kit section. Pure — tested. */
+ *  add-a-kit section. Returns full Kit records (not a narrower KitTile
+ *  projection) so callers can render description/features. Pure — tested. */
 export function addableKits(
   links: { product_slug: string }[],
   kits: Kit[] = KITS,
-): KitTile[] {
+): Kit[] {
   const linked = new Set(links.map((l) => l.product_slug));
-  return kits
-    .filter((k) => k.status === "live" && !linked.has(k.slug))
-    .map((k) => ({
-      slug: k.slug,
-      name: k.name,
-      tagline: k.tagline,
-      href: k.href ?? null,
-    }));
+  return kits.filter((k) => k.status === "live" && !linked.has(k.slug));
+}
+
+/** Coming-soon kits the vendor hasn't already waitlisted for — the
+ *  dashboard's "Coming soon" discovery bucket. A kit the vendor already has
+ *  ANY link to (waitlist or, in principle, active) is excluded, since
+ *  they're already tracked in the "Pending requests" section instead.
+ *  Pure — tested. */
+export function comingKits(
+  links: { product_slug: string }[],
+  kits: Kit[] = KITS,
+): Kit[] {
+  const linked = new Set(links.map((l) => l.product_slug));
+  return kits.filter((k) => k.status === "coming" && !linked.has(k.slug));
 }
 
 /** True when the vendor has at least one active kit that is renderable (its slug
