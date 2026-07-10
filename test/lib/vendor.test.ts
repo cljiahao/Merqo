@@ -218,6 +218,8 @@ describe("activeKitSupportLinks", () => {
       slug: "qkit",
       name: "qkit",
       tagline: "",
+      description: "",
+      features: [],
       status: "live" as const,
       href: "https://qkit-sg.vercel.app",
     },
@@ -225,6 +227,8 @@ describe("activeKitSupportLinks", () => {
       slug: "loopkit",
       name: "loopkit",
       tagline: "",
+      description: "",
+      features: [],
       status: "coming" as const,
     },
   ];
