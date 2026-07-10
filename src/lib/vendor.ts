@@ -112,8 +112,12 @@ export function hasActiveLinkFor(
   return links.some((l) => l.product_slug === slug && l.status === "active");
 }
 
-/** Read the signed-in user, team membership, and their own vendor_links (RLS
- *  scopes the rows to their email). Non-redirecting — callers decide routing. */
+/** Read the signed-in user, team membership, and their own vendor_links.
+ *  Explicitly filtered by email — RLS on vendor_links additionally grants
+ *  team members read access to EVERY vendor's rows (so admin pages can
+ *  browse all vendors), so relying on RLS alone here would leak every
+ *  vendor's links into a team caller's "own kits" view. Non-redirecting —
+ *  callers decide routing. */
 export async function loadVendorContext(): Promise<{
   user: User | null;
   isTeam: boolean;
@@ -129,13 +133,20 @@ export async function loadVendorContext(): Promise<{
   }
   if (!user) return { user: null, isTeam: false, links: [] };
 
+  const linksQuery = user.email
+    ? supabase
+        .from("vendor_links")
+        .select("product_slug, status, plan")
+        .eq("email", user.email.toLowerCase())
+    : null;
+
   const [teamRes, linksRes] = await Promise.all([
     supabase
       .from("merqo_team")
       .select("user_id")
       .eq("user_id", user.id)
       .maybeSingle(),
-    supabase.from("vendor_links").select("product_slug, status, plan"),
+    linksQuery ?? Promise.resolve({ data: [] as VendorLink[], error: null }),
   ]);
   // A read error here is a config/grant fault (e.g. PGRST106 or a missing grant),
   // NOT "no kits" — surface it loudly rather than silently emptying the dashboard.
@@ -166,18 +177,22 @@ export async function requireActiveVendor(): Promise<{
   return { user, links, isTeam };
 }
 
-/** Whether the signed-in user also has any active vendor kit — used only
- *  by the admin layout to decide whether to show a "view vendor dashboard"
- *  switch link. Best-effort: a read error hides the link rather than
- *  breaking the whole /admin page over a decorative affordance, unlike
- *  loadVendorContext's own links read, which throws loudly because it
- *  gates real access. RLS scopes vendor_links to the caller's own rows,
- *  same as loadVendorContext's own (also unfiltered) query. */
-export async function hasActiveVendorAccess(): Promise<boolean> {
+/** Whether this email has any active vendor kit — used only by the admin
+ *  layout (already holding the signed-in user's email via requireMerqoTeam)
+ *  to decide whether to show a "view vendor dashboard" switch link.
+ *  Explicitly filters by email rather than relying on RLS alone: the
+ *  vendor_links_own_select policy also grants team members read access to
+ *  EVERY vendor's rows (so they can administer them elsewhere), so an
+ *  unfiltered read here would show the switch link to any team member, not
+ *  just one who genuinely also holds an active kit themselves. Best-effort:
+ *  a read error hides the link rather than breaking the whole /admin page
+ *  over a decorative affordance. */
+export async function hasActiveVendorAccess(email: string): Promise<boolean> {
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("vendor_links")
-    .select("product_slug, status");
+    .select("product_slug, status")
+    .eq("email", email.toLowerCase());
   if (error) return false;
   return hasRenderableActiveKit((data ?? []) as VendorLink[]);
 }

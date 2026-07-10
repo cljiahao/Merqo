@@ -12,7 +12,9 @@ export default async function AdminLayout({
 }) {
   // Gate every /admin route once here; child pages re-derive the user cheaply.
   const { user } = await requireMerqoTeam();
-  const canSwitch = await hasActiveVendorAccess();
+  const canSwitch = user.email
+    ? await hasActiveVendorAccess(user.email)
+    : false;
 
   return (
     <div className="min-h-screen">
