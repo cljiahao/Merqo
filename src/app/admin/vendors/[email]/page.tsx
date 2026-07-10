@@ -23,7 +23,7 @@ export default async function VendorDetailPage({
   if (!grant) notFound();
 
   return (
-    <main className="mx-auto max-w-3xl space-y-8 px-5 py-8">
+    <main className="mx-auto max-w-7xl space-y-8 px-5 py-8">
       <div>
         <Link
           href="/admin/vendors"

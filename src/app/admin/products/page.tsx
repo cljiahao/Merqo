@@ -17,7 +17,7 @@ export default async function AdminProductsPage() {
   const now = Date.now();
 
   return (
-    <main className="mx-auto max-w-5xl px-5 py-8">
+    <main className="mx-auto max-w-7xl px-5 py-8">
       <h1 className="font-display text-2xl font-bold tracking-tight">
         Products
       </h1>

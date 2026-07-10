@@ -42,7 +42,7 @@ export default async function AdminOverviewPage() {
   const allDown = products.length > 0 && totals.products_reporting === 0;
 
   return (
-    <main className="mx-auto max-w-5xl px-5 py-8">
+    <main className="mx-auto max-w-7xl px-5 py-8">
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           Internal
