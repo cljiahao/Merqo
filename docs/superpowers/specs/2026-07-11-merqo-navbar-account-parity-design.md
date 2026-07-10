@@ -84,13 +84,12 @@ out (unchanged).
 ### `src/app/dashboard/profile/` (new)
 
 A single page: avatar (read-only display — pulled from
-`user_metadata.avatar_url`, i.e. whatever Google supplied at OAuth sign-in;
-no manual upload/clear, since that would need a new Supabase Storage bucket
-
-- RLS policies Merqo has none of today, and the ask was to _pull_ the
-  picture from Google, not to add manual upload) and display name
-  (`user_metadata.full_name`, editable via `supabase.auth.updateUser`). No
-  other fields. Gated by `requireActiveVendor()` like the rest of `/dashboard`.
+`user_metadata.avatar_url`, i.e. whatever Google supplied at OAuth sign-in; no
+manual upload/clear, since that would need a new Supabase Storage bucket and
+RLS policies Merqo has none of today, and the ask was to _pull_ the picture
+from Google, not to add manual upload) and display name
+(`user_metadata.full_name`, editable via `supabase.auth.updateUser`). No other
+fields. Gated by `requireActiveVendor()` like the rest of `/dashboard`.
 
 ### Get Help chooser (new)
 
