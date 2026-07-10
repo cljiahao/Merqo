@@ -27,9 +27,11 @@ export function initials(email: string | null | undefined): string {
  *  navigation since Merqo has no Profile/Settings/Help pages. */
 export function AccountMenu({
   email,
+  avatarUrl,
   switchTo,
 }: {
   email?: string | null;
+  avatarUrl?: string | null;
   switchTo?: { href: string; label: string };
 }) {
   const [, startTransition] = useTransition();
@@ -42,12 +44,24 @@ export function AccountMenu({
           aria-label="Account menu"
           className="flex items-center gap-2 rounded-lg py-1 pr-2 pl-1 text-left outline-none transition-colors hover:bg-secondary focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
-          <span
-            aria-hidden
-            className="grid size-8 shrink-0 place-items-center rounded-md bg-primary/12 font-mono text-xs font-semibold text-primary ring-1 ring-primary/25 ring-inset"
-          >
-            {initials(email)}
-          </span>
+          {avatarUrl ? (
+             
+            // size-8 avatar; next/image's optimization overhead isn't worth
+            // it here, and Merqo has no next.config.ts remote-pattern setup
+            // for external avatar hosts (Google) today.
+            <img
+              src={avatarUrl}
+              alt="Profile picture"
+              className="size-8 shrink-0 rounded-md object-cover ring-1 ring-primary/25 ring-inset"
+            />
+          ) : (
+            <span
+              aria-hidden
+              className="grid size-8 shrink-0 place-items-center rounded-md bg-primary/12 font-mono text-xs font-semibold text-primary ring-1 ring-primary/25 ring-inset"
+            >
+              {initials(email)}
+            </span>
+          )}
           {email && (
             <span className="hidden max-w-[12rem] truncate text-sm font-medium sm:inline">
               {email}

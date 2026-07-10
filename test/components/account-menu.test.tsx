@@ -59,4 +59,28 @@ describe("AccountMenu", () => {
     expect(screen.getByRole("menu")).toBeInTheDocument();
     expect(container.querySelector("a")).not.toBeInTheDocument();
   });
+
+  it("renders an image avatar when avatarUrl is provided", () => {
+    render(
+      <AccountMenu
+        email="vendor@example.com"
+        avatarUrl="https://lh3.googleusercontent.com/a/pic.jpg"
+      />,
+    );
+    const trigger = screen.getByRole("button", { name: "Account menu" });
+    const img = screen.getByAltText("Profile picture");
+    expect(trigger).toContainElement(img);
+    expect(img).toHaveAttribute(
+      "src",
+      "https://lh3.googleusercontent.com/a/pic.jpg",
+    );
+  });
+
+  it("falls back to initials when avatarUrl is absent", () => {
+    render(<AccountMenu email="vendor@example.com" />);
+    expect(screen.queryByAltText("Profile picture")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Account menu" }),
+    ).toHaveTextContent("V");
+  });
 });
