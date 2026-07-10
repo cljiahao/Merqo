@@ -101,6 +101,24 @@ export function hasRenderableActiveKit(
   return tilesForLinks(links).active.length > 0;
 }
 
+/** The vendor's active kits that have a real support destination, for the
+ *  account menu's Get Help chooser. A kit with no `href` (not yet live)
+ *  can't be linked to, so it's excluded even if somehow marked active. */
+export function activeKitSupportLinks(
+  links: VendorLink[],
+  kits: Kit[] = KITS,
+): { slug: string; name: string; href: string }[] {
+  const bySlug = new Map(kits.map((k) => [k.slug, k]));
+  const out: { slug: string; name: string; href: string }[] = [];
+  for (const l of links) {
+    if (l.status !== "active") continue;
+    const kit = bySlug.get(l.product_slug);
+    if (!kit?.href) continue;
+    out.push({ slug: kit.slug, name: kit.name, href: kit.href });
+  }
+  return out;
+}
+
 /** True when the vendor has an active link to this specific kit slug — the
  *  one-slug version of hasRenderableActiveKit, used to gate the self-serve
  *  upgrade-request action so it can't be invoked for a kit the vendor
