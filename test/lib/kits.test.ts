@@ -45,4 +45,12 @@ describe("kit family config", () => {
     const slugs = KITS.map((k) => k.slug);
     expect(new Set(slugs).size).toBe(slugs.length);
   });
+
+  it("every kit has a fuller description and at least 3 feature bullets", () => {
+    for (const k of KITS) {
+      expect(k.description.length).toBeGreaterThan(30);
+      expect(k.features.length).toBeGreaterThanOrEqual(3);
+      for (const f of k.features) expect(f.length).toBeGreaterThan(5);
+    }
+  });
 });

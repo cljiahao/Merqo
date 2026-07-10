@@ -13,6 +13,10 @@ export type Kit = {
   name: string;
   /** One-line, plain-language "what it does" for a non-technical vendor. */
   tagline: string;
+  /** 2-3 sentence explanation for the dashboard's discovery cards. */
+  description: string;
+  /** 3-4 short "what you get" bullets for the dashboard's discovery cards. */
+  features: string[];
   status: KitStatus;
   /** Only set for `live` kits — where the CTA sends the vendor. */
   href?: string;
@@ -33,6 +37,14 @@ export const KITS: Kit[] = [
     name: "qkit",
     tagline:
       "Take orders and run your queue from a QR code — no app, no hardware.",
+    description:
+      "Customers scan a QR code to join your queue or place an order — no app download, no extra hardware. You get a live dashboard to manage orders, track busy periods, and keep the line moving.",
+    features: [
+      "QR-code ordering and queueing",
+      "Live order dashboard",
+      "Works on any phone, no app needed",
+      "Free and Pro tiers",
+    ],
     status: "live",
     href: QKIT_URL,
   },
@@ -40,24 +52,56 @@ export const KITS: Kit[] = [
     slug: "loopkit",
     name: "loopkit",
     tagline: "Stamp cards, points and tiers that bring customers back.",
+    description:
+      "Digital stamp cards and a points system that turns one-time buyers into regulars. Customers collect stamps or points on every visit and redeem rewards you set — all tracked automatically, no punch cards to lose.",
+    features: [
+      "Digital stamp cards & points",
+      "Custom rewards and tiers",
+      "Automatic visit tracking",
+      "Works alongside your other kits",
+    ],
     status: "coming",
   },
   {
     slug: "shopkit",
     name: "shopkit",
     tagline: "A simple storefront for your catalog, checkout and pre-orders.",
+    description:
+      "A lightweight online storefront for your products — list your catalog, take orders and pre-orders, and get paid, all from one link you can share anywhere.",
+    features: [
+      "Shareable online storefront",
+      "Catalog & pre-orders",
+      "Built-in checkout",
+      "No fee on your own PayNow",
+    ],
     status: "planned",
   },
   {
     slug: "paykit",
     name: "paykit",
     tagline: "Collect PayNow, cards and cash — with receipts and e-invoices.",
+    description:
+      "One place to collect payment however your customer prefers — PayNow, cards or cash — with automatic receipts and e-invoices, so your books stay tidy without extra admin.",
+    features: [
+      "PayNow, card & cash in one flow",
+      "Automatic receipts",
+      "E-invoices",
+      "Syncs with your other kits' orders",
+    ],
     status: "planned",
   },
   {
     slug: "stockkit",
     name: "stockkit",
     tagline: "Track stock in and out, and know what each dish really costs.",
+    description:
+      "Keep a real-time count of what's on your shelves or in your kitchen, and see the true cost of every dish or product — so you know what's actually making you money.",
+    features: [
+      "Real-time stock tracking",
+      "Ingredient/product cost breakdown",
+      "Low-stock alerts",
+      "Ties stock movement to your sales",
+    ],
     status: "planned",
   },
   {
@@ -65,6 +109,14 @@ export const KITS: Kit[] = [
     name: "reachkit",
     tagline:
       "Reach customers by SMS, email and WhatsApp — and collect reviews.",
+    description:
+      "Send updates, promotions and reminders to your customers over SMS, email or WhatsApp, and collect reviews after every visit — all from the same customer list your other kits already know.",
+    features: [
+      "SMS, email & WhatsApp campaigns",
+      "Automated review requests",
+      "Shared customer list across kits",
+      "Simple campaign templates",
+    ],
     status: "planned",
   },
 ];
