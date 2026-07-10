@@ -23,3 +23,17 @@ export function classifyHealth(
   if (now - generatedMs > FRESHNESS_MS) return "lagging";
   return "reporting";
 }
+
+export type OverviewHealth = "ok" | "lagging" | "down";
+
+/** Overall status for the page-level banner — worst case across all
+ *  products. `down` (any product unreachable) outranks `lagging` (slow but
+ *  reporting), which outranks `ok`. */
+export function classifyOverviewHealth(
+  downCount: number,
+  laggingCount: number,
+): OverviewHealth {
+  if (downCount > 0) return "down";
+  if (laggingCount > 0) return "lagging";
+  return "ok";
+}

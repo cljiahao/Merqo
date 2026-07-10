@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { classifyHealth, LAGGING_MS, FRESHNESS_MS } from "@/lib/health";
+import {
+  classifyHealth,
+  classifyOverviewHealth,
+  LAGGING_MS,
+  FRESHNESS_MS,
+} from "@/lib/health";
 import type { MetricsResult } from "@/lib/metrics-client";
 
 const NOW = 1_700_000_000_000;
@@ -58,5 +63,20 @@ describe("classifyHealth", () => {
     expect(classifyHealth(ok({ generated_at: "not-a-date" }), NOW)).toBe(
       "lagging",
     );
+  });
+});
+
+describe("classifyOverviewHealth", () => {
+  it("is ok when nothing is lagging or down", () => {
+    expect(classifyOverviewHealth(0, 0)).toBe("ok");
+  });
+
+  it("is lagging when something is lagging but nothing is down", () => {
+    expect(classifyOverviewHealth(0, 2)).toBe("lagging");
+  });
+
+  it("is down when anything is down, even if something is also lagging", () => {
+    expect(classifyOverviewHealth(1, 0)).toBe("down");
+    expect(classifyOverviewHealth(1, 3)).toBe("down");
   });
 });
