@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requireMerqoTeam } from "@/lib/team";
+import { hasActiveVendorAccess } from "@/lib/vendor";
 import { AccountMenu } from "@/components/account-menu";
 import { Wordmark } from "@/components/landing/wordmark";
 import { AdminNav } from "./admin-nav";
@@ -11,6 +12,7 @@ export default async function AdminLayout({
 }) {
   // Gate every /admin route once here; child pages re-derive the user cheaply.
   const { user } = await requireMerqoTeam();
+  const canSwitch = await hasActiveVendorAccess();
 
   return (
     <div className="min-h-screen">
@@ -25,7 +27,14 @@ export default async function AdminLayout({
               Admin
             </span>
           </Link>
-          <AccountMenu email={user.email} />
+          <AccountMenu
+            email={user.email}
+            switchTo={
+              canSwitch
+                ? { href: "/dashboard", label: "View vendor dashboard" }
+                : undefined
+            }
+          />
         </div>
       </header>
       <AdminNav />
