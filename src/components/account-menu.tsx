@@ -8,6 +8,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { signOutAction } from "@/app/actions/auth";
@@ -28,10 +31,12 @@ export function initials(email: string | null | undefined): string {
 export function AccountMenu({
   email,
   avatarUrl,
+  activeKits = [],
   switchTo,
 }: {
   email?: string | null;
   avatarUrl?: string | null;
+  activeKits?: { slug: string; name: string; href: string }[];
   switchTo?: { href: string; label: string };
 }) {
   const [, startTransition] = useTransition();
@@ -74,14 +79,42 @@ export function AccountMenu({
           {email ?? "Account"}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild className="cursor-pointer">
+          <Link href="/profile">Profile</Link>
+        </DropdownMenuItem>
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger className="cursor-pointer">
+            Get help
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            {activeKits.map((k) => (
+              <DropdownMenuItem key={k.slug} asChild className="cursor-pointer">
+                <a
+                  href={`${k.href}/dashboard`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  {k.name} support
+                </a>
+              </DropdownMenuItem>
+            ))}
+            {activeKits.length > 0 && <DropdownMenuSeparator />}
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <a href="mailto:hello@merqo.sg?subject=Merqo%20account%20help">
+                Contact Merqo
+              </a>
+            </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
         {switchTo && (
           <>
+            <DropdownMenuSeparator />
             <DropdownMenuItem asChild className="cursor-pointer">
               <Link href={switchTo.href}>{switchTo.label}</Link>
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
           </>
         )}
+        <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"
           className="cursor-pointer"

@@ -83,4 +83,33 @@ describe("AccountMenu", () => {
       screen.getByRole("button", { name: "Account menu" }),
     ).toHaveTextContent("V");
   });
+
+  it("always shows Profile and a Contact Merqo link", () => {
+    render(<AccountMenu email="vendor@example.com" />);
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Account menu" }));
+    expect(screen.getByRole("menuitem", { name: "Profile" })).toHaveAttribute(
+      "href",
+      "/profile",
+    );
+    fireEvent.click(screen.getByRole("menuitem", { name: "Get help" }));
+    expect(
+      screen.getByRole("menuitem", { name: "Contact Merqo" }),
+    ).toHaveAttribute("href", expect.stringContaining("mailto:"));
+  });
+
+  it("lists each active kit's support link inside Get help", () => {
+    render(
+      <AccountMenu
+        email="vendor@example.com"
+        activeKits={[
+          { slug: "qkit", name: "qkit", href: "https://qkit-sg.vercel.app" },
+        ]}
+      />,
+    );
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Account menu" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Get help" }));
+    expect(
+      screen.getByRole("menuitem", { name: "qkit support" }),
+    ).toHaveAttribute("href", "https://qkit-sg.vercel.app/dashboard");
+  });
 });
