@@ -16,19 +16,24 @@ const GENERIC_ERROR = "Could not send your request. Try again in a moment.";
 export async function requestUpgrade(
   slug: string,
 ): Promise<UpgradeActionResult> {
-  const { user, links } = await loadVendorContext();
-  if (!user?.email) {
-    return { success: false, error: "Please sign in first." };
-  }
-  if (!hasActiveLinkFor(links, slug)) {
+  try {
+    const { user, links } = await loadVendorContext();
+    if (!user?.email) {
+      return { success: false, error: "Please sign in first." };
+    }
+    if (!hasActiveLinkFor(links, slug)) {
+      return { success: false, error: GENERIC_ERROR };
+    }
+
+    const products = await listLiveProducts();
+    const kit = products.find((p) => p.slug === slug);
+    if (!kit) {
+      return { success: false, error: GENERIC_ERROR };
+    }
+
+    return requestKitUpgrade(kit, user.email);
+  } catch (err) {
+    console.error("requestUpgrade: unexpected failure", err);
     return { success: false, error: GENERIC_ERROR };
   }
-
-  const products = await listLiveProducts();
-  const kit = products.find((p) => p.slug === slug);
-  if (!kit) {
-    return { success: false, error: GENERIC_ERROR };
-  }
-
-  return requestKitUpgrade(kit, user.email);
 }
