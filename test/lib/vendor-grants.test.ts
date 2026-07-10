@@ -3,7 +3,7 @@ import {
   groupVendorGrants,
   findVendorGrant,
   filterVendorGrants,
-} from "@/lib/admin";
+} from "@/lib/vendor-grants";
 
 describe("groupVendorGrants", () => {
   const names = new Map([

@@ -1,64 +1,25 @@
 import { createServiceClient } from "@/lib/supabase/server";
+import {
+  groupVendorGrants,
+  findVendorGrant,
+  filterVendorGrants,
+} from "@/lib/vendor-grants";
+import type {
+  GrantStatus,
+  VendorGrant,
+  ProductOption,
+  LinkRow,
+} from "@/lib/vendor-grants";
 
 // All writes here run through the service client (bypasses RLS). Every caller
 // MUST gate with requireMerqoTeam() first — these helpers do not re-check.
 
-export type GrantStatus = "active" | "waitlist";
-
-export type VendorGrant = {
-  email: string;
-  kits: { slug: string; name: string; status: GrantStatus }[];
-};
-
-type LinkRow = { email: string; product_slug: string; status: GrantStatus };
-
-/** Group flat vendor_links rows into one entry per vendor email. Pure — tested. */
-export function groupVendorGrants(
-  links: LinkRow[],
-  nameBySlug: Map<string, string>,
-): VendorGrant[] {
-  const byEmail = new Map<string, VendorGrant>();
-  for (const l of links) {
-    const entry = byEmail.get(l.email) ?? { email: l.email, kits: [] };
-    entry.kits.push({
-      slug: l.product_slug,
-      name: nameBySlug.get(l.product_slug) ?? l.product_slug,
-      status: l.status,
-    });
-    byEmail.set(l.email, entry);
-  }
-  return [...byEmail.values()].sort((a, b) => a.email.localeCompare(b.email));
-}
-
-/** Find one vendor's grant entry by email (case-insensitive). Pure — tested. */
-export function findVendorGrant(
-  grants: VendorGrant[],
-  email: string,
-): VendorGrant | null {
-  const key = email.toLowerCase();
-  return grants.find((g) => g.email.toLowerCase() === key) ?? null;
-}
-
-/** Narrow the vendor list by email substring, kit status, and/or kit slug for
- *  the /admin/vendors search UI. When status and slug are both set, they must
- *  match the same kit entry (not just any two kits on the vendor). Pure — tested. */
-export function filterVendorGrants(
-  grants: VendorGrant[],
-  filters: { query?: string; status?: GrantStatus | "all"; slug?: string },
-): VendorGrant[] {
-  const query = (filters.query ?? "").trim().toLowerCase();
-  const status = filters.status ?? "all";
-  const slug = filters.slug ?? "all";
-  return grants.filter((g) => {
-    if (query && !g.email.toLowerCase().includes(query)) return false;
-    if (status === "all" && slug === "all") return true;
-    return g.kits.some(
-      (k) =>
-        (slug === "all" || k.slug === slug) &&
-        (status === "all" || k.status === status),
-    );
-  });
-}
+// Re-exported so existing call sites (server pages/actions) keep working —
+// the pure logic itself lives in vendor-grants.ts, which client components
+// import directly to avoid pulling this file's supabase/server dependency
+// into a client bundle.
+export type { GrantStatus, VendorGrant, ProductOption };
+export { groupVendorGrants, findVendorGrant, filterVendorGrants };
 
 /** One vendor's grants by email, or null. Gate callers with requireMerqoTeam(). */
 export async function getVendorGrant(
@@ -82,8 +43,6 @@ export async function listVendorGrants(): Promise<VendorGrant[]> {
   );
   return groupVendorGrants((linksRes.data ?? []) as LinkRow[], nameBySlug);
 }
-
-export type ProductOption = { slug: string; name: string };
 
 export async function listProducts(): Promise<ProductOption[]> {
   const supabase = await createServiceClient();

@@ -1,8 +1,12 @@
 "use client";
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { filterVendorGrants } from "@/lib/admin";
-import type { GrantStatus, ProductOption, VendorGrant } from "@/lib/admin";
+import { filterVendorGrants } from "@/lib/vendor-grants";
+import type {
+  GrantStatus,
+  ProductOption,
+  VendorGrant,
+} from "@/lib/vendor-grants";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
