@@ -1,5 +1,6 @@
 "use client";
 
+import { useTransition } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +24,8 @@ export function initials(email: string | null | undefined): string {
  *  Sign out. Matches qkit's DashboardNav account-area shape; scoped to just
  *  account info + sign-out since Merqo has no Profile/Settings/Help pages. */
 export function AccountMenu({ email }: { email?: string | null }) {
+  const [, startTransition] = useTransition();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -49,13 +52,13 @@ export function AccountMenu({ email }: { email?: string | null }) {
           {email ?? "Account"}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <form action={signOutAction}>
-          <DropdownMenuItem asChild variant="destructive">
-            <button type="submit" className="w-full cursor-pointer">
-              Sign out
-            </button>
-          </DropdownMenuItem>
-        </form>
+        <DropdownMenuItem
+          variant="destructive"
+          className="cursor-pointer"
+          onSelect={() => startTransition(() => signOutAction())}
+        >
+          Sign out
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
