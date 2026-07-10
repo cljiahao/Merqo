@@ -2,6 +2,7 @@ import type { KitTile } from "@/lib/vendor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { UpgradeButton } from "./upgrade-button";
+import { DowngradeButton } from "./downgrade-button";
 
 export function VendorKitCard({ tile }: { tile: KitTile }) {
   return (
@@ -24,6 +25,7 @@ export function VendorKitCard({ tile }: { tile: KitTile }) {
           </Button>
         )}
         {tile.plan === "free" && <UpgradeButton slug={tile.slug} />}
+        {tile.plan === "pro" && <DowngradeButton slug={tile.slug} />}
       </div>
     </div>
   );
