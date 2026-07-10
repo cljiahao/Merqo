@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { ProductCard } from "@/app/admin/product-card";
+import { ProductTile } from "@/app/admin/product-tile";
 import type { MetricsResult } from "@/lib/metrics-client";
+
+const NOW = 1_700_000_000_000;
 
 const okResult: MetricsResult = {
   ok: true,
@@ -10,7 +12,7 @@ const okResult: MetricsResult = {
   durationMs: 0,
   data: {
     product: "qkit",
-    generated_at: "t",
+    generated_at: new Date(NOW).toISOString(),
     revenue_cents_30d: 1000,
     revenue_cents_all: 5000,
     gmv_cents_30d: 2000,
@@ -25,10 +27,11 @@ const okResult: MetricsResult = {
   },
 };
 
-describe("ProductCard", () => {
-  it("renders live metrics for an ok result", () => {
-    render(<ProductCard name="Queue" result={okResult} />);
+describe("ProductTile", () => {
+  it("renders live metrics and a Reporting badge for a healthy ok result", () => {
+    render(<ProductTile name="Queue" result={okResult} now={NOW} />);
     expect(screen.getByText("Queue")).toBeInTheDocument();
+    expect(screen.getByText("Reporting")).toBeInTheDocument();
     // revenue_cents_30d 1000 renders as $10
     expect(screen.getByText("$10")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
@@ -36,7 +39,7 @@ describe("ProductCard", () => {
 
   it("renders a degraded Unavailable state and no metric rows when the product is down", () => {
     render(
-      <ProductCard
+      <ProductTile
         name="Queue"
         result={{
           ok: false,
@@ -44,6 +47,7 @@ describe("ProductCard", () => {
           reason: "unreachable",
           durationMs: 0,
         }}
+        now={NOW}
       />,
     );
     expect(screen.getByText("Unavailable")).toBeInTheDocument();
@@ -52,9 +56,10 @@ describe("ProductCard", () => {
 
   it("labels an auth failure distinctly", () => {
     render(
-      <ProductCard
+      <ProductTile
         name="Queue"
         result={{ ok: false, product: "qkit", reason: "auth", durationMs: 0 }}
+        now={NOW}
       />,
     );
     expect(screen.getByText("Auth error")).toBeInTheDocument();
