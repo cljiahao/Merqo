@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { initials, AccountMenu } from "@/components/account-menu";
 
 describe("initials", () => {
@@ -34,5 +34,29 @@ describe("AccountMenu", () => {
     const trigger = screen.getByRole("button", { name: "Account menu" });
     expect(trigger).toHaveTextContent("•");
     expect(screen.queryByText("@")).not.toBeInTheDocument();
+  });
+
+  it("shows the switch link when switchTo is provided", () => {
+    render(
+      <AccountMenu
+        email="vendor@example.com"
+        switchTo={{ href: "/admin", label: "Go to admin" }}
+      />,
+    );
+    // Radix mounts DropdownMenuContent lazily — open the menu the same way a
+    // user would (pointerdown on the trigger) before asserting on its items.
+    // The rendered <a> carries Radix's role="menuitem" (menu-item semantics
+    // take precedence over the implicit "link" role), so query by that role
+    // and assert the underlying href to confirm it is a real navigable link.
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Account menu" }));
+    const link = screen.getByRole("menuitem", { name: "Go to admin" });
+    expect(link).toHaveAttribute("href", "/admin");
+  });
+
+  it("shows no switch link when switchTo is absent", () => {
+    const { container } = render(<AccountMenu email="vendor@example.com" />);
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Account menu" }));
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+    expect(container.querySelector("a")).not.toBeInTheDocument();
   });
 });

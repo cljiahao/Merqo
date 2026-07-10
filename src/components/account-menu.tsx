@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,10 +21,17 @@ export function initials(email: string | null | undefined): string {
 }
 
 /** Shared account-menu trigger for /dashboard and /admin headers — an
- *  initials avatar that opens a dropdown with the signed-in email and
- *  Sign out. Matches qkit's DashboardNav account-area shape; scoped to just
- *  account info + sign-out since Merqo has no Profile/Settings/Help pages. */
-export function AccountMenu({ email }: { email?: string | null }) {
+ *  initials avatar that opens a dropdown with the signed-in email, an
+ *  optional switch link for dual-role accounts, and Sign out. Matches
+ *  qkit's DashboardNav account-area shape; scoped to just account info +
+ *  navigation since Merqo has no Profile/Settings/Help pages. */
+export function AccountMenu({
+  email,
+  switchTo,
+}: {
+  email?: string | null;
+  switchTo?: { href: string; label: string };
+}) {
   const [, startTransition] = useTransition();
 
   return (
@@ -52,6 +60,14 @@ export function AccountMenu({ email }: { email?: string | null }) {
           {email ?? "Account"}
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        {switchTo && (
+          <>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href={switchTo.href}>{switchTo.label}</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem
           variant="destructive"
           className="cursor-pointer"
