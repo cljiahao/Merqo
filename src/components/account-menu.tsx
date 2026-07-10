@@ -23,11 +23,11 @@ export function initials(email: string | null | undefined): string {
   return first ? first.toUpperCase() : "•";
 }
 
-/** Shared account-menu trigger for /dashboard and /admin headers — an
- *  initials avatar that opens a dropdown with the signed-in email, an
- *  optional switch link for dual-role accounts, and Sign out. Matches
- *  qkit's DashboardNav account-area shape; scoped to just account info +
- *  navigation since Merqo has no Profile/Settings/Help pages. */
+/** Shared account-menu trigger for /dashboard and /admin headers — an image
+ *  avatar (or initials fallback) that opens a dropdown with the signed-in email,
+ *  a Profile link, a Get Help submenu (listing the vendor's active kits' support
+ *  links plus "Contact Merqo"), an optional switch link for dual-role accounts,
+ *  and Sign out. */
 export function AccountMenu({
   email,
   avatarUrl,
