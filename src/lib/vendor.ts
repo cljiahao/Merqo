@@ -87,6 +87,17 @@ export function hasRenderableActiveKit(
   return tilesForLinks(links).active.length > 0;
 }
 
+/** True when the vendor has an active link to this specific kit slug — the
+ *  one-slug version of hasRenderableActiveKit, used to gate the self-serve
+ *  upgrade-request action so it can't be invoked for a kit the vendor
+ *  doesn't actually use. Pure — tested. */
+export function hasActiveLinkFor(
+  links: { product_slug: string; status: GrantStatus }[],
+  slug: string,
+): boolean {
+  return links.some((l) => l.product_slug === slug && l.status === "active");
+}
+
 /** Read the signed-in user, team membership, and their own vendor_links (RLS
  *  scopes the rows to their email). Non-redirecting — callers decide routing. */
 export async function loadVendorContext(): Promise<{

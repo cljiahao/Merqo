@@ -4,6 +4,7 @@ import {
   tilesForLinks,
   hasRenderableActiveKit,
   addableKits,
+  hasActiveLinkFor,
 } from "@/lib/vendor";
 
 describe("resolveHome", () => {
@@ -114,5 +115,29 @@ describe("addableKits", () => {
     const out = addableKits([], kits);
     expect(out.map((t) => t.slug)).not.toContain("loopkit");
     expect(out.map((t) => t.slug)).not.toContain("shopkit");
+  });
+});
+
+describe("hasActiveLinkFor", () => {
+  it("is true for a matching active link", () => {
+    expect(
+      hasActiveLinkFor([{ product_slug: "qkit", status: "active" }], "qkit"),
+    ).toBe(true);
+  });
+
+  it("is false for a waitlist link to the same slug", () => {
+    expect(
+      hasActiveLinkFor([{ product_slug: "qkit", status: "waitlist" }], "qkit"),
+    ).toBe(false);
+  });
+
+  it("is false when there's no link at all", () => {
+    expect(hasActiveLinkFor([], "qkit")).toBe(false);
+  });
+
+  it("is false for an active link to a different slug", () => {
+    expect(
+      hasActiveLinkFor([{ product_slug: "loopkit", status: "active" }], "qkit"),
+    ).toBe(false);
   });
 });
