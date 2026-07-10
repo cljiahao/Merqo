@@ -45,10 +45,10 @@ export function AccountMenu({
           className="flex items-center gap-2 rounded-lg py-1 pr-2 pl-1 text-left outline-none transition-colors hover:bg-secondary focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
           {avatarUrl ? (
-             
             // size-8 avatar; next/image's optimization overhead isn't worth
             // it here, and Merqo has no next.config.ts remote-pattern setup
             // for external avatar hosts (Google) today.
+            // eslint-disable-next-line @next/next/no-img-element -- fixed
             <img
               src={avatarUrl}
               alt="Profile picture"
