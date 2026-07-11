@@ -77,3 +77,10 @@ of git — it lives only in Vercel env + the DB row.
   column and throws loudly on any read error, so shipping code before the
   migration causes every login and `/dashboard` load to return 500, not a
   silently-missing badge.
+- **In-app feedback & support**: apply `supabase/migrations/0007_feedback_and_support.sql`
+  (`pnpm dlx supabase db push`) strictly BEFORE deploying this branch's code
+  (same class as 0006, not before-or-with like 0005). `/admin`'s Overview page
+  now reads `merqo.support_messages` via `listOpenSupportMessages()` on every
+  load and throws loudly on any read error, so shipping code before the
+  migration takes down the entire `/admin` Overview page with a 500, not just
+  the new Feedback/Support surfaces.
