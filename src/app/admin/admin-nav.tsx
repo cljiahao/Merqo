@@ -9,6 +9,7 @@ const TABS = [
   { href: "/admin/vendors", label: "Vendors" },
   { href: "/admin/products", label: "Products" },
   { href: "/admin/team", label: "Team" },
+  { href: "/admin/feedback", label: "Feedback" },
 ];
 
 /** Admin section tabs. Overview matches exactly; others match by prefix. */
