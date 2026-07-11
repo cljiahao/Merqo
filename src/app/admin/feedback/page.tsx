@@ -11,11 +11,14 @@ function when(iso: string): string {
 export default async function AdminFeedbackPage() {
   await requireMerqoTeam();
   const supabase = await createServerClient();
-  const { data: rows } = await supabase
+  const { data: rows, error } = await supabase
     .from("feedback")
     .select("id, nps, message, created_at")
     .order("created_at", { ascending: false })
     .limit(200);
+  // A query error is a config/grant fault, NOT "no feedback yet" — surface it
+  // loudly rather than silently rendering an empty state.
+  if (error) throw new Error(`feedback read failed: ${error.message}`);
   const all = rows ?? [];
   const nps = npsBreakdown(all.map((f) => f.nps as number));
   const comments = all.filter((f) => (f.message as string | null)?.trim());
