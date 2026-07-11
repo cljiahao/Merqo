@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Merqo
 
-## Getting Started
+House brand + operator console for a modular family of small-business tools
+("kits") for Singapore micro/small sellers. `qkit` (queue/orders) is the
+first live product; `loopkit` (stamp-card loyalty) is the second.
 
-First, run the development server:
+This app is the public brand landing plus a role-gated operator console:
+
+- `/dashboard` — cross-product metrics overview (post-login home)
+- `/vendors` — grant/revoke kit access per vendor
+- `/team` — manage Merqo-team members
+
+Each kit runs its own app on its own schema in a shared Supabase project.
+Merqo pulls per-kit metrics over an HTTP API (bearer secret) — it never
+queries another kit's schema directly.
+
+## Stack
+
+Next.js 16 · App Router · Turbopack · TypeScript strict · Tailwind v4 ·
+shadcn/ui (new-york) · Zod · Supabase (`@supabase/ssr`) · Vitest ·
+Playwright · pnpm 11 · Node ≥24 · deploy target: Vercel
+
+## Commands
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm dev          # dev server — http://localhost:3000
+pnpm build        # production build
+pnpm test         # run test suite (vitest)
+pnpm test:e2e     # playwright public smoke
+pnpm check        # prettier --check + eslint + tsc --noEmit
+pnpm format       # prettier --write
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## File layout
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+src/app/                    — app router (landing, dashboard, server actions)
+src/app/page.tsx            — public brand landing (static-prerendered)
+src/app/dashboard/          — cross-product metrics overview (auth-gated home)
+src/app/vendors/            — grant/revoke vendor kit access (auth-gated)
+src/app/team/               — manage Merqo-team members (auth-gated)
+src/app/login/              — email/password sign-in
+src/proxy.ts                — Supabase session refresh + route guard (Next 16)
+src/components/landing/     — landing sections (nav, hero, kit-grid, …)
+src/lib/kits.ts             — kit family config (landing roadmap source of truth)
+src/lib/metrics-client.ts   — fetch of a kit's HTTP metrics endpoint
+supabase/migrations/        — SQL schema (merqo.* tables) + RLS + grants
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Data model
 
-## Learn More
+One shared Supabase project, schema per kit. Merqo owns `merqo.*`:
+`merqo_team` (team membership), `products` (kit registry + per-product
+`metrics_secret`), `vendor_links` (vendor↔kit access, email-keyed).
+RLS default-deny; `products`/`vendor_links` are read/written via the
+service-role client only, so `metrics_secret` never reaches a browser.
 
-To learn more about Next.js, take a look at the following resources:
+## Docs
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Deploy runbook: `docs/DEPLOY.md`
+- Plans/specs: `docs/superpowers/`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See `AGENTS.md` for full engineering rules, harness details, and skills.
