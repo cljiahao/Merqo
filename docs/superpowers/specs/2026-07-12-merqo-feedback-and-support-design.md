@@ -18,14 +18,13 @@ lighter option was chosen specifically to avoid the schema/build cost of the
 heavier one.
 
 The user has since asked for the heavier option after all, explicitly
-modeled on qkit's real implementation: qkit has a `FeedbackForm` (rating/NPS
-
-- message → `feedback` table) and a `SupportForm` (category + free text →
-  `support_messages` table), both opened as `Sheet` drawers from
-  `DashboardNav`'s account menu (two flat sibling items, "Get help" and
-  "Feedback" — not nested). qkit's admin reads open support messages inline on
-  its main `/admin` page and gives `feedback` its own `/admin/feedback` page
-  (NPS score, detractor/passive/promoter breakdown, comments).
+modeled on qkit's real implementation: qkit has a `FeedbackForm`
+(rating/NPS + message → `feedback` table) and a `SupportForm` (category +
+free text → `support_messages` table), both opened as `Sheet` drawers from
+`DashboardNav`'s account menu (two flat sibling items, "Get help" and
+"Feedback" — not nested). qkit's admin reads open support messages inline
+on its main `/admin` page and gives `feedback` its own `/admin/feedback`
+page (NPS score, detractor/passive/promoter breakdown, comments).
 
 qkit's `feedback` table also carries customer order ratings (`rating`,
 `booth_id`, `order_number`) and a rate-limited, `SECURITY DEFINER`-RPC
