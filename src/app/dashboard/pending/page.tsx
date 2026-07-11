@@ -4,11 +4,13 @@ import {
   loadVendorContext,
   tilesForLinks,
   hasRenderableActiveKit,
+  addableKits,
 } from "@/lib/vendor";
 import { syncVendorKits } from "@/lib/vendor-sync";
 import { signOutAction } from "@/app/actions/auth";
 import { Wordmark } from "@/components/landing/wordmark";
 import { Button } from "@/components/ui/button";
+import { KitDiscoveryCard } from "@/components/dashboard/kit-discovery-card";
 
 export const revalidate = 0;
 
@@ -32,6 +34,11 @@ export default async function PendingPage() {
   if (hasRenderableActiveKit(links)) redirect("/dashboard");
 
   const { pending } = tilesForLinks(links);
+  // Deliberately NOT the full "Explore more kits" grid from /dashboard — one
+  // featured, actionable card plus a link out, per the empty-state research
+  // (Nielsen Norman Group: give a direct pathway, not a full catalog dump
+  // right after signup).
+  const featured = addableKits(links)[0];
 
   return (
     <main className="flex min-h-screen items-center justify-center p-5">
@@ -68,11 +75,40 @@ export default async function PendingPage() {
                 <span className="font-medium text-foreground">
                   {user.email}
                 </span>
-                , but no kits are active on this account yet. Get in touch to
-                get started.
+                , but no kits are active on this account yet.
               </p>
             </>
           )}
+
+          {featured?.href && (
+            <div className="mt-6 text-left">
+              <KitDiscoveryCard
+                kit={featured}
+                cta={
+                  <a
+                    href={`${featured.href}/login`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm font-medium text-foreground hover:underline"
+                  >
+                    Add {featured.name}
+                  </a>
+                }
+              />
+            </div>
+          )}
+
+          <p className="mt-5 text-sm text-muted-foreground">
+            More kits on the way —{" "}
+            <Link
+              href="/#kits"
+              className="font-medium text-foreground hover:underline"
+            >
+              see the family
+            </Link>
+            .
+          </p>
+
           <div className="mt-7 flex flex-col gap-2.5">
             <Button asChild className="h-11 w-full rounded-xl">
               <Link href="/post-login">Check again</Link>
