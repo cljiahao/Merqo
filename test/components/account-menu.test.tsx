@@ -84,17 +84,48 @@ describe("AccountMenu", () => {
     ).toHaveTextContent("V");
   });
 
-  it("always shows Profile and a Contact Merqo link", () => {
+  it("always shows a Profile link", () => {
     render(<AccountMenu email="vendor@example.com" />);
     fireEvent.pointerDown(screen.getByRole("button", { name: "Account menu" }));
     expect(screen.getByRole("menuitem", { name: "Profile" })).toHaveAttribute(
       "href",
       "/profile",
     );
-    fireEvent.click(screen.getByRole("menuitem", { name: "Get help" }));
+  });
+
+  it("opens the Feedback sheet when its menu item is selected, and Contact Merqo is gone", () => {
+    render(<AccountMenu email="vendor@example.com" />);
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Account menu" }));
     expect(
-      screen.getByRole("menuitem", { name: "Contact Merqo" }),
-    ).toHaveAttribute("href", expect.stringContaining("mailto:"));
+      screen.queryByRole("menuitem", { name: "Contact Merqo" }),
+    ).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("menuitem", { name: "Feedback" }));
+    expect(
+      screen.getByText(/how's merqo working for you/i),
+    ).toBeInTheDocument();
+  });
+
+  it("opens the Report a problem sheet when its menu item is selected", () => {
+    render(<AccountMenu email="vendor@example.com" />);
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Account menu" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Report a problem" }));
+    expect(
+      screen.getByText(/something not working, or need help/i),
+    ).toBeInTheDocument();
+  });
+
+  it("hides the Get help submenu when there are no active kits, but keeps Feedback and Report a problem", () => {
+    render(<AccountMenu email="vendor@example.com" />);
+    fireEvent.pointerDown(screen.getByRole("button", { name: "Account menu" }));
+    expect(
+      screen.queryByRole("menuitem", { name: "Get help" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("menuitem", { name: "Feedback" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("menuitem", { name: "Report a problem" }),
+    ).toBeInTheDocument();
   });
 
   it("lists each active kit's support link inside Get help", () => {
