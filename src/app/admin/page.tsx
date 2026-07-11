@@ -3,6 +3,8 @@ import { DollarSign, ShoppingCart, TrendingUp, Users } from "lucide-react";
 import { requireMerqoTeam } from "@/lib/team";
 import { listLiveProducts } from "@/lib/products";
 import { listVendorGrants } from "@/lib/admin";
+import { listOpenSupportMessages } from "@/lib/support";
+import { SUPPORT_CATEGORY_LABELS } from "@/lib/feedback-support-schemas";
 import { fetchProductMetrics } from "@/lib/metrics-client";
 import { summarizeOverview } from "@/lib/overview";
 import { classifyHealth } from "@/lib/health";
@@ -12,14 +14,16 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { OnboardingFunnelView } from "./onboarding-funnel";
 import { ProductTile } from "./product-tile";
 import { StatusBanner } from "./status-banner";
+import { ResolveSupportMessageButton } from "./resolve-support-message-button";
 
 export const revalidate = 0;
 
 export default async function AdminOverviewPage() {
   await requireMerqoTeam();
-  const [products, grants] = await Promise.all([
+  const [products, grants, openSupport] = await Promise.all([
     listLiveProducts(),
     listVendorGrants(),
+    listOpenSupportMessages(),
   ]);
   const results = await Promise.all(
     products.map((p) => fetchProductMetrics(p)),
@@ -37,7 +41,8 @@ export default async function AdminOverviewPage() {
   const waitlist = grants
     .flatMap((g) => g.kits.map((k) => ({ email: g.email, kit: k })))
     .filter((x) => x.kit.status === "waitlist");
-  const attention = waitlist.length + totals.pending_upgrade_requests;
+  const attention =
+    waitlist.length + totals.pending_upgrade_requests + openSupport.length;
 
   const allDown = products.length > 0 && totals.products_reporting === 0;
 
@@ -79,6 +84,20 @@ export default async function AdminOverviewPage() {
                   waitlisted for {w.kit.slug}
                 </p>
               </div>
+            </div>
+          ))}
+          {openSupport.map((m) => (
+            <div
+              key={m.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/[0.04] px-4 py-3 text-sm"
+            >
+              <div className="min-w-0">
+                <p className="truncate font-medium">{m.email ?? "Unknown"}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {SUPPORT_CATEGORY_LABELS[m.category]} — {m.body}
+                </p>
+              </div>
+              <ResolveSupportMessageButton id={m.id} />
             </div>
           ))}
           {totals.pending_upgrade_requests > 0 && (
