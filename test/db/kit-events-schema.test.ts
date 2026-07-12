@@ -34,4 +34,8 @@ describe("0008_kit_events migration", () => {
       /grant execute on function merqo\.emit_metric[^;]*to[^;]*anon/,
     );
   });
+  it("enables RLS and grants no direct client access to the table", () => {
+    expect(sql).toMatch(/enable row level security/);
+    expect(sql).not.toMatch(/grant select on merqo\.kit_events/);
+  });
 });
