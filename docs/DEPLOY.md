@@ -84,3 +84,7 @@ of git — it lives only in Vercel env + the DB row.
   load and throws loudly on any read error, so shipping code before the
   migration takes down the entire `/admin` Overview page with a 500, not just
   the new Feedback/Support surfaces.
+- **qkit-loopkit auto-award**: apply `supabase/migrations/0008_kit_events.sql`
+  (`pnpm dlx supabase db push`) BEFORE qkit's `0051_emit_order_completed.sql`
+  is applied — qkit's trigger calls `merqo.emit_metric`, which must already
+  exist. No merqo code deploy needed; this is DB-only.
