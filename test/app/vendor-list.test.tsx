@@ -12,16 +12,16 @@ import { VendorList } from "@/app/admin/vendors/vendor-list";
 const grants = [
   {
     email: "alice@x.sg",
-    kits: [{ slug: "qkit", name: "QKit", status: "active" as const }],
+    kits: [{ slug: "qkit", name: "qkit", status: "active" as const }],
   },
   {
     email: "bob@x.sg",
-    kits: [{ slug: "loopkit", name: "LoopKit", status: "waitlist" as const }],
+    kits: [{ slug: "loopkit", name: "loopkit", status: "waitlist" as const }],
   },
 ];
 const products = [
-  { slug: "qkit", name: "QKit" },
-  { slug: "loopkit", name: "LoopKit" },
+  { slug: "qkit", name: "qkit" },
+  { slug: "loopkit", name: "loopkit" },
 ];
 
 describe("VendorList", () => {
