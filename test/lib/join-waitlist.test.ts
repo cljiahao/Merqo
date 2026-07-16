@@ -30,7 +30,7 @@ describe("joinWaitlistAction", () => {
 
   it("rejects when there is no signed-in user", async () => {
     getUserMock.mockResolvedValue({ data: { user: null } });
-    const res = await joinWaitlistAction("loopkit");
+    const res = await joinWaitlistAction("shopkit");
     expect(res).toEqual({ success: false, error: "Sign in first." });
   });
 
@@ -38,10 +38,10 @@ describe("joinWaitlistAction", () => {
     getUserMock.mockResolvedValue({
       data: { user: { email: "vendor@example.com" } },
     });
-    const res = await joinWaitlistAction("loopkit");
+    const res = await joinWaitlistAction("shopkit");
     expect(addToWaitlistMock).toHaveBeenCalledWith(
       "vendor@example.com",
-      "loopkit",
+      "shopkit",
     );
     expect(res).toEqual({ success: true });
   });
@@ -51,7 +51,7 @@ describe("joinWaitlistAction", () => {
       data: { user: { email: "vendor@example.com" } },
     });
     addToWaitlistMock.mockRejectedValue(new Error("db down"));
-    const res = await joinWaitlistAction("loopkit");
+    const res = await joinWaitlistAction("shopkit");
     expect(res).toEqual({
       success: false,
       error: "Couldn't join the waitlist. Try again.",

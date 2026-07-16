@@ -13,10 +13,9 @@ describe("kit family config", () => {
     ]);
   });
 
-  it("has qkit as the one live kit with a link", () => {
-    expect(LIVE_KITS).toHaveLength(1);
-    expect(LIVE_KITS[0].slug).toBe("qkit");
-    expect(LIVE_KITS[0].href).toBeTruthy();
+  it("has qkit, loopkit, and paykit as live kits, each with a link", () => {
+    expect(LIVE_KITS.map((k) => k.slug)).toEqual(["qkit", "loopkit", "paykit"]);
+    for (const k of LIVE_KITS) expect(k.href).toBeTruthy();
   });
 
   it("sets href only on live kits (no dead links to unlaunched kits)", () => {

@@ -20,11 +20,11 @@ describe("joinKitWaitlist", () => {
     addToWaitlistMock.mockResolvedValue(undefined);
     const res = await joinKitWaitlist(
       WAITLIST_IDLE,
-      form({ email: "  Vendor@Example.COM ", slug: "loopkit" }),
+      form({ email: "  Vendor@Example.COM ", slug: "shopkit" }),
     );
     expect(addToWaitlistMock).toHaveBeenCalledWith(
       "vendor@example.com",
-      "loopkit",
+      "shopkit",
     );
     expect(res.status).toBe("success");
   });
@@ -32,7 +32,7 @@ describe("joinKitWaitlist", () => {
   it("rejects an invalid email without touching the DB", async () => {
     const res = await joinKitWaitlist(
       WAITLIST_IDLE,
-      form({ email: "not-an-email", slug: "loopkit" }),
+      form({ email: "not-an-email", slug: "shopkit" }),
     );
     expect(res.status).toBe("error");
     expect(addToWaitlistMock).not.toHaveBeenCalled();
@@ -51,7 +51,7 @@ describe("joinKitWaitlist", () => {
     addToWaitlistMock.mockRejectedValue(new Error("db down"));
     const res = await joinKitWaitlist(
       WAITLIST_IDLE,
-      form({ email: "v@x.com", slug: "loopkit" }),
+      form({ email: "v@x.com", slug: "shopkit" }),
     );
     expect(res.status).toBe("error");
     expect(res.message).toMatch(/try again/i);

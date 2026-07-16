@@ -84,7 +84,7 @@ export const KITS: Kit[] = [
       "Built-in checkout",
       "No fee on your own PayNow",
     ],
-    status: "planned",
+    status: "coming",
   },
   {
     slug: "paykit",
