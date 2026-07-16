@@ -27,10 +27,19 @@ export type Kit = {
 export const QKIT_URL =
   process.env.NEXT_PUBLIC_QKIT_URL ?? "https://qkit-sg.vercel.app";
 
+/** Where the live loopkit product lives. Set NEXT_PUBLIC_LOOPKIT_URL per
+ *  environment to override (e.g. a custom domain). */
+export const LOOPKIT_URL =
+  process.env.NEXT_PUBLIC_LOOPKIT_URL ?? "https://loopkit-sg.vercel.app";
+
+/** Where the live paykit product lives. Set NEXT_PUBLIC_PAYKIT_URL per
+ *  environment to override (e.g. a custom domain). */
+export const PAYKIT_URL =
+  process.env.NEXT_PUBLIC_PAYKIT_URL ?? "https://paykit-sg.vercel.app";
+
 // Canonical per-kit URLs (each kit is a standalone product on its own domain).
-// href is only wired for the live kit; the rest launch on:
-//   loopkit-sg.vercel.app · shopkit-sg.vercel.app · paykit-sg.vercel.app
-//   stockkit-sg.vercel.app · reachkit-sg.vercel.app
+// href is wired for the live kits (qkit, loopkit, paykit); the rest launch on:
+//   shopkit-sg.vercel.app · stockkit-sg.vercel.app · reachkit-sg.vercel.app
 export const KITS: Kit[] = [
   {
     slug: "qkit",
@@ -60,7 +69,8 @@ export const KITS: Kit[] = [
       "Automatic visit tracking",
       "Works alongside your other kits",
     ],
-    status: "coming",
+    status: "live",
+    href: LOOPKIT_URL,
   },
   {
     slug: "shopkit",
@@ -88,7 +98,8 @@ export const KITS: Kit[] = [
       "E-invoices",
       "Syncs with your other kits' orders",
     ],
-    status: "planned",
+    status: "live",
+    href: PAYKIT_URL,
   },
   {
     slug: "stockkit",
