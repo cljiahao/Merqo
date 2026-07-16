@@ -24,12 +24,12 @@ language plpgsql security definer set search_path = '' as $$
 declare
   v_row merqo.vendor_profile;
 begin
-  select * into v_row from merqo.vendor_profile where vendor_id = p_vendor_id;
-  if found then
-    return v_row;
-  end if;
+  -- ON CONFLICT DO UPDATE (no-op self-assignment) makes this atomic against a
+  -- concurrent first-touch call with the same vendor_id — a plain
+  -- select-then-insert would race and raise unique_violation on the loser.
   insert into merqo.vendor_profile (vendor_id, stall_name)
   values (p_vendor_id, coalesce(nullif(p_default_stall_name, ''), 'My Stall'))
+  on conflict (vendor_id) do update set vendor_id = excluded.vendor_id
   returning * into v_row;
   return v_row;
 end;
