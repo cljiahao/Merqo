@@ -24,9 +24,19 @@ language plpgsql security definer set search_path = '' as $$
 declare
   v_row merqo.vendor_profile;
 begin
-  -- ON CONFLICT DO UPDATE (no-op self-assignment) makes this atomic against a
-  -- concurrent first-touch call with the same vendor_id — a plain
-  -- select-then-insert would race and raise unique_violation on the loser.
+  -- Read-first fast path: the row exists on the overwhelming majority of
+  -- calls (this is wired into qkit's dashboard load and a public
+  -- customer-facing order-status page), so make that case a pure read
+  -- instead of an unconditional write.
+  select * into v_row from merqo.vendor_profile where vendor_id = p_vendor_id;
+  if found then
+    return v_row;
+  end if;
+
+  -- Only reached on a genuine first-touch race (the select above missed,
+  -- then a concurrent caller inserted first). ON CONFLICT DO UPDATE (no-op
+  -- self-assignment) makes this atomic against that race — a plain insert
+  -- would raise unique_violation on the loser.
   insert into merqo.vendor_profile (vendor_id, stall_name)
   values (p_vendor_id, coalesce(nullif(p_default_stall_name, ''), 'My Stall'))
   on conflict (vendor_id) do update set vendor_id = excluded.vendor_id
@@ -44,6 +54,14 @@ language plpgsql security definer set search_path = '' as $$
 declare
   v_row merqo.vendor_profile;
 begin
+  -- SECURITY DEFINER bypasses RLS, so ownership must be checked in-body: a
+  -- logged-in caller may only upsert their own vendor_id. A null auth.uid()
+  -- (service-role / admin write path, which has no JWT subject) bypasses
+  -- this — matches how service-role already bypasses RLS elsewhere.
+  if auth.uid() is not null and auth.uid() <> p_vendor_id then
+    raise exception 'not authorized to modify vendor_id %', p_vendor_id;
+  end if;
+
   insert into merqo.vendor_profile (vendor_id, stall_name, social_links, updated_at)
   values (p_vendor_id, p_stall_name, p_social_links, now())
   on conflict (vendor_id) do update

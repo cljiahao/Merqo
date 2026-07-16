@@ -58,4 +58,37 @@ describe("0009_vendor_profile migration", () => {
   it("upsert_vendor_profile does ON CONFLICT (vendor_id) DO UPDATE", () => {
     expect(sql).toMatch(/on conflict\s*\(\s*vendor_id\s*\)\s*do update/);
   });
+
+  it("upsert_vendor_profile enforces caller-owns-vendor_id before writing", () => {
+    const upsertIdx = sql.indexOf(
+      "create or replace function merqo.upsert_vendor_profile",
+    );
+    expect(upsertIdx).toBeGreaterThanOrEqual(0);
+    const upsertBody = sql.slice(upsertIdx);
+    expect(upsertBody).toContain("auth.uid()");
+    expect(upsertBody).toMatch(/raise exception/);
+    // the ownership check must precede the write, not just appear somewhere
+    // in the function body
+    expect(upsertBody.indexOf("auth.uid()")).toBeLessThan(
+      upsertBody.indexOf("insert into merqo.vendor_profile"),
+    );
+  });
+
+  it("get_or_create_vendor_profile reads first and only falls back to the atomic insert on a cache miss", () => {
+    const getOrCreateIdx = sql.indexOf(
+      "create or replace function merqo.get_or_create_vendor_profile",
+    );
+    const upsertIdx = sql.indexOf(
+      "create or replace function merqo.upsert_vendor_profile",
+    );
+    const body = sql.slice(getOrCreateIdx, upsertIdx);
+    expect(body).toMatch(
+      /select \* into v_row from merqo\.vendor_profile where vendor_id = p_vendor_id/,
+    );
+    expect(body).toMatch(/if found then/);
+    // the select must precede the insert — read-first, not unconditional write
+    expect(body.indexOf("select * into v_row")).toBeLessThan(
+      body.indexOf("insert into merqo.vendor_profile"),
+    );
+  });
 });

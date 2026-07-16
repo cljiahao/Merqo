@@ -137,6 +137,14 @@ grant execute on function merqo.get_or_create_vendor_profile(uuid, text) to auth
 grant execute on function merqo.upsert_vendor_profile(uuid, text, jsonb) to authenticated, service_role;
 ```
 
+> **Post-review update:** the shipped SQL in `supabase/migrations/0009_vendor_profile.sql`
+> now differs from the snippet above — `get_or_create_vendor_profile` is
+> read-first with the `on conflict` insert only as a fallback on a genuine
+> first-touch race, and `upsert_vendor_profile` adds an `auth.uid() = p_vendor_id`
+> ownership check (the trust-boundary reasoning below was found to be a live
+> cross-tenant write bug during final-branch review, not accurate precedent).
+> Treat the migration file as source of truth over this doc.
+
 Both functions trust `p_vendor_id` as given — same trust boundary as every
 other `authenticated`-role RPC in this codebase (the caller is already an
 authenticated Supabase session; a vendor calling with someone else's
