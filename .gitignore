@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# claude code local overrides
+.claude/settings.local.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
@@ -43,3 +46,6 @@ next-env.d.ts
 # Playwright
 /test-results/
 /playwright-report/
+
+# git worktrees (local scratch)
+.worktrees/
