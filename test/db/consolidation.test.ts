@@ -30,7 +30,8 @@ describe("0004_kit_consolidation migration", () => {
       "delete from merqo.vendor_links where product_slug = 'tapkit'",
     );
     expect(carry).toBeGreaterThanOrEqual(0);
-    expect(delLinks).toBeGreaterThan(carry); // FK-safe ordering
+    // FK-safe ordering
+    expect(delLinks).toBeGreaterThan(carry);
   });
 
   it("retires tapkit and slotkit from products", () => {

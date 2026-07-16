@@ -36,7 +36,8 @@ describe("ecosystem graph config", () => {
     const edges = activeEdges(new Set(KIT_NODES.map((n) => n.slug)));
     const linked = new Set(edges.flatMap((e) => [e.from, e.to]));
     for (const n of KIT_NODES) {
-      if (n.slug === "stockkit") continue; // stockkit stands alone by design
+      // stockkit stands alone by design
+      if (n.slug === "stockkit") continue;
       expect(linked.has(n.slug)).toBe(true);
     }
     expect(linked.has("stockkit")).toBe(false);
