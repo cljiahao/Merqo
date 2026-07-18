@@ -48,6 +48,20 @@ future card-payment rail (see paykit's own `docs/meta/2026-07-17-paykit-
 task-registry.md`, T3) — don't build billing-Stripe and payments-Stripe as
 two separate integrations.
 
+**Update (2026-07-18):** the founder is actively pursuing a Singapore ACRA
+business registration specifically to attach Stripe — this has a real,
+in-progress timeline now, not an indefinite "someday." Leans the PSP
+choice toward **Stripe directly** for billing rather than HitPay (HitPay
+was paykit's candidate for card/Tap-to-Pay on the customer-payment side —
+still worth deciding whether one PSP serves both billing and payments, or
+Stripe for billing + HitPay for PayNow-adjacent customer payments, once
+ACRA clears). Any new paid-gate feature built in the meantime (e.g. the
+WhatsApp notification add-on, see qkit's `docs/superpowers/specs/
+2026-07-18-vendor-notification-channels-design.md`) should be architected
+as a clean boolean/entitlement flag now, so swapping "admin manually
+flips it" for "a Stripe subscription webhook sets it" later is a clean
+swap, not a rearchitecture.
+
 ## P3 — hygiene, no functional impact
 
 ### T4. Two unpaired early specs predate the plan-file convention
