@@ -25,7 +25,9 @@ export function HowItWorks() {
             <p className="font-mono text-xs text-muted-foreground">
               Step {i + 1}
             </p>
-            <h3 className="mt-1 text-xl font-semibold">{step.title}</h3>
+            <h3 className="mt-1 font-display text-xl font-semibold">
+              {step.title}
+            </h3>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               {step.body}
             </p>
