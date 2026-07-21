@@ -4,7 +4,7 @@
   "adapted": "Next 16 + Supabase (auth/db) — shared project, schema per kit; not better-auth/Drizzle",
   "seeded_at": "2026-07-06",
   "reviewed_at": "2026-07-06",
-  "review_note": "Adopted 5.7→5.8 delta: comment hygiene (no-inline-comments:warn + AGENTS.md doctrine), packageManager pnpm@11.10.0. NOT adopted (same divergence as qkit): lefthook + full tc harness-kit (husky + bespoke CI here), pino route-logging enforcement, verify-harness/.harness-base re-sync (none seeded), better-auth/Drizzle add-skills. settings.json omits broad permissions.allow (auto-mode self-grant guard).",
+  "review_note": "Adopted 5.7→5.8 delta + lefthook: comment hygiene (no-inline-comments:warn + AGENTS.md doctrine), packageManager pnpm@11.10.0. NOT adopted (same divergence as qkit): full tc harness-kit (bespoke CI here), pino route-logging enforcement, verify-harness/.harness-base re-sync (none seeded), better-auth/Drizzle add-skills. settings.json omits broad permissions.allow (auto-mode self-grant guard).",
   "seeded_files": {
     "AGENTS.md": {
       "origin_hash": "3c5746168dcb6c5bf29007b644f9626bf0741952c573c744e9a82258c24c1bcb",
