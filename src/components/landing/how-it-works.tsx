@@ -16,7 +16,7 @@ const STEPS = [
 export function HowItWorks() {
   return (
     <section id="how" className="mx-auto max-w-5xl px-6 py-16">
-      <h2 className="mb-10 text-center text-3xl font-semibold">
+      <h2 className="mb-10 text-center text-3xl font-display font-bold tracking-tight">
         How Merqo works
       </h2>
       <div className="grid gap-5 sm:grid-cols-3">
