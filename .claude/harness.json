@@ -43,6 +43,10 @@
     ".claude/regen-harness.sh": {
       "origin_hash": "<pending>",
       "path": ".claude/regen-harness.sh"
+    },
+    ".github/workflows/ci.yml": {
+      "origin_hash": "<pending>",
+      "path": ".github/workflows/ci.yml"
     }
   }
 }
