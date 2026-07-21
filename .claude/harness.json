@@ -31,9 +31,18 @@
       "path": ".claude/skills/supabase-migrate/SKILL.md"
     },
     "lefthook.yml": { "origin_hash": "<pending>", "path": "lefthook.yml" },
-    ".lefthook/commit-msg.sh": { "origin_hash": "<pending>", "path": ".lefthook/commit-msg.sh" },
+    ".lefthook/commit-msg.sh": {
+      "origin_hash": "<pending>",
+      "path": ".lefthook/commit-msg.sh"
+    },
     ".gitleaks.toml": { "origin_hash": "<pending>", "path": ".gitleaks.toml" },
-    ".claude/verify-harness.sh": { "origin_hash": "<pending>", "path": ".claude/verify-harness.sh" },
-    ".claude/regen-harness.sh": { "origin_hash": "<pending>", "path": ".claude/regen-harness.sh" }
+    ".claude/verify-harness.sh": {
+      "origin_hash": "<pending>",
+      "path": ".claude/verify-harness.sh"
+    },
+    ".claude/regen-harness.sh": {
+      "origin_hash": "<pending>",
+      "path": ".claude/regen-harness.sh"
+    }
   }
 }
