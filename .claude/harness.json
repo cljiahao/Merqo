@@ -29,6 +29,11 @@
     ".claude/skills/supabase-migrate/SKILL.md": {
       "origin_hash": "1b2a2963ef427b22f7d2ff8d7c7c3e6cb4b2757acfb2c1de5b79a8e57b96d15b",
       "path": ".claude/skills/supabase-migrate/SKILL.md"
-    }
+    },
+    "lefthook.yml": { "origin_hash": "<pending>", "path": "lefthook.yml" },
+    ".lefthook/commit-msg.sh": { "origin_hash": "<pending>", "path": ".lefthook/commit-msg.sh" },
+    ".gitleaks.toml": { "origin_hash": "<pending>", "path": ".gitleaks.toml" },
+    ".claude/verify-harness.sh": { "origin_hash": "<pending>", "path": ".claude/verify-harness.sh" },
+    ".claude/regen-harness.sh": { "origin_hash": "<pending>", "path": ".claude/regen-harness.sh" }
   }
 }
