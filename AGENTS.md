@@ -108,8 +108,18 @@ of this file. `permissions`: `deny` covers secret reads/edits (`.env.local` and
 other `.env.<env>` variants, `./secrets/**` — `.env.example` whitelisted) and
 irreversible ops (`rm -rf`, `git push --force`/`-f`, `git reset --hard`,
 `git clean -fd/-fx`, `git filter-branch`, ref-delete). `ask` gates edits to
-AGENTS.md / CLAUDE.md / settings.json. CI security: `.github/workflows/security.yml`
-(gitleaks v3 + CodeQL + `pnpm audit`) and `.github/dependabot.yml` (security-only).
+AGENTS.md / CLAUDE.md / settings.json.
+Git hooks (lefthook): pre-commit runs format/lint/typecheck + lockfile-sync
+(`--frozen-lockfile`) + gitleaks secret-scan on staged files, plus a
+readme-coupling staleness warning; commit-msg enforces Conventional Commits;
+pre-push runs the harness integrity check + quality gate.
+CI (GitHub Actions): hard gate on changed-line coverage (`diff-cover`
+≥80%), lockfile-in-sync (`--frozen-lockfile`), a changelog-touched check, a
+readme-freshness check, harness integrity, and a `db` job (pgTAP RLS suite).
+`security.yml` runs gitleaks + `pnpm audit` — **no CodeQL** (code scanning
+requires GitHub Advanced Security, unavailable on this private repo's free
+tier; this line previously and incorrectly claimed CodeQL was configured).
+`.github/dependabot.yml` (security-only).
 Project skills (directory form, `<name>/SKILL.md`): `.claude/skills/` |
 Manifest: `.claude/harness.json`
 
@@ -127,10 +137,11 @@ Manifest: `.claude/harness.json`
 
 - Adopted into templateCentral (`nextjs@5.8.0` Supabase variant) via
   `templatecentral:migrate` on 2026-07-06 — hand-crafted from qkit boilerplate,
-  harness ported from the qkit reference. **5.7→5.8 delta adopted:** comment
-  hygiene (`no-inline-comments: warn` + the doctrine above), `packageManager`
-  currency (`pnpm@11.10.0`). **Not adopted** (same divergences as qkit): lefthook
-  - the full tc harness-kit (husky + bespoke CI here), pino route-logging,
+  harness ported from the qkit reference. **5.7→5.8 delta + lefthook adopted:**
+  comment hygiene (`no-inline-comments: warn` + the doctrine above),
+  `packageManager` currency (`pnpm@11.10.0`), and lefthook (git hooks,
+  replacing husky). **Not adopted** (same divergences as qkit):
+  - the full tc harness-kit (bespoke CI here), pino route-logging,
     harness-verifier / `.harness-base` re-sync layer, better-auth/Drizzle.
 - Landing design spec: `docs/superpowers/specs/2026-07-06-merqo-home-landing-design.md`.
 - Deploy runbook: `docs/DEPLOY.md`.
