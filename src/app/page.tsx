@@ -2,6 +2,8 @@ import { Nav } from "@/components/landing/nav";
 import { Hero } from "@/components/landing/hero";
 import { Benefits } from "@/components/landing/benefits";
 import { KitStacker } from "@/components/landing/kit-stacker/kit-stacker";
+import { HowItWorks } from "@/components/landing/how-it-works";
+import { Faq } from "@/components/landing/faq";
 import { Cta } from "@/components/landing/cta";
 import { Footer } from "@/components/landing/footer";
 import { Button } from "@/components/ui/button";
@@ -24,6 +26,8 @@ export default async function Home() {
         <Hero authed={authed} />
         <Benefits />
         <KitStacker />
+        <HowItWorks />
+        <Faq />
         <Cta authed={authed} />
       </main>
       <Footer />
