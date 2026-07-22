@@ -4,7 +4,6 @@ import { requireMerqoTeam } from "@/lib/team";
 import { listLiveProducts } from "@/lib/products";
 import { listVendorGrants } from "@/lib/admin";
 import { listOpenSupportMessages } from "@/lib/support";
-import { SUPPORT_CATEGORY_LABELS } from "@/lib/feedback-support-schemas";
 import { fetchProductMetrics } from "@/lib/metrics-client";
 import { summarizeOverview } from "@/lib/overview";
 import { classifyHealth } from "@/lib/health";
@@ -94,7 +93,10 @@ export default async function AdminOverviewPage() {
               <div className="min-w-0">
                 <p className="truncate font-medium">{m.email ?? "Unknown"}</p>
                 <p className="truncate text-xs text-muted-foreground">
-                  {SUPPORT_CATEGORY_LABELS[m.category]} — {m.body}
+                  <span className="font-mono text-[10px] uppercase tracking-wide">
+                    {m.kit_slug ?? "merqo"}
+                  </span>{" "}
+                  · {m.category} — {m.body}
                 </p>
               </div>
               <ResolveSupportMessageButton id={m.id} />
