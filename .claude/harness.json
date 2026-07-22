@@ -7,7 +7,7 @@
   "review_note": "Adopted 5.7→5.8 delta + lefthook: comment hygiene (no-inline-comments:warn + AGENTS.md doctrine), packageManager pnpm@11.10.0. NOT adopted (same divergence as qkit): full tc harness-kit (bespoke CI here), pino route-logging enforcement, verify-harness/.harness-base re-sync (none seeded), better-auth/Drizzle add-skills. settings.json omits broad permissions.allow (auto-mode self-grant guard).",
   "seeded_files": {
     "AGENTS.md": {
-      "origin_hash": "3c5746168dcb6c5bf29007b644f9626bf0741952c573c744e9a82258c24c1bcb",
+      "origin_hash": "afecd1ef2716a1716fe481c7c0dcd37daa30affa48831351274eb94573624545",
       "path": "AGENTS.md"
     },
     "CLAUDE.md": {
@@ -30,22 +30,28 @@
       "origin_hash": "1b2a2963ef427b22f7d2ff8d7c7c3e6cb4b2757acfb2c1de5b79a8e57b96d15b",
       "path": ".claude/skills/supabase-migrate/SKILL.md"
     },
-    "lefthook.yml": { "origin_hash": "<pending>", "path": "lefthook.yml" },
+    "lefthook.yml": {
+      "origin_hash": "fe4e4e6c12e9a9f23292c50963ad9ed482ce6ba070f590bb1e88ca1084774190",
+      "path": "lefthook.yml"
+    },
     ".lefthook/commit-msg.sh": {
-      "origin_hash": "<pending>",
+      "origin_hash": "65d9b8f755a4103b466f4ac3c0291af7a0ddd30721c1913afac0cffefc4384e3",
       "path": ".lefthook/commit-msg.sh"
     },
-    ".gitleaks.toml": { "origin_hash": "<pending>", "path": ".gitleaks.toml" },
+    ".gitleaks.toml": {
+      "origin_hash": "f9cd4aac35f474f9a48c691b4fd46642388389fa650481342fc4d5ad6216de4e",
+      "path": ".gitleaks.toml"
+    },
     ".claude/verify-harness.sh": {
-      "origin_hash": "<pending>",
+      "origin_hash": "8c50cc319c80fb1b6e4129f149b69a7341803dc078f388fe0e3127e64d7f08bd",
       "path": ".claude/verify-harness.sh"
     },
     ".claude/regen-harness.sh": {
-      "origin_hash": "<pending>",
+      "origin_hash": "a8c844610843c39550ac920d1d29323244bdecbcdeaa4519c97d8867de1b37a0",
       "path": ".claude/regen-harness.sh"
     },
     ".github/workflows/ci.yml": {
-      "origin_hash": "<pending>",
+      "origin_hash": "6376a8ed8ab9f67d3d41b51ffc9d7596411fd09f4dc37a29ba34e953712c7174",
       "path": ".github/workflows/ci.yml"
     }
   }
