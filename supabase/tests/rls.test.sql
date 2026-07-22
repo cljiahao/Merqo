@@ -25,12 +25,12 @@ insert into merqo.merqo_team (user_id)
 values ('00000000-0000-0000-0000-00000000000a');
 
 insert into merqo.products (id, slug, name, status)
-values ('00000000-0000-0000-0000-0000000p0001', 'qkit-rlstest', 'qkit', 'live');
+values ('00000000-0000-0000-0000-0000000c0001', 'qkit-rlstest', 'qkit', 'live');
 
 insert into merqo.vendor_links (id, email, product_slug, status)
 values
-  ('00000000-0000-0000-0000-0000000v0001', 'vendor-b@test.local', 'qkit-rlstest', 'active'),
-  ('00000000-0000-0000-0000-0000000v0002', 'someone-else@test.local', 'qkit-rlstest', 'waitlist');
+  ('00000000-0000-0000-0000-0000000e0001', 'vendor-b@test.local', 'qkit-rlstest', 'active'),
+  ('00000000-0000-0000-0000-0000000e0002', 'someone-else@test.local', 'qkit-rlstest', 'waitlist');
 
 -- ── RLS is actually enabled on every protected table ─────────────────────────
 select ok((select relrowsecurity from pg_class where oid = 'merqo.merqo_team'::regclass), 'RLS on merqo_team');
@@ -62,7 +62,7 @@ select isnt_empty(
 -- ANY direct select as `authenticated` — team member or not — raises
 -- permission-denied (42501); it does not filter to a row or an empty set.
 select throws_ok(
-  $$ select 1 from merqo.products where id = '00000000-0000-0000-0000-0000000p0001' $$,
+  $$ select 1 from merqo.products where id = '00000000-0000-0000-0000-0000000c0001' $$,
   '42501', null,
   'team member cannot SELECT products directly (no grant; metrics_secret stays server-only)');
 
@@ -70,7 +70,7 @@ select throws_ok(
 -- — the team branch passes regardless of row, so a team member sees every row,
 -- including one belonging to a different vendor's email.
 select isnt_empty(
-  $$ select 1 from merqo.vendor_links where id = '00000000-0000-0000-0000-0000000v0002' $$,
+  $$ select 1 from merqo.vendor_links where id = '00000000-0000-0000-0000-0000000e0002' $$,
   'team member reads any vendor_links row (not just their own email)');
 
 -- ── Act as an ordinary vendor (not on the team) ───────────────────────────────
@@ -97,12 +97,12 @@ select throws_ok(
 -- vendor_links_own_select's email branch: vendor-b's own row (lower(email)
 -- matches lower(jwt ->> 'email')) is visible.
 select isnt_empty(
-  $$ select 1 from merqo.vendor_links where id = '00000000-0000-0000-0000-0000000v0001' $$,
+  $$ select 1 from merqo.vendor_links where id = '00000000-0000-0000-0000-0000000e0001' $$,
   'vendor reads its own vendor_links row (matched by email)');
 -- ...but a row keyed to a different email is filtered out (not a team member,
 -- and the emails don't match).
 select is_empty(
-  $$ select 1 from merqo.vendor_links where id = '00000000-0000-0000-0000-0000000v0002' $$,
+  $$ select 1 from merqo.vendor_links where id = '00000000-0000-0000-0000-0000000e0002' $$,
   'vendor cannot read another email''s vendor_links row');
 
 -- ── Act as anon ───────────────────────────────────────────────────────────
