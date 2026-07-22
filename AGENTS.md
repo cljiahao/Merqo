@@ -113,15 +113,22 @@ Git hooks (lefthook): pre-commit runs format/lint/typecheck + lockfile-sync
 (`--frozen-lockfile`) + gitleaks secret-scan on staged files, plus a
 readme-coupling staleness warning; commit-msg enforces Conventional Commits;
 pre-push runs the harness integrity check + quality gate.
-CI (GitHub Actions): hard gate on changed-line coverage (`diff-cover`
-≥80%), lockfile-in-sync (`--frozen-lockfile`), a changelog-touched check, a
-readme-freshness check, harness integrity, and a `db` job (pgTAP RLS suite).
+CI (GitHub Actions, `ci.yml`, 6 jobs): `test` (harness integrity, changed-line
+coverage via `diff-cover` ≥80%, lockfile-in-sync via `--frozen-lockfile`),
+`build` (`next build`), `e2e` (Playwright public smoke), `changelog`
+(changelog-touched check), `readme-freshness` (README-coupling check), and `db`
+(pgTAP RLS suite).
 `security.yml` runs gitleaks + `pnpm audit` — **no CodeQL** (code scanning
 requires GitHub Advanced Security, unavailable on this private repo's free
 tier; this line previously and incorrectly claimed CodeQL was configured).
 `.github/dependabot.yml` (security-only).
 Project skills (directory form, `<name>/SKILL.md`): `.claude/skills/` |
-Manifest: `.claude/harness.json`
+Manifest: `.claude/harness.json` — 6 of its 12 entries (`lefthook.yml`,
+`.lefthook/commit-msg.sh`, `.gitleaks.toml`, `.claude/verify-harness.sh`,
+`.claude/regen-harness.sh`, `.github/workflows/ci.yml`) are still
+`origin_hash: "<pending>"`; `verify-harness.sh` skips pending entries, so
+harness-integrity currently gives zero drift protection over the lefthook/CI
+layer until a human runs `.claude/regen-harness.sh` to bless real hashes.
 
 > Note: unlike the qkit reference, `settings.json` here omits the broad
 > `permissions.allow` list (each session grants tools interactively). Add an
