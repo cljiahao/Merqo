@@ -13,7 +13,7 @@ import { StatCard } from "@/components/dashboard/stat-card";
 import { OnboardingFunnelView } from "./onboarding-funnel";
 import { ProductTile } from "./product-tile";
 import { StatusBanner } from "./status-banner";
-import { ResolveSupportMessageButton } from "./resolve-support-message-button";
+import { SupportMessageRow } from "./support-message-row";
 
 export const revalidate = 0;
 
@@ -86,21 +86,7 @@ export default async function AdminOverviewPage() {
             </div>
           ))}
           {openSupport.map((m) => (
-            <div
-              key={m.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/[0.04] px-4 py-3 text-sm"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-medium">{m.email ?? "Unknown"}</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  <span className="font-mono text-[10px] uppercase tracking-wide">
-                    {m.kit_slug ?? "merqo"}
-                  </span>{" "}
-                  · {m.category} — {m.body}
-                </p>
-              </div>
-              <ResolveSupportMessageButton id={m.id} />
-            </div>
+            <SupportMessageRow key={m.id} message={m} />
           ))}
           {totals.pending_upgrade_requests > 0 && (
             <p className="text-sm text-muted-foreground">
