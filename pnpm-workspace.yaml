@@ -2,7 +2,9 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
+  lefthook: true
 onlyBuiltDependencies:
   - esbuild
   - unrs-resolver
   - sharp
+  - lefthook
