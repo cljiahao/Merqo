@@ -15,7 +15,7 @@
       "path": "CLAUDE.md"
     },
     ".claude/settings.json": {
-      "origin_hash": "9efdb4bcc8ae5e701b2d6469966606fc53ce9ed6e422e63eb3be319e6060e4bc",
+      "origin_hash": "f739333b10057cec03f957c54b314dfeeb72f9e019ad602837b24cb492035729",
       "path": ".claude/settings.json"
     },
     ".claude/hooks/verify.sh": {
