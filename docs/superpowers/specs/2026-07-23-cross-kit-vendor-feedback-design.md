@@ -195,6 +195,16 @@ where not exists (
 kit's own migration hardcodes its own slug, same as paykit's
 `submit_support_message` call already hardcodes `p_kit_slug: "paykit"`.)
 
+> **Post-review update:** the shipped migrations wrap this `insert` in a
+> `do $$ begin if exists (select 1 from information_schema.tables where
+table_schema = 'merqo' and table_name = 'vendor_feedback') then ... end
+if; end $$;` guard — the snippet above, run unguarded, hard-failed each
+> kit's own CI (`supabase start` builds a fresh Postgres from only that
+> kit's migrations, with no `merqo` schema at all). Same guard pattern
+> `qkit/supabase/migrations/0054_vendor_profile_backfill.sql` already
+> established for the identical failure class. Treat each kit's actual
+> shipped migration file as source of truth over this snippet.
+
 ### `src/lib/merqo-vendor-feedback.ts` (new, per kit)
 
 Mirrors paykit's own `src/lib/merqo-support.ts` (added in the support-
