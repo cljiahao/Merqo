@@ -21,4 +21,11 @@ describe("NpsCard", () => {
     render(<NpsCard title="loopkit" scores={[9]} />);
     expect(screen.getByText("loopkit")).toBeInTheDocument();
   });
+
+  it("renders the passives bar segment and label when a score falls in the passive range", () => {
+    render(<NpsCard title="Test kit" scores={[10, 8, 0]} />);
+    expect(screen.getByText("1 passive")).toBeInTheDocument();
+    expect(screen.getByText("1 detractors")).toBeInTheDocument();
+    expect(screen.getByText("1 promoters")).toBeInTheDocument();
+  });
 });
