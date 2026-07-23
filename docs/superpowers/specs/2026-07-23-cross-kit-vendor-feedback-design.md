@@ -197,8 +197,8 @@ kit's own migration hardcodes its own slug, same as paykit's
 
 > **Post-review update:** the shipped migrations wrap this `insert` in a
 > `do $$ begin if exists (select 1 from information_schema.tables where
-> table_schema = 'merqo' and table_name = 'vendor_feedback') then ... end
-> if; end $$;` guard — the snippet above, run unguarded, hard-failed each
+table_schema = 'merqo' and table_name = 'vendor_feedback') then ... end
+if; end $$;` guard — the snippet above, run unguarded, hard-failed each
 > kit's own CI (`supabase start` builds a fresh Postgres from only that
 > kit's migrations, with no `merqo` schema at all). Same guard pattern
 > `qkit/supabase/migrations/0054_vendor_profile_backfill.sql` already
