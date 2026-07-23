@@ -4,6 +4,9 @@ pre-commit:
   commands:
     format-lint:
       glob: "*.{ts,tsx,js,mjs,cjs}"
+      exclude:
+        - .claude/hooks/*
+        - .claude/.harness-base/**
       run: pnpm exec prettier --write {staged_files} && pnpm exec eslint --fix --max-warnings=0 --no-warn-ignored {staged_files}
       stage_fixed: true
     typecheck:
