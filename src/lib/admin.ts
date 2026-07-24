@@ -56,17 +56,32 @@ export async function listProducts(): Promise<ProductOption[]> {
 
 export type TeamMember = { user_id: string; email: string | null };
 
+// listUsers() is paginated; a single call only returns page 1. Past 1000 auth
+// users, an unpaginated read silently drops real accounts.
+async function listAllAuthUsers(
+  supabase: Awaited<ReturnType<typeof createServiceClient>>,
+) {
+  const perPage = 1000;
+  const users: { id: string; email?: string | null }[] = [];
+  for (let page = 1; ; page++) {
+    const { data, error } = await supabase.auth.admin.listUsers({
+      page,
+      perPage,
+    });
+    if (error) throw new Error(`list users: ${error.message}`);
+    users.push(...(data?.users ?? []));
+    if ((data?.users ?? []).length < perPage) break;
+  }
+  return users;
+}
+
 export async function listTeamMembers(): Promise<TeamMember[]> {
   const supabase = await createServiceClient();
   const teamRes = await supabase.from("merqo_team").select("user_id");
   if (teamRes.error) throw new Error(`team read: ${teamRes.error.message}`);
   // Resolve emails via the admin API (merqo_team stores only auth user ids).
-  const { data: usersData } = await supabase.auth.admin.listUsers({
-    perPage: 1000,
-  });
-  const emailById = new Map(
-    (usersData?.users ?? []).map((u) => [u.id, u.email]),
-  );
+  const users = await listAllAuthUsers(supabase);
+  const emailById = new Map(users.map((u) => [u.id, u.email ?? null]));
   return (teamRes.data ?? [])
     .map((r) => ({
       user_id: r.user_id,
@@ -108,8 +123,8 @@ export async function revokeKit(email: string, slug: string): Promise<void> {
 export async function addTeamMemberByEmail(email: string): Promise<boolean> {
   const supabase = await createServiceClient();
   const key = email.toLowerCase();
-  const { data } = await supabase.auth.admin.listUsers({ perPage: 1000 });
-  const user = (data?.users ?? []).find((u) => u.email?.toLowerCase() === key);
+  const users = await listAllAuthUsers(supabase);
+  const user = users.find((u) => u.email?.toLowerCase() === key);
   if (!user) return false;
   const { error } = await supabase
     .from("merqo_team")

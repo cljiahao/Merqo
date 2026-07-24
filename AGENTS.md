@@ -13,8 +13,8 @@
 The house brand + dashboard for a modular family of small-business tools ("kits")
 for Singapore micro/small sellers. `qkit` (queue/orders) is the first, live product.
 This app is the public brand landing + a role-gated operator console:
-`/dashboard` (cross-product metrics overview, post-login home), `/vendors`
-(grant/revoke kit access per vendor), and `/team` (manage Merqo-team members).
+`/dashboard` (cross-product metrics overview, post-login home), `/admin/vendors`
+(grant/revoke kit access per vendor), and `/admin/team` (manage Merqo-team members).
 It pulls each kit's metrics over an **HTTP API** (bearer secret) — never a direct
 cross-schema query.
 
@@ -41,11 +41,11 @@ pnpm format       # prettier --write
 src/app/                    — app router (landing, dashboard, server actions)
 src/app/page.tsx            — public brand landing (static-prerendered)
 src/app/dashboard/          — cross-product metrics overview (auth-gated home)
-src/app/vendors/            — grant/revoke vendor kit access (auth-gated)
-src/app/team/               — manage Merqo-team members (auth-gated)
+src/app/admin/vendors/      — grant/revoke vendor kit access (auth-gated)
+src/app/admin/team/         — manage Merqo-team members (auth-gated)
 src/app/actions/            — server actions (public waitlist)
 src/app/login/              — email/password sign-in
-src/proxy.ts                — Supabase session refresh + /dashboard,/vendors,/team guard (Next 16)
+src/proxy.ts                — Supabase session refresh + /dashboard,/admin guard (Next 16)
 src/components/landing/      — landing sections (nav, hero, kit-grid, …)
 src/components/ui/           — shadcn primitives (CLI-managed, do not hand-edit)
 src/lib/supabase/           — browser / server (schema=merqo) / service clients + mw helper
@@ -57,9 +57,9 @@ supabase/migrations/        — SQL schema (merqo.* tables) + RLS + grants
 ## Data model
 
 One shared Supabase project, schema per kit. Merqo owns `merqo.*`:
-`merqo_team` (team membership, managed on `/team`), `products` (kit registry +
+`merqo_team` (team membership, managed on `/admin/team`), `products` (kit registry +
 per-product `metrics_secret`, surfaced on `/dashboard`), `vendor_links`
-(vendor↔kit, email-keyed, waitlist/active — granted/revoked on `/vendors`).
+(vendor↔kit, email-keyed, waitlist/active — granted/revoked on `/admin/vendors`).
 RLS default-deny; team-membership via `merqo.is_merqo_team()`. `products` +
 `vendor_links` are read/written via the **service-role client** (server-only) so
 the `metrics_secret` never reaches a browser.
