@@ -18,6 +18,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Enforcement-layer scripts, not app code — integrity is hash-checked via
+    // .claude/harness.json, not style-checked here (mirrors lefthook.yml's
+    // format-lint exclude for the same directory).
+    ".claude/hooks/**",
   ]),
 ]);
 

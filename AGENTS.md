@@ -97,22 +97,39 @@ and will break RLS.
 
 ## AI Harness
 
-PreToolUse: blocks secret files (exit 2): `.env*` (except `.env.example`), cert
-files (`.pem`/`.key`/`.p12`/`.pfx`/`.secret`), `credentials.json`/`.netrc`/`.secrets`;
-and blocks `--no-verify`. App code, skills, specs, `.github/workflows/` unrestricted.
-UserPromptSubmit: pattern-checks prompts for injection phrases; exit 2 blocks.
-PostToolUse: `tsc --noEmit --incremental` after every Edit/Write. Feedback-only.
-Stop: exits 0 when `stop_hook_active`; else runs the test suite, exit 2 feeds
-failures back. SessionStart (startup|resume|compact): re-injects the first 30 lines
-of this file. `permissions`: `deny` covers secret reads/edits (`.env.local` and
-other `.env.<env>` variants, `./secrets/**` — `.env.example` whitelisted) and
+Hook scripts live in `.claude/hooks/` (not inlined in `settings.json`):
+PreToolUse(Edit|Write) → `protect-files.sh` hard-blocks secret files (exit 2:
+`.env*` except `.env.example`, cert/credential files, CI/CD pipeline
+definitions, `secrets/**`) and asks for human approval on governance files
+(AGENTS.md/CLAUDE.md, `.claude/settings.json`, `.claude/hooks/*`,
+`lefthook.yml`, `.gitleaks.toml`, Dockerfile, etc). PreToolUse(Bash) →
+`block-no-verify.sh` blocks `--no-verify`/`-n`, hook-layer bypasses
+(`LEFTHOOK=0`, `core.hooksPath=…`), direct commits to `main`, force-pushes to
+`main`, `checkout`/`restore` of guard-layer files, and recursive-forced `rm`
+on source directories. App code, skills, specs unrestricted.
+UserPromptSubmit → `user-prompt-guard.cjs` pattern-checks prompts for
+injection phrases (OWASP LLM01) and embedded credentials (OWASP LLM02); exit
+2 blocks. PostToolUse(Edit|Write) → `post-edit-typecheck.sh` runs `tsc
+--noEmit --incremental` on TS edits, feedback-only. PostToolUse(Skill__.*) →
+`skill-usage-log.sh` appends to `.claude/skill-usage.log`.
+PostToolUseFailure → `post-tool-failure.sh` surfaces tool-error context,
+always exits 0. Stop → `stop-checks.sh` exits 0 when `stop_hook_active`; else
+runs `pnpm test --run`, exit 2 feeds failures back. SubagentStop →
+`subagent-stop.sh` type-gates a subagent's uncommitted TS changes before it
+hands back control. SessionStart (startup|resume|clear|compact) →
+`session-context.sh` re-injects the first 30 lines of this file plus
+always-on invariants.
+`permissions`: `deny` covers secret reads/edits (`.env.local` and other
+`.env.<env>` variants, `./secrets/**` — `.env.example` whitelisted) and
 irreversible ops (`rm -rf`, `git push --force`/`-f`, `git reset --hard`,
 `git clean -fd/-fx`, `git filter-branch`, ref-delete). `ask` gates edits to
 AGENTS.md / CLAUDE.md / settings.json.
 Git hooks (lefthook): pre-commit runs format/lint/typecheck + lockfile-sync
 (`--frozen-lockfile`) + gitleaks secret-scan on staged files, plus a
-readme-coupling staleness warning; commit-msg enforces Conventional Commits;
-pre-push runs the harness integrity check + quality gate.
+readme-coupling staleness warning (`format-lint` excludes `.claude/hooks/*`
+and `.claude/.harness-base/**` so it can't reformat scripts off their
+harness.json baseline); commit-msg enforces Conventional Commits; pre-push
+runs the harness integrity check + quality gate.
 CI (GitHub Actions, `ci.yml`, 6 jobs): `test` (harness integrity, changed-line
 coverage via `diff-cover` ≥80%, lockfile-in-sync via `--frozen-lockfile`),
 `build` (`next build`), `e2e` (Playwright public smoke), `changelog`
@@ -123,12 +140,12 @@ requires GitHub Advanced Security, unavailable on this private repo's free
 tier; this line previously and incorrectly claimed CodeQL was configured).
 `.github/dependabot.yml` (security-only).
 Project skills (directory form, `<name>/SKILL.md`): `.claude/skills/` |
-Manifest: `.claude/harness.json` — 6 of its 12 entries (`lefthook.yml`,
-`.lefthook/commit-msg.sh`, `.gitleaks.toml`, `.claude/verify-harness.sh`,
-`.claude/regen-harness.sh`, `.github/workflows/ci.yml`) are still
-`origin_hash: "<pending>"`; `verify-harness.sh` skips pending entries, so
-harness-integrity currently gives zero drift protection over the lefthook/CI
-layer until a human runs `.claude/regen-harness.sh` to bless real hashes.
+Manifest: `.claude/harness.json` (`templatecentral_version: 5.11.0`) — all 21
+`seeded_files` entries carry real `origin_hash` values (no `<pending>`
+markers); `verify-harness.sh` checks the subset under its guard regex
+(`.claude/hooks/`, `.claude/settings.json`, `.claude/(verify|regen)-harness.sh`,
+`lefthook.yml`, `.lefthook/`, `.gitleaks.toml`, `.github/workflows/`) against
+the git blob at HEAD on every pre-push and in CI.
 
 > Note: unlike the qkit reference, `settings.json` here omits the broad
 > `permissions.allow` list (each session grants tools interactively). Add an
