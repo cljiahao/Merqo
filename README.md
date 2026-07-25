@@ -7,8 +7,8 @@ first live product; `loopkit` (stamp-card loyalty) is the second.
 This app is the public brand landing plus a role-gated operator console:
 
 - `/dashboard` — cross-product metrics overview (post-login home)
-- `/vendors` — grant/revoke kit access per vendor
-- `/team` — manage Merqo-team members
+- `/admin/vendors` — grant/revoke kit access per vendor
+- `/admin/team` — manage Merqo-team members
 
 Each kit runs its own app on its own schema in a shared Supabase project.
 Merqo pulls per-kit metrics over an HTTP API (bearer secret) — it never
@@ -37,8 +37,8 @@ pnpm format       # prettier --write
 src/app/                    — app router (landing, dashboard, server actions)
 src/app/page.tsx            — public brand landing (static-prerendered)
 src/app/dashboard/          — cross-product metrics overview (auth-gated home)
-src/app/vendors/            — grant/revoke vendor kit access (auth-gated)
-src/app/team/               — manage Merqo-team members (auth-gated)
+src/app/admin/vendors/      — grant/revoke vendor kit access (auth-gated)
+src/app/admin/team/         — manage Merqo-team members (auth-gated)
 src/app/login/              — email/password sign-in
 src/proxy.ts                — Supabase session refresh + route guard (Next 16)
 src/components/landing/     — landing sections (nav, hero, kit-grid, …)
