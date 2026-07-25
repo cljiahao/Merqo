@@ -22,6 +22,10 @@ const eslintConfig = defineConfig([
     // .claude/harness.json, not style-checked here (mirrors lefthook.yml's
     // format-lint exclude for the same directory).
     ".claude/hooks/**",
+    // Agent worktrees are independent checkouts (their own node_modules,
+    // .next, etc.) — not app code, and .gitignore's mismatch (see that file)
+    // meant they were never actually excluded before.
+    ".claude/worktrees/**",
   ]),
 ]);
 
