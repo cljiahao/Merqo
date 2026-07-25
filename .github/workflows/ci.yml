@@ -73,6 +73,77 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
+  e2e-admin:
+    name: e2e (admin interaction)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.0
+      # A real local Supabase instance (not dummy creds) — the admin
+      # interaction flows below make actual auth + PostgREST calls, unlike
+      # the public-smoke job above.
+      - run: supabase start
+      - name: Capture local Supabase env
+        run: |
+          status=$(supabase status -o json)
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$(echo "$status" | jq -r .API_URL)"
+            echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$(echo "$status" | jq -r .PUBLISHABLE_KEY)"
+            echo "SUPABASE_SECRET_KEY=$(echo "$status" | jq -r .SECRET_KEY)"
+          } >> "$GITHUB_ENV"
+      - name: Seed e2e fixtures
+        env:
+          MERQO_E2E_TEAM_EMAIL: e2e-team@merqo.test
+          MERQO_E2E_TEAM_PASSWORD: e2e-test-pass-123
+          MERQO_E2E_ADDABLE_EMAIL: e2e-addable@merqo.test
+          MERQO_E2E_TEST_KIT_SLUG: e2e-testkit
+          MERQO_E2E_TEST_KIT_NAME: E2E Test Kit
+        run: |
+          api="$NEXT_PUBLIC_SUPABASE_URL"
+          key="$SUPABASE_SECRET_KEY"
+          auth() { curl -sf -H "apikey: $key" -H "Authorization: Bearer $key" "$@"; }
+          team_id=$(auth -X POST "$api/auth/v1/admin/users" \
+            -H "Content-Type: application/json" \
+            -d "{\"email\":\"$MERQO_E2E_TEAM_EMAIL\",\"password\":\"$MERQO_E2E_TEAM_PASSWORD\",\"email_confirm\":true}" \
+            | jq -r .id)
+          auth -X POST "$api/auth/v1/admin/users" \
+            -H "Content-Type: application/json" \
+            -d "{\"email\":\"$MERQO_E2E_ADDABLE_EMAIL\",\"password\":\"$MERQO_E2E_TEAM_PASSWORD\",\"email_confirm\":true}" \
+            > /dev/null
+          auth -X POST "$api/rest/v1/merqo_team" \
+            -H "Content-Profile: merqo" -H "Content-Type: application/json" \
+            -d "{\"user_id\":\"$team_id\"}" > /dev/null
+          auth -X POST "$api/rest/v1/products" \
+            -H "Content-Profile: merqo" -H "Content-Type: application/json" \
+            -d "{\"slug\":\"$MERQO_E2E_TEST_KIT_SLUG\",\"name\":\"$MERQO_E2E_TEST_KIT_NAME\",\"status\":\"live\"}" \
+            > /dev/null
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Run e2e (including admin interaction flows)
+        env:
+          MERQO_E2E_AUTH: "1"
+          MERQO_E2E_TEAM_EMAIL: e2e-team@merqo.test
+          MERQO_E2E_TEAM_PASSWORD: e2e-test-pass-123
+          MERQO_E2E_ADDABLE_EMAIL: e2e-addable@merqo.test
+          MERQO_E2E_TEST_KIT_SLUG: e2e-testkit
+          MERQO_E2E_TEST_KIT_NAME: E2E Test Kit
+        run: pnpm exec playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report-admin
+          path: playwright-report/
+          retention-days: 7
+      - if: always()
+        run: supabase stop
+
   changelog:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest

@@ -8,6 +8,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **`service_role` couldn't read tables added after the first migration.**
+  0001's `grant all on all tables in schema merqo to service_role` only
+  covered tables that existed when it ran — every table added since
+  (`support_messages`, `kit_events`, `vendor_profile`, `vendor_feedback`)
+  never got an equivalent grant, so a byte-for-byte fresh migration replay
+  (a new local dev instance, or CI) hit permission-denied on the service
+  client's direct reads (e.g. the admin Overview page's support-message
+  read). New migration `0012_service_role_table_grants.sql` re-applies the
+  grant to cover everything added since. Found via real local-Supabase e2e
+  testing, not the pgTAP suite (which runs as the Postgres superuser and
+  never exercises table-level grants).
 - **Team lookup past 1000 auth users.** `listTeamMembers`/`addTeamMemberByEmail`
   (`src/lib/admin.ts`) now paginate `auth.admin.listUsers` instead of reading
   page 1 only, so accounts and team-member emails beyond the first 1000 auth
@@ -17,6 +28,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Real admin-interaction e2e coverage.** `e2e/smoke.spec.ts`'s `authed areas`
+  block now actually logs in and exercises the grant/revoke-a-kit and
+  add/remove-team-member flows against a real local Supabase instance,
+  instead of only render checks behind an always-skipped flag. A new CI job
+  (`e2e (admin interaction)`) boots local Supabase (`supabase/config.toml`
+  is new — first committed local-dev config for this repo, exposes the
+  `merqo` schema), seeds a team member + addable user + test product via
+  the GoTrue admin API and PostgREST, and runs the suite with
+  `MERQO_E2E_AUTH=1`.
 - **Cross-kit vendor feedback/NPS.** `merqo.vendor_feedback` converges
   loopkit/stockkit/paykit's identical local NPS tables via a new
   `merqo.submit_vendor_feedback` RPC. The admin feedback page now shows a

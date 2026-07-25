@@ -87,7 +87,7 @@
       "path": ".claude/regen-harness.sh"
     },
     ".github/workflows/ci.yml": {
-      "origin_hash": "6376a8ed8ab9f67d3d41b51ffc9d7596411fd09f4dc37a29ba34e953712c7174",
+      "origin_hash": "1a1e5b7b53a6c0ca008571f7513a9fc80a3ca360d07dde17025540533dc3f6a9",
       "path": ".github/workflows/ci.yml"
     }
   }
