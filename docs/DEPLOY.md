@@ -27,8 +27,8 @@ of git — it lives only in Vercel env + the DB row.
    ```sql
    insert into merqo.products (slug, name, status, app_url, metrics_url, metrics_secret)
    values ('qkit', 'Merqo qkit — Queue', 'live',
-           'https://<qkit-domain>',
-           'https://<qkit-domain>/api/merqo/metrics',
+           'https://qkit-sg.vercel.app',
+           'https://qkit-sg.vercel.app/api/merqo/metrics',
            '<MERQO_METRICS_SECRET>');
    ```
 7. **Add yourself to the team** (SQL editor). Find your uuid in Auth → Users:
@@ -53,7 +53,7 @@ of git — it lives only in Vercel env + the DB row.
    - `NEXT_PUBLIC_SUPABASE_URL` = shared project URL
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` = anon key
    - `SUPABASE_SECRET_KEY` = service_role key
-   - `NEXT_PUBLIC_BASE_URL` = `https://<merqo-domain>`
+   - `NEXT_PUBLIC_BASE_URL` = `https://merqo-sg.vercel.app`
 3. Deploy. If the qkit domain wasn't final at step A.6, update `merqo.products`
    `app_url`/`metrics_url` now.
 4. **Smoke**: open `/login`, sign in as the account you added to `merqo_team` →
@@ -62,6 +62,10 @@ of git — it lives only in Vercel env + the DB row.
 
 ## Notes
 
+- **Custom domain (planned, not yet purchased):** intent is `merqo.io` for merqo
+  and `qkit.merqo.io` for qkit, replacing the `*.vercel.app` domains above. Once
+  bought, update `NEXT_PUBLIC_BASE_URL`, `merqo.products.app_url`/`metrics_url`,
+  and qkit's own env accordingly.
 - Rotate the secret by updating both the qkit Vercel env and `merqo.products.metrics_secret`.
 - A future qkit `public`→`qkit` schema move is invisible to merqo (HTTP boundary).
 - **Vendor membership sync**: apply `supabase/migrations/0005_vendor_link_sync.sql`
