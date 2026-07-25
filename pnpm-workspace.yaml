@@ -11,3 +11,4 @@ onlyBuiltDependencies:
 
 overrides:
   sharp@<0.35.0: ">=0.35.0"
+  postcss@<8.5.18: ">=8.5.18"
