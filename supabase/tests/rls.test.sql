@@ -207,13 +207,14 @@ select throws_ok(
   '42501', null,
   'anon cannot read vendor_feedback (no SELECT grant)');
 
--- submit_vendor_feedback is granted to `authenticated` only (0011); anon has
--- no execute grant at all, so the call fails on privilege before the
--- function's own `auth.uid() is null` check is ever reached.
-select throws_ok(
+-- submit_vendor_feedback's explicit grant (0011) is to `authenticated`, but
+-- Postgres' default PUBLIC execute grant on new functions isn't revoked, so
+-- anon can still call it — and hits the function's own `auth.uid() is null`
+-- check instead.
+select throws_like(
   $$ select merqo.submit_vendor_feedback('qkit-rlstest', 5, 'hi') $$,
-  '42501', null,
-  'anon cannot call submit_vendor_feedback (no EXECUTE grant)');
+  'not authorized',
+  'anon cannot call submit_vendor_feedback (auth.uid() is null check)');
 
 reset role;
 
