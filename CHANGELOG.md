@@ -6,6 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Team lookup past 1000 auth users.** `listTeamMembers`/`addTeamMemberByEmail`
+  (`src/lib/admin.ts`) now paginate `auth.admin.listUsers` instead of reading
+  page 1 only, so accounts and team-member emails beyond the first 1000 auth
+  users are no longer silently missed.
+- Added pgTAP RLS coverage for `kit_events`, `vendor_profile`, and
+  `vendor_feedback` (previously untested policies).
+
 ### Added
 
 - **Cross-kit vendor feedback/NPS.** `merqo.vendor_feedback` converges
