@@ -181,6 +181,11 @@ select throws_like(
 -- for any role but service_role). So every direct select below fails the
 -- privilege check before RLS is ever evaluated — 42501, not an empty result set.
 reset role;
+-- request.jwt.claims is transaction-local (set_config's is_local=true), not
+-- role-local — it would otherwise still carry vendor-b's sub from above, so
+-- auth.uid() would resolve to a real vendor even under the anon role. Clear
+-- it to actually simulate an unauthenticated request.
+select set_config('request.jwt.claims', '', true);
 set local role anon;
 select throws_ok(
   $$ select 1 from merqo.merqo_team $$,
