@@ -58,11 +58,11 @@ owner/staff time these kits actually displace at micro/small-seller scale.
 `$/month = hrs/week × 4.33 × $18`, rounded to the nearest $10, applied
 consistently across kits so the numbers stay internally comparable.
 
-| kit | free hrs/wk | free $/mo | pro hrs/wk | pro $/mo | rationale |
-|---|---|---|---|---|---|
-| qkit | 3 | $230 | 6 | $470 | QR ordering replaces manual order-taking. Industry case data: ~2.5hr saved per 100 QR orders when QR handles ~50% of volume (Jamezz QR-ordering implementation guide). Pro (multi-queue/analytics) assumed ~2x at higher volume. |
-| loopkit | 2 | $150 | 4 | $300 | Manual stamp-card tracking removed (direct time input). Directionally backed by loyalty-program lift stats: members drive 12–18% more incremental revenue/year, repeat customers spend ~67% more (queue-it.com loyalty-program statistics, 2026). Read as "time + program value," not pure labor-hours. |
-| paykit | 2 | $150 | 5 | $390 | Automated reconciliation/e-invoicing vs manual. SME automation studies show 10–20hrs/month saved, up to 40% cut in reconciliation time (Fincent), scaled down here for single-stall transaction volume rather than a full SME back office. |
+| kit     | free hrs/wk | free $/mo | pro hrs/wk | pro $/mo | rationale                                                                                                                                                                                                                                                                                               |
+| ------- | ----------- | --------- | ---------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| qkit    | 3           | $230      | 6          | $470     | QR ordering replaces manual order-taking. Industry case data: ~2.5hr saved per 100 QR orders when QR handles ~50% of volume (Jamezz QR-ordering implementation guide). Pro (multi-queue/analytics) assumed ~2x at higher volume.                                                                        |
+| loopkit | 2           | $150      | 4          | $300     | Manual stamp-card tracking removed (direct time input). Directionally backed by loyalty-program lift stats: members drive 12–18% more incremental revenue/year, repeat customers spend ~67% more (queue-it.com loyalty-program statistics, 2026). Read as "time + program value," not pure labor-hours. |
+| paykit  | 2           | $150      | 5          | $390     | Automated reconciliation/e-invoicing vs manual. SME automation studies show 10–20hrs/month saved, up to 40% cut in reconciliation time (Fincent), scaled down here for single-stall transaction volume rather than a full SME back office.                                                              |
 
 Pro figures are kept at roughly a 2x multiple of Free across all three kits,
 since Free-vs-Pro feature gating isn't defined anywhere in this repo yet and

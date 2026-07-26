@@ -23,10 +23,12 @@
 ### Task 1: `computeVendorSavings` pure function
 
 **Files:**
+
 - Create: `src/lib/savings.ts`
 - Test: `src/lib/savings.test.ts`
 
 **Interfaces:**
+
 - Consumes: `VendorLink` type from `src/lib/vendor.ts` — `{ product_slug: string; status: GrantStatus; plan: string | null }` (`GrantStatus` from `src/lib/admin.ts` is a string union including `"active"`; only its `"active"` value matters here).
 - Produces (for Task 2/3/4 to import):
   - `SAVINGS_ASSUMPTIONS: Record<string, { free: SavingsAssumption; pro: SavingsAssumption }>`
@@ -60,7 +62,9 @@ describe("computeVendorSavings", () => {
   });
 
   it("uses the free-tier assumption for an active free-plan kit, with upside toward pro", () => {
-    const result = computeVendorSavings([link({ product_slug: "qkit", plan: "free" })]);
+    const result = computeVendorSavings([
+      link({ product_slug: "qkit", plan: "free" }),
+    ]);
     expect(result.perKit).toEqual([
       {
         slug: "qkit",
@@ -76,7 +80,9 @@ describe("computeVendorSavings", () => {
   });
 
   it("uses the pro-tier assumption with zero upside for an active pro-plan kit", () => {
-    const result = computeVendorSavings([link({ product_slug: "loopkit", plan: "pro" })]);
+    const result = computeVendorSavings([
+      link({ product_slug: "loopkit", plan: "pro" }),
+    ]);
     expect(result.perKit).toEqual([
       {
         slug: "loopkit",
@@ -90,12 +96,19 @@ describe("computeVendorSavings", () => {
   });
 
   it("treats a null plan on an active link as free tier", () => {
-    const result = computeVendorSavings([link({ product_slug: "paykit", plan: null })]);
-    expect(result.perKit[0]).toMatchObject({ hoursPerWeek: 2, costCentsPerMonth: 15000 });
+    const result = computeVendorSavings([
+      link({ product_slug: "paykit", plan: null }),
+    ]);
+    expect(result.perKit[0]).toMatchObject({
+      hoursPerWeek: 2,
+      costCentsPerMonth: 15000,
+    });
   });
 
   it("skips a waitlist (non-active) link entirely", () => {
-    const result = computeVendorSavings([link({ status: "waitlist" as never })]);
+    const result = computeVendorSavings([
+      link({ status: "waitlist" as never }),
+    ]);
     expect(result.perKit).toEqual([]);
   });
 
@@ -244,10 +257,12 @@ git commit -m "feat: add vendor savings-estimate calculation"
 ### Task 2: `SavingsSummary` component
 
 **Files:**
+
 - Create: `src/app/dashboard/(app)/savings-summary.tsx`
 - Test: `test/app/savings-summary.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `VendorSavings` type and shape from Task 1 (`src/lib/savings.ts`); `money(cents: number): string` from `src/lib/format.ts`.
 - Produces: `SavingsSummary({ totals }: { totals: VendorSavings })` — a React server component, default export not used (named export, matching `VendorKitCard`'s convention). Renders `null` when `totals.perKit.length === 0`.
 
@@ -351,8 +366,8 @@ export function SavingsSummary({ totals }: { totals: VendorSavings }) {
         <span className="font-semibold text-foreground">
           {money(totals.totalCostCentsPerMonth)}
         </span>{" "}
-        saved this month · ~{totals.totalHoursPerWeek} hrs/week back across
-        your kits
+        saved this month · ~{totals.totalHoursPerWeek} hrs/week back across your
+        kits
       </p>
       {totals.totalUpsideCostCentsPerMonth > 0 && (
         <p className="mt-1 text-muted-foreground">
@@ -386,10 +401,12 @@ git commit -m "feat: add SavingsSummary component"
 ### Task 3: Per-card savings line on `VendorKitCard`
 
 **Files:**
+
 - Modify: `src/app/dashboard/(app)/vendor-kit-card.tsx`
 - Modify: `test/app/vendor-kit-card.test.tsx`
 
 **Interfaces:**
+
 - Consumes: `KitSavings` type from Task 1 (`src/lib/savings.ts`); `money()` from `src/lib/format.ts`.
 - Produces: `VendorKitCard` gains an optional `savings?: KitSavings` prop. Existing `{ tile: KitTile }` usage (no `savings` passed) keeps rendering exactly as before — used by Task 4's callers as the contract.
 
@@ -398,87 +415,87 @@ git commit -m "feat: add SavingsSummary component"
 Append to `test/app/vendor-kit-card.test.tsx` (add these `it` blocks inside the existing `describe("VendorKitCard", ...)`, after the current hover-lift test):
 
 ```tsx
-  it("renders no savings line when savings is omitted", () => {
-    render(
-      <VendorKitCard
-        tile={{
-          slug: "qkit",
-          name: "qkit",
-          tagline: "Take orders and run your queue.",
-          href: "https://qkit-sg.vercel.app",
-          plan: "free",
-        }}
-      />,
-    );
-    expect(screen.queryByText(/saved this month/)).not.toBeInTheDocument();
-  });
+it("renders no savings line when savings is omitted", () => {
+  render(
+    <VendorKitCard
+      tile={{
+        slug: "qkit",
+        name: "qkit",
+        tagline: "Take orders and run your queue.",
+        href: "https://qkit-sg.vercel.app",
+        plan: "free",
+      }}
+    />,
+  );
+  expect(screen.queryByText(/saved this month/)).not.toBeInTheDocument();
+});
 
-  it("renders the savings line when savings is provided", () => {
-    render(
-      <VendorKitCard
-        tile={{
-          slug: "qkit",
-          name: "qkit",
-          tagline: "Take orders and run your queue.",
-          href: "https://qkit-sg.vercel.app",
-          plan: "free",
-        }}
-        savings={{
-          slug: "qkit",
-          hoursPerWeek: 3,
-          costCentsPerMonth: 23000,
-          upsideHoursPerWeek: 3,
-          upsideCostCentsPerMonth: 24000,
-        }}
-      />,
-    );
-    expect(screen.getByText(/saved this month/)).toBeInTheDocument();
-    expect(screen.getByText("$230", { exact: false })).toBeInTheDocument();
-  });
+it("renders the savings line when savings is provided", () => {
+  render(
+    <VendorKitCard
+      tile={{
+        slug: "qkit",
+        name: "qkit",
+        tagline: "Take orders and run your queue.",
+        href: "https://qkit-sg.vercel.app",
+        plan: "free",
+      }}
+      savings={{
+        slug: "qkit",
+        hoursPerWeek: 3,
+        costCentsPerMonth: 23000,
+        upsideHoursPerWeek: 3,
+        upsideCostCentsPerMonth: 24000,
+      }}
+    />,
+  );
+  expect(screen.getByText(/saved this month/)).toBeInTheDocument();
+  expect(screen.getByText("$230", { exact: false })).toBeInTheDocument();
+});
 
-  it("shows the Pro upside line on a free-plan card with upside", () => {
-    render(
-      <VendorKitCard
-        tile={{
-          slug: "qkit",
-          name: "qkit",
-          tagline: "Take orders and run your queue.",
-          href: "https://qkit-sg.vercel.app",
-          plan: "free",
-        }}
-        savings={{
-          slug: "qkit",
-          hoursPerWeek: 3,
-          costCentsPerMonth: 23000,
-          upsideHoursPerWeek: 3,
-          upsideCostCentsPerMonth: 24000,
-        }}
-      />,
-    );
-    expect(screen.getByText(/Pro saves/)).toBeInTheDocument();
-  });
+it("shows the Pro upside line on a free-plan card with upside", () => {
+  render(
+    <VendorKitCard
+      tile={{
+        slug: "qkit",
+        name: "qkit",
+        tagline: "Take orders and run your queue.",
+        href: "https://qkit-sg.vercel.app",
+        plan: "free",
+      }}
+      savings={{
+        slug: "qkit",
+        hoursPerWeek: 3,
+        costCentsPerMonth: 23000,
+        upsideHoursPerWeek: 3,
+        upsideCostCentsPerMonth: 24000,
+      }}
+    />,
+  );
+  expect(screen.getByText(/Pro saves/)).toBeInTheDocument();
+});
 
-  it("omits the Pro upside line on a pro-plan card", () => {
-    render(
-      <VendorKitCard
-        tile={{
-          slug: "loopkit",
-          name: "loopkit",
-          tagline: "Stamp cards, points and tiers.",
-          href: "https://loopkit-sg.vercel.app",
-          plan: "pro",
-        }}
-        savings={{
-          slug: "loopkit",
-          hoursPerWeek: 4,
-          costCentsPerMonth: 30000,
-          upsideHoursPerWeek: 0,
-          upsideCostCentsPerMonth: 0,
-        }}
-      />,
-    );
-    expect(screen.queryByText(/Pro saves/)).not.toBeInTheDocument();
-  });
+it("omits the Pro upside line on a pro-plan card", () => {
+  render(
+    <VendorKitCard
+      tile={{
+        slug: "loopkit",
+        name: "loopkit",
+        tagline: "Stamp cards, points and tiers.",
+        href: "https://loopkit-sg.vercel.app",
+        plan: "pro",
+      }}
+      savings={{
+        slug: "loopkit",
+        hoursPerWeek: 4,
+        costCentsPerMonth: 30000,
+        upsideHoursPerWeek: 0,
+        upsideCostCentsPerMonth: 0,
+      }}
+    />,
+  );
+  expect(screen.queryByText(/Pro saves/)).not.toBeInTheDocument();
+});
 ```
 
 - [ ] **Step 2: Run tests to verify they fail**
@@ -570,9 +587,11 @@ git commit -m "feat: show per-kit savings estimate on VendorKitCard"
 ### Task 4: Wire savings into the dashboard page
 
 **Files:**
+
 - Modify: `src/app/dashboard/(app)/page.tsx`
 
 **Interfaces:**
+
 - Consumes: `computeVendorSavings` + `VendorSavings`/`KitSavings` from Task 1; `SavingsSummary` from Task 2; `VendorKitCard`'s new `savings` prop from Task 3.
 - Produces: nothing new for later tasks — this is the final integration point.
 
