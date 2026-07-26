@@ -6,6 +6,8 @@ import {
   comingKits,
 } from "@/lib/vendor";
 import { KITS } from "@/lib/kits";
+import { computeVendorSavings } from "@/lib/savings";
+import { SavingsSummary } from "./savings-summary";
 import { VendorKitCard } from "./vendor-kit-card";
 import { KitDiscoveryCard } from "@/components/dashboard/kit-discovery-card";
 import { JoinWaitlistButton } from "@/components/dashboard/join-waitlist-button";
@@ -15,6 +17,8 @@ export const revalidate = 0;
 export default async function DashboardPage() {
   const { links } = await requireActiveVendor();
   const { active, pending } = tilesForLinks(links);
+  const savings = computeVendorSavings(links);
+  const savingsBySlug = new Map(savings.perKit.map((s) => [s.slug, s]));
   const readyToAdd = addableKits(links);
   const comingSoon = comingKits(links);
   const planned = KITS.filter((k) => k.status === "planned");
@@ -25,9 +29,15 @@ export default async function DashboardPage() {
         Your kits
       </h1>
 
+      <SavingsSummary totals={savings} />
+
       <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
         {active.map((t) => (
-          <VendorKitCard key={t.slug} tile={t} />
+          <VendorKitCard
+            key={t.slug}
+            tile={t}
+            savings={savingsBySlug.get(t.slug)}
+          />
         ))}
       </section>
 
