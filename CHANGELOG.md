@@ -28,6 +28,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Estimated savings panel on the vendor dashboard.** Each active kit card on
+  `/dashboard` now shows an estimated dollar/hours-saved figure for the
+  vendor's current plan tier, with a Pro-upgrade delta shown when the vendor
+  is on Free, plus a page-level summary banner totaling the estimate across
+  all of a vendor's active kits. New module `src/lib/savings.ts` holds the
+  numbers — flat per-kit/per-tier assumptions, not measured per-vendor usage
+  (no such data exists in the metrics pipeline), grounded in Singapore
+  hawker-wage and industry-benchmark research. See
+  `docs/superpowers/specs/2026-07-26-merqo-dashboard-savings-estimate-design.md`
+  for the full sourcing.
 - **Real admin-interaction e2e coverage.** `e2e/smoke.spec.ts`'s `authed areas`
   block now actually logs in and exercises the grant/revoke-a-kit and
   add/remove-team-member flows against a real local Supabase instance,

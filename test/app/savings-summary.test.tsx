@@ -42,6 +42,8 @@ describe("SavingsSummary", () => {
     expect(screen.getByText("$230")).toBeInTheDocument();
     expect(screen.getByText(/3 hrs\/week/)).toBeInTheDocument();
     expect(screen.getByText("Estimated")).toBeInTheDocument();
+    expect(screen.getByText(/Upgrade to Pro/)).toBeInTheDocument();
+    expect(screen.getByText("+$240")).toBeInTheDocument();
   });
 
   it("shows the Pro upgrade line only when there is upside", () => {
