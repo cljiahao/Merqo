@@ -1,10 +1,18 @@
 import type { KitTile } from "@/lib/vendor";
+import type { KitSavings } from "@/lib/savings";
+import { money } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { UpgradeButton } from "./upgrade-button";
 import { DowngradeButton } from "./downgrade-button";
 
-export function VendorKitCard({ tile }: { tile: KitTile }) {
+export function VendorKitCard({
+  tile,
+  savings,
+}: {
+  tile: KitTile;
+  savings?: KitSavings;
+}) {
   return (
     <div className="rounded-xl border bg-card p-5 shadow-[0_0_0_1px_rgba(0,0,0,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md">
       <div className="flex items-center justify-between gap-3">
@@ -16,6 +24,15 @@ export function VendorKitCard({ tile }: { tile: KitTile }) {
         </div>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">{tile.tagline}</p>
+      {savings && (
+        <p className="mt-2 text-sm text-foreground">
+          Est.{" "}
+          <span className="font-semibold">
+            {money(savings.costCentsPerMonth)}
+          </span>{" "}
+          saved this month · ~{savings.hoursPerWeek} hrs/week back
+        </p>
+      )}
       <div className="mt-4 flex flex-wrap items-center gap-3">
         {tile.href && (
           <Button asChild size="sm">
@@ -27,6 +44,17 @@ export function VendorKitCard({ tile }: { tile: KitTile }) {
         {tile.plan === "free" && <UpgradeButton slug={tile.slug} />}
         {tile.plan === "pro" && <DowngradeButton slug={tile.slug} />}
       </div>
+      {tile.plan === "free" &&
+        savings &&
+        savings.upsideCostCentsPerMonth > 0 && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Pro saves{" "}
+            <span className="font-medium text-foreground">
+              +{money(savings.upsideCostCentsPerMonth)}
+            </span>{" "}
+            more (+{savings.upsideHoursPerWeek} hrs/week)
+          </p>
+        )}
     </div>
   );
 }
