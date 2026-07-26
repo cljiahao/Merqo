@@ -5,6 +5,7 @@ import {
   addableKits,
   comingKits,
 } from "@/lib/vendor";
+import { syncVendorKits } from "@/lib/vendor-sync";
 import { KITS } from "@/lib/kits";
 import { VendorKitCard } from "./vendor-kit-card";
 import { KitDiscoveryCard } from "@/components/dashboard/kit-discovery-card";
@@ -13,7 +14,13 @@ import { JoinWaitlistButton } from "@/components/dashboard/join-waitlist-button"
 export const revalidate = 0;
 
 export default async function DashboardPage() {
-  const { links } = await requireActiveVendor();
+  const { user, links: initialLinks } = await requireActiveVendor();
+  // Unlike /dashboard/pending, this page has no "Check again" affordance —
+  // without re-syncing here, a vendor who signs up directly on another
+  // kit's site (the "Add {kit}" link just opens that kit's own login page)
+  // never sees it reflected without a full logout/login, since sync
+  // otherwise only runs from /post-login.
+  const links = user.email ? await syncVendorKits(user.email) : initialLinks;
   const { active, pending } = tilesForLinks(links);
   const readyToAdd = addableKits(links);
   const comingSoon = comingKits(links);

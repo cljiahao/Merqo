@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **A newly-added kit never appeared on `/dashboard` without a full logout/
+  login.** "Add {kit}" just opens the other kit's own signup page — merqo
+  only re-checks `vendor_links` via `syncVendorKits` from `/post-login`
+  (a fresh sign-in). `/dashboard/pending` already had a defensive sync +
+  "Check again" for the zero-active-kits case, but `/dashboard` itself (what
+  a vendor with an existing active kit lands on) never synced at all.
+  `/dashboard` now syncs on every load, the same as `/dashboard/pending`.
+
 - **`service_role` couldn't read tables added after the first migration.**
   0001's `grant all on all tables in schema merqo to service_role` only
   covered tables that existed when it ran — every table added since
