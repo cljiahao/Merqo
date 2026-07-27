@@ -1,6 +1,29 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { checkVendorStatus, upsertsFromChecks } from "@/lib/vendor-sync";
-import { listLiveProducts } from "@/lib/products";
+
+const { selectMock, eqMock, createServiceClientMock } = vi.hoisted(() => ({
+  selectMock: vi.fn(),
+  eqMock: vi.fn(),
+  createServiceClientMock: vi.fn(),
+}));
+
+vi.mock("@/lib/supabase/server", () => ({
+  createServiceClient: createServiceClientMock,
+}));
+
+function fakeSupabase() {
+  return {
+    from: vi.fn(() => ({
+      select: selectMock,
+    })),
+  };
+}
+
+beforeEach(() => {
+  selectMock.mockReset();
+  eqMock.mockReset();
+  createServiceClientMock.mockReset();
+});
 
 const kit = {
   slug: "qkit",
@@ -124,18 +147,58 @@ describe("upsertsFromChecks", () => {
   });
 });
 
-describe("listLiveProducts (post-0013 migration)", () => {
-  it("includes loopkit now that its status is corrected to live", async () => {
-    const products = await listLiveProducts();
-    const slugs = products.map((p) => p.slug);
-    expect(slugs).toContain("loopkit");
-    expect(slugs).toContain("qkit");
+describe("listLiveProducts", () => {
+  it("selects provision_secret and filters on status = 'live'", async () => {
+    const mockProducts = [
+      {
+        slug: "qkit",
+        name: "QKit",
+        app_url: "https://qkit.vercel.app",
+        metrics_url: "https://metrics.qkit.example.com",
+        metrics_secret: "ms1",
+        provision_secret: "ps1",
+      },
+      {
+        slug: "loopkit",
+        name: "LoopKit",
+        app_url: "https://loopkit.vercel.app",
+        metrics_url: "https://metrics.loopkit.example.com",
+        metrics_secret: "ms2",
+        provision_secret: null,
+      },
+    ];
+    eqMock.mockResolvedValue({ data: mockProducts, error: null });
+    selectMock.mockReturnValue({ eq: eqMock });
+    createServiceClientMock.mockResolvedValue(fakeSupabase());
+
+    const { listLiveProducts } = await import("@/lib/products");
+    const result = await listLiveProducts();
+
+    expect(result).toEqual(mockProducts);
+    expect(selectMock).toHaveBeenCalledWith(
+      "slug, name, app_url, metrics_url, metrics_secret, provision_secret",
+    );
+    expect(eqMock).toHaveBeenCalledWith("status", "live");
   });
 
-  it("every row carries a provision_secret field (nullable)", async () => {
-    const products = await listLiveProducts();
-    for (const p of products) {
-      expect(p).toHaveProperty("provision_secret");
-    }
+  it("includes provision_secret in the result shape", async () => {
+    const mockProducts = [
+      {
+        slug: "qkit",
+        name: "QKit",
+        app_url: null,
+        metrics_url: null,
+        metrics_secret: null,
+        provision_secret: "secret123",
+      },
+    ];
+    eqMock.mockResolvedValue({ data: mockProducts, error: null });
+    selectMock.mockReturnValue({ eq: eqMock });
+    createServiceClientMock.mockResolvedValue(fakeSupabase());
+
+    const { listLiveProducts } = await import("@/lib/products");
+    const result = await listLiveProducts();
+
+    expect(result[0]).toHaveProperty("provision_secret");
   });
 });
