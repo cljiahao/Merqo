@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { checkVendorStatus, upsertsFromChecks } from "@/lib/vendor-sync";
+import { listLiveProducts } from "@/lib/products";
 
 const kit = {
   slug: "qkit",
@@ -120,5 +121,21 @@ describe("upsertsFromChecks", () => {
       "2026-07-09T00:00:00.000Z",
     );
     expect(out).toEqual([]);
+  });
+});
+
+describe("listLiveProducts (post-0013 migration)", () => {
+  it("includes loopkit now that its status is corrected to live", async () => {
+    const products = await listLiveProducts();
+    const slugs = products.map((p) => p.slug);
+    expect(slugs).toContain("loopkit");
+    expect(slugs).toContain("qkit");
+  });
+
+  it("every row carries a provision_secret field (nullable)", async () => {
+    const products = await listLiveProducts();
+    for (const p of products) {
+      expect(p).toHaveProperty("provision_secret");
+    }
   });
 });
