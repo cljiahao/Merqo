@@ -26,7 +26,7 @@ export default async function DashboardPage() {
   // never sees it reflected without a full logout/login, since sync
   // otherwise only runs from /post-login.
   const links = user.email ? await syncVendorKits(user.email) : initialLinks;
-  const { active, pending } = tilesForLinks(links);
+  const { active, pending, needsSetup } = tilesForLinks(links);
   const savings = computeVendorSavings(links);
   const savingsBySlug = new Map(savings.perKit.map((s) => [s.slug, s]));
   // Best-effort: a products-registry read failure degrades to "nothing is
@@ -90,6 +90,37 @@ export default async function DashboardPage() {
                 <span className="ml-2 text-muted-foreground">
                   — we&apos;ll email you when it opens.
                 </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {needsSetup.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Finish setup
+          </h2>
+          <ul className="mt-3 space-y-2">
+            {needsSetup.map((t) => (
+              <li
+                key={t.slug}
+                className="rounded-xl border border-dashed bg-card px-4 py-3 text-sm"
+              >
+                <span className="font-medium">{t.name}</span>
+                <span className="ml-2 text-muted-foreground">
+                  — one step left to activate.
+                </span>
+                {t.href && (
+                  <a
+                    href={`${t.href}/dashboard/config`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="ml-2 font-medium text-foreground hover:underline"
+                  >
+                    Finish setup
+                  </a>
+                )}
               </li>
             ))}
           </ul>

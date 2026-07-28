@@ -35,7 +35,7 @@ export default async function PendingPage() {
 
   if (hasRenderableActiveKit(links)) redirect("/dashboard");
 
-  const { pending } = tilesForLinks(links);
+  const { pending, needsSetup } = tilesForLinks(links);
   // The single bulk/per-kit activate button below is the only add-a-kit
   // affordance on this page — everything else is a link out to "the family".
   // Best-effort: a products-registry read failure degrades to "nothing is
@@ -66,25 +66,48 @@ export default async function PendingPage() {
       <div className="w-full max-w-md text-center">
         <div className="rounded-2xl border bg-card px-7 py-10 shadow-sm">
           <Wordmark className="text-2xl" />
-          {pending.length > 0 ? (
+          {pending.length > 0 || needsSetup.length > 0 ? (
             <>
               <h1 className="mt-6 font-display text-3xl font-bold tracking-tight">
-                You&rsquo;re on the list
+                {pending.length > 0 ? "You're on the list" : "Almost there"}
               </h1>
-              <p className="mt-3 text-sm text-muted-foreground">
-                We&rsquo;ll email{" "}
-                <span className="font-medium text-foreground">
-                  {user.email}
-                </span>{" "}
-                when {pending.length === 1 ? "it opens" : "these open"}:
-              </p>
-              <ul className="mt-4 space-y-1.5 text-sm">
-                {pending.map((t) => (
-                  <li key={t.slug} className="font-medium">
-                    {t.name}
-                  </li>
-                ))}
-              </ul>
+              {pending.length > 0 && (
+                <>
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    We&rsquo;ll email{" "}
+                    <span className="font-medium text-foreground">
+                      {user.email}
+                    </span>{" "}
+                    when {pending.length === 1 ? "it opens" : "these open"}:
+                  </p>
+                  <ul className="mt-4 space-y-1.5 text-sm">
+                    {pending.map((t) => (
+                      <li key={t.slug} className="font-medium">
+                        {t.name}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {needsSetup.length > 0 && (
+                <ul className="mt-4 space-y-1.5 text-sm">
+                  {needsSetup.map((t) => (
+                    <li key={t.slug} className="font-medium">
+                      {t.name} — one step left.{" "}
+                      {t.href && (
+                        <a
+                          href={`${t.href}/dashboard/config`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-normal underline"
+                        >
+                          Finish setup
+                        </a>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </>
           ) : (
             <>
