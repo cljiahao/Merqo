@@ -8,6 +8,16 @@
 
 **Tech Stack:** Next.js 16 App Router, TypeScript strict, Supabase (`@supabase/ssr` + service-role client), Zod, Vitest, pgTAP (`supabase test db`).
 
+> **Deployment status: NOT yet functional in any environment.** This feature
+> requires manual operator setup before it works at all: (1) generate a real
+> `MERQO_PROVISION_SECRET` value, (2) set it as an env var in qkit, loopkit,
+> and merqo's deployments, (3) run
+> `update merqo.products set provision_secret = '<value>' where slug in ('qkit', 'loopkit')`
+> via the Supabase SQL editor, (4) add `MERQO_PROVISION_SECRET=` to qkit's
+> `.env.example` (blocked from automated edit in the implementation session —
+> one-line manual addition needed). Until all four are done, every activation
+> attempt will fail with a retry prompt — this is expected, not a bug.
+
 ## Global Constraints
 
 - TypeScript strict — no `any`, no `@ts-ignore` (all three repos' AGENTS.md).
