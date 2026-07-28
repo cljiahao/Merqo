@@ -50,6 +50,18 @@ describe("activateKitsAction", () => {
       ["qkit"],
     );
     expect(revalidatePathMock).toHaveBeenCalledWith("/dashboard");
+    expect(revalidatePathMock).toHaveBeenCalledWith("/dashboard/pending");
+  });
+
+  it("rejects non-array/oversized input without calling provisionVendorKits", async () => {
+    const tooMany = Array.from({ length: 11 }, (_, i) => `kit${i}`);
+    const res = await activateKitsAction(tooMany);
+    expect(res).toEqual({
+      success: false,
+      error: "Could not activate your kits. Try again in a moment.",
+    });
+    expect(provisionVendorKitsMock).not.toHaveBeenCalled();
+    expect(loadVendorContextMock).not.toHaveBeenCalled();
   });
 
   it("returns a generic error when provisionVendorKits throws", async () => {
