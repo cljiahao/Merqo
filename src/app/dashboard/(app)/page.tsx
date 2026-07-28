@@ -64,8 +64,7 @@ export default async function DashboardPage() {
   // eslint-disable-next-line react-hooks/purity
   const now = Date.now();
 
-  const registry = await listLiveProducts();
-  const registryBySlug = new Map(registry.map((r) => [r.slug, r]));
+  const registryBySlug = new Map(liveProducts.map((r) => [r.slug, r]));
   const metricsByTile = user.email
     ? new Map(
         await Promise.all(
