@@ -4,8 +4,9 @@ import {
   loadVendorContext,
   tilesForLinks,
   hasRenderableActiveKit,
-  addableKits,
+  provisionableKits,
 } from "@/lib/vendor";
+import { listLiveProducts } from "@/lib/products";
 import { syncVendorKits } from "@/lib/vendor-sync";
 import { signOutAction } from "@/app/actions/auth";
 import { Wordmark } from "@/components/landing/wordmark";
@@ -34,11 +35,13 @@ export default async function PendingPage() {
   if (hasRenderableActiveKit(links)) redirect("/dashboard");
 
   const { pending } = tilesForLinks(links);
-  // Deliberately NOT the full "Explore more kits" grid from /dashboard — one
-  // featured, actionable card plus a link out, per the empty-state research
-  // (Nielsen Norman Group: give a direct pathway, not a full catalog dump
-  // right after signup).
-  const addable = addableKits(links);
+  // The single bulk/per-kit activate button below is the only add-a-kit
+  // affordance on this page — everything else is a link out to "the family".
+  const liveProducts = await listLiveProducts();
+  const addable = provisionableKits(
+    links,
+    new Set(liveProducts.filter((p) => p.provision_secret).map((p) => p.slug)),
+  );
 
   return (
     <main className="flex min-h-screen items-center justify-center p-5">

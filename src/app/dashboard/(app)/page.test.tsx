@@ -2,10 +2,12 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { requireActiveVendorMock, syncVendorKitsMock } = vi.hoisted(() => ({
-  requireActiveVendorMock: vi.fn(),
-  syncVendorKitsMock: vi.fn(),
-}));
+const { requireActiveVendorMock, syncVendorKitsMock, listLiveProductsMock } =
+  vi.hoisted(() => ({
+    requireActiveVendorMock: vi.fn(),
+    syncVendorKitsMock: vi.fn(),
+    listLiveProductsMock: vi.fn(),
+  }));
 
 vi.mock("@/lib/vendor", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/vendor")>();
@@ -19,6 +21,10 @@ vi.mock("@/lib/vendor-sync", () => ({
   syncVendorKits: syncVendorKitsMock,
 }));
 
+vi.mock("@/lib/products", () => ({
+  listLiveProducts: listLiveProductsMock,
+}));
+
 // ActivateKitsButton (rendered for every "Ready to add" kit) calls
 // next/navigation's useRouter — needs a mount context this test doesn't have.
 vi.mock("next/navigation", () => ({
@@ -29,6 +35,25 @@ describe("DashboardPage", () => {
   beforeEach(() => {
     requireActiveVendorMock.mockReset();
     syncVendorKitsMock.mockReset();
+    listLiveProductsMock.mockReset();
+    listLiveProductsMock.mockResolvedValue([
+      {
+        slug: "qkit",
+        name: "qkit",
+        app_url: "https://qkit.vercel.app",
+        metrics_url: null,
+        metrics_secret: null,
+        provision_secret: "p1",
+      },
+      {
+        slug: "loopkit",
+        name: "loopkit",
+        app_url: "https://loopkit.vercel.app",
+        metrics_url: null,
+        metrics_secret: null,
+        provision_secret: "p2",
+      },
+    ]);
   });
 
   it("re-syncs vendor kits on load so a kit added elsewhere shows up without a fresh login", async () => {

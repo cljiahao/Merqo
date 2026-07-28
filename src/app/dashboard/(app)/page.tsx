@@ -2,9 +2,10 @@ import Link from "next/link";
 import {
   requireActiveVendor,
   tilesForLinks,
-  addableKits,
+  provisionableKits,
   comingKits,
 } from "@/lib/vendor";
+import { listLiveProducts } from "@/lib/products";
 import { syncVendorKits } from "@/lib/vendor-sync";
 import { KITS } from "@/lib/kits";
 import { computeVendorSavings } from "@/lib/savings";
@@ -27,7 +28,11 @@ export default async function DashboardPage() {
   const { active, pending } = tilesForLinks(links);
   const savings = computeVendorSavings(links);
   const savingsBySlug = new Map(savings.perKit.map((s) => [s.slug, s]));
-  const readyToAdd = addableKits(links);
+  const liveProducts = await listLiveProducts();
+  const readyToAdd = provisionableKits(
+    links,
+    new Set(liveProducts.filter((p) => p.provision_secret).map((p) => p.slug)),
+  );
   const comingSoon = comingKits(links);
   const planned = KITS.filter((k) => k.status === "planned");
 

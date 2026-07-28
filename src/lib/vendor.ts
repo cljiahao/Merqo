@@ -85,6 +85,27 @@ export function addableKits(
   return kits.filter((k) => k.status === "live" && !linked.has(k.slug));
 }
 
+/** Live kits the vendor has no vendor_links row for AND that actually support
+ *  push-provisioning right now — the "Add to my dashboard" set for the
+ *  self-serve activate buttons. Deliberately does NOT reuse addableKits'
+ *  `status === "live"` check: kits.ts's `live` is a display tier for the
+ *  landing page, not a provisioning-capability signal, and the two can
+ *  disagree (a kit can be display-live with no `/api/merqo/vendor-provision`
+ *  route yet). Callers must derive `liveSlugs` from the real capability
+ *  source — `listLiveProducts()` rows that have a `provision_secret` set —
+ *  never from kits.ts alone. Pure — tested. */
+export function provisionableKits(
+  links: { product_slug: string }[],
+  liveSlugs: Set<string> | string[],
+  kits: Kit[] = KITS,
+): Kit[] {
+  const linked = new Set(links.map((l) => l.product_slug));
+  const live = liveSlugs instanceof Set ? liveSlugs : new Set(liveSlugs);
+  return kits.filter(
+    (k) => k.status === "live" && live.has(k.slug) && !linked.has(k.slug),
+  );
+}
+
 /** Coming-soon kits the vendor hasn't already waitlisted for — the
  *  dashboard's "Coming soon" discovery bucket. A kit the vendor already has
  *  ANY link to (waitlist or, in principle, active) is excluded, since
