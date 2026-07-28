@@ -8,9 +8,10 @@ import {
 } from "@/lib/vendor";
 import { listLiveProducts } from "@/lib/products";
 import { syncVendorKits } from "@/lib/vendor-sync";
-import { KITS } from "@/lib/kits";
+import { KITS, LIVE_KITS } from "@/lib/kits";
 import { computeVendorSavings } from "@/lib/savings";
 import { SavingsSummary } from "./savings-summary";
+import { fetchVendorMetrics } from "@/lib/vendor-metrics-client";
 import { VendorKitCard } from "./vendor-kit-card";
 import { KitDiscoveryCard } from "@/components/dashboard/kit-discovery-card";
 import { JoinWaitlistButton } from "@/components/dashboard/join-waitlist-button";
@@ -57,11 +58,43 @@ export default async function DashboardPage() {
   const comingSoon = comingKits(links);
   const planned = KITS.filter((k) => k.status === "planned");
 
+  // Reading the wall clock in an async server component is intentional here,
+  // same as admin's overview page — a stable "now" for every freshness label
+  // rendered below.
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
+
+  const registry = await listLiveProducts();
+  const registryBySlug = new Map(registry.map((r) => [r.slug, r]));
+  const metricsByTile = user.email
+    ? new Map(
+        await Promise.all(
+          active.map(async (t) => {
+            const row = registryBySlug.get(t.slug) ?? {
+              slug: t.slug,
+              app_url: null,
+              metrics_secret: null,
+            };
+            return [
+              t.slug,
+              await fetchVendorMetrics(row, user.email as string),
+            ] as const;
+          }),
+        ),
+      )
+    : new Map();
+
   return (
     <>
-      <h1 className="font-display text-2xl font-bold tracking-tight">
-        Your kits
-      </h1>
+      <div>
+        <h1 className="font-display text-2xl font-bold tracking-tight">
+          Your kits
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {active.length} of {LIVE_KITS.length} kits connected — everything you
+          run through Merqo, in one place.
+        </p>
+      </div>
 
       <SavingsSummary totals={savings} />
 
@@ -71,6 +104,8 @@ export default async function DashboardPage() {
             key={t.slug}
             tile={t}
             savings={savingsBySlug.get(t.slug)}
+            metrics={metricsByTile.get(t.slug) ?? { ok: false, slug: t.slug }}
+            now={now}
           />
         ))}
       </section>
@@ -129,8 +164,11 @@ export default async function DashboardPage() {
 
       <section className="mt-10">
         <h2 className="font-display text-lg font-bold tracking-tight">
-          Explore more kits
+          Complete your toolkit
         </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Each kit stands on its own, but they&apos;re built to work together.
+        </p>
 
         {readyToAdd.length > 0 && (
           <div className="mt-4">

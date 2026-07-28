@@ -2,12 +2,17 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { requireActiveVendorMock, syncVendorKitsMock, listLiveProductsMock } =
-  vi.hoisted(() => ({
-    requireActiveVendorMock: vi.fn(),
-    syncVendorKitsMock: vi.fn(),
-    listLiveProductsMock: vi.fn(),
-  }));
+const {
+  requireActiveVendorMock,
+  syncVendorKitsMock,
+  listLiveProductsMock,
+  fetchVendorMetricsMock,
+} = vi.hoisted(() => ({
+  requireActiveVendorMock: vi.fn(),
+  syncVendorKitsMock: vi.fn(),
+  listLiveProductsMock: vi.fn(),
+  fetchVendorMetricsMock: vi.fn(),
+}));
 
 vi.mock("@/lib/vendor", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/vendor")>();
@@ -23,6 +28,10 @@ vi.mock("@/lib/vendor-sync", () => ({
 
 vi.mock("@/lib/products", () => ({
   listLiveProducts: listLiveProductsMock,
+}));
+
+vi.mock("@/lib/vendor-metrics-client", () => ({
+  fetchVendorMetrics: fetchVendorMetricsMock,
 }));
 
 // ActivateKitsButton (rendered for every "Ready to add" kit) calls
@@ -54,6 +63,12 @@ describe("DashboardPage", () => {
         provision_secret: "p2",
       },
     ]);
+    fetchVendorMetricsMock
+      .mockReset()
+      .mockImplementation(async (kit: { slug: string }) => ({
+        ok: false,
+        slug: kit.slug,
+      }));
   });
 
   it("re-syncs vendor kits on load so a kit added elsewhere shows up without a fresh login", async () => {
@@ -79,7 +94,7 @@ describe("DashboardPage", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("still renders when the vendor has no email (never syncs)", async () => {
+  it("still renders when the vendor has no email (never syncs or fetches metrics)", async () => {
     requireActiveVendorMock.mockResolvedValue({
       user: { email: null },
       isTeam: false,
@@ -90,6 +105,7 @@ describe("DashboardPage", () => {
     render(await DashboardPage());
 
     expect(syncVendorKitsMock).not.toHaveBeenCalled();
+    expect(fetchVendorMetricsMock).not.toHaveBeenCalled();
     expect(screen.getByText("qkit")).toBeInTheDocument();
   });
 
@@ -123,5 +139,68 @@ describe("DashboardPage", () => {
       "href",
       expect.stringContaining("/dashboard/config"),
     );
+  });
+
+  it("states how many of the live kits the vendor has connected", async () => {
+    requireActiveVendorMock.mockResolvedValue({
+      user: { email: "vendor@business.sg" },
+      isTeam: false,
+      links: [{ product_slug: "qkit", status: "active", plan: "free" }],
+    });
+    syncVendorKitsMock.mockResolvedValue([
+      { product_slug: "qkit", status: "active", plan: "free" },
+    ]);
+
+    const { default: DashboardPage } = await import("./page");
+    const { LIVE_KITS } = await import("@/lib/kits");
+    render(await DashboardPage());
+
+    expect(
+      screen.getByText(`1 of ${LIVE_KITS.length} kits connected`, {
+        exact: false,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("fetches and renders real vendor metrics for an active kit found in the registry", async () => {
+    requireActiveVendorMock.mockResolvedValue({
+      user: { email: "vendor@business.sg" },
+      isTeam: false,
+      links: [{ product_slug: "qkit", status: "active", plan: "free" }],
+    });
+    syncVendorKitsMock.mockResolvedValue([
+      { product_slug: "qkit", status: "active", plan: "free" },
+    ]);
+    listLiveProductsMock.mockResolvedValue([
+      {
+        slug: "qkit",
+        name: "qkit",
+        app_url: "https://qkit-sg.vercel.app",
+        metrics_url: null,
+        metrics_secret: "s",
+      },
+    ]);
+    fetchVendorMetricsMock.mockResolvedValue({
+      ok: true,
+      slug: "qkit",
+      data: {
+        product: "qkit",
+        generated_at: "2026-07-26T00:00:00.000Z",
+        metrics: [{ key: "orders_7d", label: "Orders (7d)", value: "42" }],
+      },
+    });
+
+    const { default: DashboardPage } = await import("./page");
+    render(await DashboardPage());
+
+    expect(fetchVendorMetricsMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        slug: "qkit",
+        app_url: "https://qkit-sg.vercel.app",
+      }),
+      "vendor@business.sg",
+    );
+    expect(screen.getByText("42")).toBeInTheDocument();
+    expect(screen.getByText("Orders (7d)")).toBeInTheDocument();
   });
 });

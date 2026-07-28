@@ -97,6 +97,30 @@ describe("tilesForLinks plan passthrough", () => {
   });
 });
 
+describe("tilesForLinks lastVerifiedAt passthrough", () => {
+  it("carries last_verified_at through on an active tile", () => {
+    const { active } = tilesForLinks([
+      {
+        product_slug: "qkit",
+        status: "active",
+        last_verified_at: "2026-07-09T00:00:00.000Z",
+      },
+    ]);
+    expect(active[0].lastVerifiedAt).toBe("2026-07-09T00:00:00.000Z");
+  });
+
+  it("leaves lastVerifiedAt undefined on a pending (waitlist) tile", () => {
+    const { pending } = tilesForLinks([
+      {
+        product_slug: "loopkit",
+        status: "waitlist",
+        last_verified_at: "2026-07-09T00:00:00.000Z",
+      },
+    ]);
+    expect(pending[0].lastVerifiedAt).toBeUndefined();
+  });
+});
+
 describe("addableKits", () => {
   const kits = [
     {
