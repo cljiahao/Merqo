@@ -139,6 +139,86 @@ describe("PendingPage — provisionable (addable) kits", () => {
     expect(syncVendorKitsMock).toHaveBeenCalledWith("v@x.com");
   });
 
+  it("renders 'Almost there' (not 'No kits yet') for a vendor whose only link is needs_setup, with a Finish setup deep-link", async () => {
+    loadVendorContextMock.mockResolvedValue({
+      user: { id: "u1", email: "v@x.com" },
+      isTeam: false,
+      links: [{ product_slug: "paykit", status: "needs_setup", plan: null }],
+    });
+    // Re-sync runs (needs_setup triggers it) but the vendor hasn't actually
+    // finished setup yet, so it comes back unchanged.
+    syncVendorKitsMock.mockResolvedValue([
+      { product_slug: "paykit", status: "needs_setup", plan: null },
+    ]);
+    listLiveProductsMock.mockResolvedValue([]);
+
+    const jsx = await PendingPage();
+    render(jsx);
+
+    expect(
+      screen.getByRole("heading", { name: "Almost there" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("No kits yet")).not.toBeInTheDocument();
+    expect(screen.getByText("paykit", { exact: false })).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: "Finish setup" });
+    expect(link).toHaveAttribute(
+      "href",
+      "https://paykit-sg.vercel.app/dashboard/config",
+    );
+  });
+
+  it("renders both the pending (waitlist) list and the needs-setup list together", async () => {
+    loadVendorContextMock.mockResolvedValue({
+      user: { id: "u1", email: "v@x.com" },
+      isTeam: false,
+      links: [
+        { product_slug: "loopkit", status: "waitlist", plan: null },
+        { product_slug: "paykit", status: "needs_setup", plan: null },
+      ],
+    });
+    syncVendorKitsMock.mockResolvedValue([
+      { product_slug: "loopkit", status: "waitlist", plan: null },
+      { product_slug: "paykit", status: "needs_setup", plan: null },
+    ]);
+    listLiveProductsMock.mockResolvedValue([]);
+
+    const jsx = await PendingPage();
+    render(jsx);
+
+    // pending.length > 0 wins the heading ternary even with a needs_setup
+    // link also present.
+    expect(
+      screen.getByRole("heading", { name: "You’re on the list" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("loopkit")).toBeInTheDocument();
+    expect(screen.getByText("paykit", { exact: false })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Finish setup" })).toHaveAttribute(
+      "href",
+      "https://paykit-sg.vercel.app/dashboard/config",
+    );
+  });
+
+  it("still renders 'No kits yet' for a vendor with zero links at all", async () => {
+    loadVendorContextMock.mockResolvedValue({
+      user: { id: "u1", email: "v@x.com" },
+      isTeam: false,
+      links: [],
+    });
+    syncVendorKitsMock.mockResolvedValue([]);
+    listLiveProductsMock.mockResolvedValue([]);
+
+    const jsx = await PendingPage();
+    render(jsx);
+
+    expect(screen.getByText("No kits yet")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "Almost there" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "You’re on the list" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("degrades to no addable kits (no activate button) instead of crashing when listLiveProducts throws", async () => {
     loadVendorContextMock.mockResolvedValue({
       user: { id: "u1", email: "v@x.com" },
