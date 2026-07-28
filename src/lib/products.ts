@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createServiceClient } from "@/lib/supabase/server";
 
 export type RegistryRow = {
@@ -9,7 +10,10 @@ export type RegistryRow = {
   provision_secret: string | null;
 };
 
-export async function listLiveProducts(): Promise<RegistryRow[]> {
+// Wrapped in React's request-scoped cache() — a page and the syncVendorKits()/
+// provisionVendorKits() it also calls each ask for the live registry, and
+// without this they'd hit merqo.products twice per render.
+export const listLiveProducts = cache(async (): Promise<RegistryRow[]> => {
   const supabase = await createServiceClient();
   const { data, error } = await supabase
     .from("products")
@@ -19,4 +23,4 @@ export async function listLiveProducts(): Promise<RegistryRow[]> {
     .eq("status", "live");
   if (error) throw new Error(`products read failed: ${error.message}`);
   return (data ?? []) as RegistryRow[];
-}
+});
