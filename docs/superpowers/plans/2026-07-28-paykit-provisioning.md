@@ -4,7 +4,7 @@
 
 **Goal:** Give paykit its first two `/api/merqo/*` routes (`vendor-status`, `vendor-provision`) so it can join merqo hub's "Activate all my kits" flow — as a read-only identity check, never a data write — and teach merqo hub to render a distinct "finish payment setup" state (`vendor_links.status = 'needs_setup'`) instead of collapsing paykit into either "active" or a plain external link.
 
-**Architecture:** paykit's two new routes mirror qkit/loopkit's existing `MERQO_METRICS_SECRET`/`MERQO_PROVISION_SECRET` bearer-secret contract exactly, but both routes only ever *read* `paykit.vendor_payment_config` — there is nothing safe to write, since `payee_name`/`uen`/`mobile` have no safe default (a placeholder PayNow proxy could misdirect a real payment). Merqo hub widens its `vendor_links.status` state machine from a binary `active`/`waitlist` to a third `needs_setup` value, threads it through `provisionVendorKit`/`ActivateKitsButton`, and renders a "Finish payment setup" tile linking straight to paykit's own `/dashboard/config`.
+**Architecture:** paykit's two new routes mirror qkit/loopkit's existing `MERQO_METRICS_SECRET`/`MERQO_PROVISION_SECRET` bearer-secret contract exactly, but both routes only ever _read_ `paykit.vendor_payment_config` — there is nothing safe to write, since `payee_name`/`uen`/`mobile` have no safe default (a placeholder PayNow proxy could misdirect a real payment). Merqo hub widens its `vendor_links.status` state machine from a binary `active`/`waitlist` to a third `needs_setup` value, threads it through `provisionVendorKit`/`ActivateKitsButton`, and renders a "Finish payment setup" tile linking straight to paykit's own `/dashboard/config`.
 
 **Tech Stack:** Next.js App Router route handlers, Zod, `@supabase/ssr` service-role client, Vitest (+ `@testing-library/react` for dom tests), Postgres migrations (hermetic `readFileSync`-based tests, no live-DB hits).
 
@@ -22,13 +22,15 @@
 ## Task 1: paykit — `merqo-auth.ts` (bearer-secret helpers)
 
 **Files:**
+
 - Create: `paykit/src/lib/merqo-auth.ts`
 - Create: `paykit/src/lib/merqo-auth.test.ts`
 - Modify: `paykit/src/lib/README.md` (add entry)
 
-**Existing pattern:** qkit's `src/lib/merqo-auth.ts` already implements this exact file — paykit needs its own copy (paykit has zero `/api/merqo/*` infrastructure today; its existing `kit-auth.ts`/`verifyKitAuth` is a *different* system for peer-kit-to-kit calls like `v1/vendors/[vendor_id]/config`, keyed by a `kit_api_keys` table — do not touch or reuse it).
+**Existing pattern:** qkit's `src/lib/merqo-auth.ts` already implements this exact file — paykit needs its own copy (paykit has zero `/api/merqo/*` infrastructure today; its existing `kit-auth.ts`/`verifyKitAuth` is a _different_ system for peer-kit-to-kit calls like `v1/vendors/[vendor_id]/config`, keyed by a `kit_api_keys` table — do not touch or reuse it).
 
 **Interfaces:**
+
 - Produces: `bearerOk(request: Request): boolean`, `provisionBearerOk(request: Request): boolean`, `listAllAuthUsers(supabase, logPrefix: string)` — all three consumed by Tasks 2 and 3.
 
 - [ ] **Step 1: Write the failing tests**
@@ -179,6 +181,7 @@ git commit -m "feat: add merqo-auth bearer-secret helpers for merqo hub routes"
 ## Task 2: paykit — `GET /api/merqo/vendor-status`
 
 **Files:**
+
 - Create: `paykit/src/lib/merqo-vendor-status.ts`
 - Create: `paykit/src/lib/merqo-vendor-status.test.ts`
 - Create: `paykit/src/app/api/merqo/vendor-status/route.ts`
@@ -187,6 +190,7 @@ git commit -m "feat: add merqo-auth bearer-secret helpers for merqo hub routes"
 **Existing pattern:** qkit's `src/lib/merqo-vendor-status.ts` (`resolveVendorStatus`) and `src/app/api/merqo/vendor-status/route.ts` — same shape, adapted from qkit's `vendors` table to paykit's `vendor_payment_config` table (both are keyed directly by `auth.users.id`, so the join logic is identical).
 
 **Interfaces:**
+
 - Consumes: `bearerOk`, `listAllAuthUsers` from Task 1 (`@/lib/merqo-auth`).
 - Produces: `resolveVendorStatus(email, authUsers, configs): { active: boolean; plan: string | null }`, consumed only within this task's own route.
 
@@ -242,8 +246,7 @@ Expected: FAIL — module doesn't exist.
 ```ts
 // paykit/src/lib/merqo-vendor-status.ts
 export type VendorStatus =
-  | { active: true; plan: string }
-  | { active: false; plan: null };
+  { active: true; plan: string } | { active: false; plan: null };
 
 /**
  * paykit.vendor_payment_config has no email column (vendor_id references
@@ -336,7 +339,10 @@ describe("GET /api/merqo/vendor-status (paykit)", () => {
   it("reports active with plan for a vendor with a config row", async () => {
     fromMock.mockImplementation(() => ({
       select: () =>
-        Promise.resolve({ data: [{ vendor_id: "u1", plan: "pro" }], error: null }),
+        Promise.resolve({
+          data: [{ vendor_id: "u1", plan: "pro" }],
+          error: null,
+        }),
     }));
     const res = await GET(
       req(
@@ -412,10 +418,7 @@ export async function GET(request: Request) {
     supabase.from("vendor_payment_config").select("vendor_id, plan"),
   ]);
   if (usersRes.error) {
-    console.error(
-      "paykit vendor-status: read failed",
-      usersRes.error.message,
-    );
+    console.error("paykit vendor-status: read failed", usersRes.error.message);
     return NextResponse.json(
       { error: "Upstream unavailable" },
       { status: 503 },
@@ -462,12 +465,14 @@ git commit -m "feat: add paykit vendor-status route for merqo hub pull-sync"
 ## Task 3: paykit — `POST /api/merqo/vendor-provision`
 
 **Files:**
+
 - Create: `paykit/src/app/api/merqo/vendor-provision/route.ts`
 - Create: `paykit/src/app/api/merqo/vendor-provision/route.test.ts`
 
 **Existing pattern:** qkit/loopkit's `vendor-provision` routes, but with the insert branch removed entirely — this route only ever reads.
 
 **Interfaces:**
+
 - Consumes: `provisionBearerOk` from Task 1 (`@/lib/merqo-auth`).
 - Produces: HTTP contract `POST /api/merqo/vendor-provision` → `{ ok: true, needs_setup: boolean, plan: string | null }`, consumed by merqo hub's Task 7 (`provisionVendorKit`).
 
@@ -497,7 +502,10 @@ function req(body: unknown, auth?: string) {
   });
 }
 
-function configTable(row: { plan: string } | null, error: { message: string } | null = null) {
+function configTable(
+  row: { plan: string } | null,
+  error: { message: string } | null = null,
+) {
   return () => ({
     select: () => ({
       eq: () => ({
@@ -533,7 +541,9 @@ describe("POST /api/merqo/vendor-provision (paykit)", () => {
   });
 
   it("400 when user_id fails schema validation", async () => {
-    const res = await POST(req({ user_id: "not-a-uuid" }, "Bearer test-secret"));
+    const res = await POST(
+      req({ user_id: "not-a-uuid" }, "Bearer test-secret"),
+    );
     expect(res.status).toBe(400);
   });
 
@@ -541,7 +551,11 @@ describe("POST /api/merqo/vendor-provision (paykit)", () => {
     fromMock.mockImplementation(configTable(null));
     const res = await POST(req({ user_id: USER_ID }, "Bearer test-secret"));
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true, needs_setup: true, plan: null });
+    expect(await res.json()).toEqual({
+      ok: true,
+      needs_setup: true,
+      plan: null,
+    });
     // Only ever reads vendor_payment_config once — no insert/update call of
     // any kind, since there is nothing safe to write.
     expect(fromMock).toHaveBeenCalledTimes(1);
@@ -551,7 +565,11 @@ describe("POST /api/merqo/vendor-provision (paykit)", () => {
   it("reports needs_setup false with the real plan when a config row already exists", async () => {
     fromMock.mockImplementation(configTable({ plan: "pro" }));
     const res = await POST(req({ user_id: USER_ID }, "Bearer test-secret"));
-    expect(await res.json()).toEqual({ ok: true, needs_setup: false, plan: "pro" });
+    expect(await res.json()).toEqual({
+      ok: true,
+      needs_setup: false,
+      plan: "pro",
+    });
   });
 
   it("500 when the config read errors", async () => {
@@ -640,6 +658,7 @@ git commit -m "feat: add paykit vendor-provision route (read-only identity check
 ## Task 4: paykit — docs and env
 
 **Files:**
+
 - Modify: `paykit/CHANGELOG.md`
 
 **Interfaces:** none (documentation only).
@@ -686,6 +705,7 @@ git commit -m "docs: document new merqo hub integration routes and env vars"
 ## Task 5: merqo — migration widening `vendor_links.status` + flipping paykit live
 
 **Files:**
+
 - Create: `merqo/supabase/migrations/0014_paykit_live_and_needs_setup_status.sql`
 - Create: `merqo/test/db/0014_paykit_live_and_needs_setup_status.test.ts`
 - Modify: `merqo/src/lib/vendor-grants.ts:6`
@@ -693,6 +713,7 @@ git commit -m "docs: document new merqo hub integration routes and env vars"
 **Existing pattern:** `supabase/migrations/0013_fix_loopkit_live_status_and_provision_secret.sql` + `test/db/0013_fix_loopkit_live_status_and_provision_secret.test.ts` (hermetic `readFileSync` test, no live-DB hit).
 
 **Interfaces:**
+
 - Produces: `merqo.vendor_links.status` CHECK now allows `'needs_setup'`; `merqo.products` row for `paykit` has `status = 'live'`; `GrantStatus = "active" | "waitlist" | "needs_setup"`. Consumed by Task 6 (`vendor.ts`) and Task 7 (`vendor-sync.ts`).
 
 - [ ] **Step 1: Write the failing migration test**
@@ -817,7 +838,7 @@ export type GrantStatus = "active" | "waitlist" | "needs_setup";
 Run: `pnpm tsc --noEmit`
 Expected: passes (this is a widening change — no existing `GrantStatus`
 consumer narrows it in a way that would now fail to compile; Tasks 6-9
-below are exactly the places that need to actually *handle* the new value).
+below are exactly the places that need to actually _handle_ the new value).
 
 - [ ] **Step 8: Commit**
 
@@ -831,10 +852,12 @@ git commit -m "feat: flip paykit live and add needs_setup vendor_links status"
 ## Task 6: merqo — `tilesForLinks` third bucket (`needsSetup`)
 
 **Files:**
+
 - Modify: `merqo/src/lib/vendor.ts:51-74` (the `tilesForLinks` function)
 - Create: `merqo/src/lib/vendor.test.ts`
 
 **Interfaces:**
+
 - Consumes: `GrantStatus` (now includes `"needs_setup"`, from Task 5).
 - Produces: `tilesForLinks(links): { active: KitTile[]; pending: KitTile[]; needsSetup: KitTile[] }` — the `needsSetup` array is new; `active`/`pending` keep their existing meaning (`pending` is now specifically "waitlist", not "everything non-active"). Consumed by Task 9 (dashboard pages).
 
@@ -950,10 +973,12 @@ git commit -m "feat: add needs_setup bucket to tilesForLinks"
 ## Task 7: merqo — thread `needs_setup` through `vendor-sync.ts`
 
 **Files:**
+
 - Modify: `merqo/src/lib/vendor-sync.ts` (the `ProvisionResult` type, `provisionResponseSchema`, `provisionOnce`, and `provisionVendorKits`)
 - Create: `merqo/src/lib/vendor-sync.test.ts`
 
 **Interfaces:**
+
 - Consumes: paykit's `POST /api/merqo/vendor-provision` response shape from Task 3 (`{ ok: true, needs_setup: boolean, plan: string | null }`).
 - Produces: `ProvisionResult`'s `ok: true` variant gains an optional `needsSetup?: boolean`. `provisionVendorKits` upserts `vendor_links.status` as `"needs_setup"` when a result's `needsSetup` is `true`, `"active"` otherwise (unchanged for qkit/loopkit, whose responses omit the field entirely). Consumed by Task 8 (`ActivateKitsButton`).
 
@@ -1002,7 +1027,11 @@ describe("provisionVendorKits", () => {
   it("upserts status needs_setup when a kit reports needs_setup: true", async () => {
     const { upsertMock } = upsertCapturingClient();
     listLiveProductsMock.mockResolvedValue([
-      { slug: "paykit", app_url: "https://paykit.test", provision_secret: "s1" },
+      {
+        slug: "paykit",
+        app_url: "https://paykit.test",
+        provision_secret: "s1",
+      },
     ]);
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -1017,7 +1046,12 @@ describe("provisionVendorKits", () => {
     await provisionVendorKits(USER, ["paykit"]);
 
     expect(upsertMock).toHaveBeenCalledWith(
-      [expect.objectContaining({ product_slug: "paykit", status: "needs_setup" })],
+      [
+        expect.objectContaining({
+          product_slug: "paykit",
+          status: "needs_setup",
+        }),
+      ],
       { onConflict: "email,product_slug" },
     );
   });
@@ -1043,7 +1077,11 @@ describe("provisionVendorKits", () => {
   it("upserts status active when a kit explicitly reports needs_setup: false", async () => {
     const { upsertMock } = upsertCapturingClient();
     listLiveProductsMock.mockResolvedValue([
-      { slug: "paykit", app_url: "https://paykit.test", provision_secret: "s1" },
+      {
+        slug: "paykit",
+        app_url: "https://paykit.test",
+        provision_secret: "s1",
+      },
     ]);
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -1102,29 +1140,27 @@ const provisionResponseSchema = z.object({
 In `provisionOnce`, update the success return (around line 192):
 
 ```ts
-    return {
-      ok: true,
-      slug: kit.slug,
-      alreadyExisted: parsed.data.already_existed,
-      plan: parsed.data.plan,
-      needsSetup: parsed.data.needs_setup,
-    };
+return {
+  ok: true,
+  slug: kit.slug,
+  alreadyExisted: parsed.data.already_existed,
+  plan: parsed.data.plan,
+  needsSetup: parsed.data.needs_setup,
+};
 ```
 
 In `provisionVendorKits`, update the upsert-building block (around lines
 264-271):
 
 ```ts
-    const nowIso = new Date().toISOString();
-    const upserts = successes.map((s) => ({
-      email: user.email.toLowerCase(),
-      product_slug: s.slug,
-      status: (s.needsSetup ? "needs_setup" : "active") as
-        | "active"
-        | "needs_setup",
-      last_verified_at: nowIso,
-      plan: s.plan,
-    }));
+const nowIso = new Date().toISOString();
+const upserts = successes.map((s) => ({
+  email: user.email.toLowerCase(),
+  product_slug: s.slug,
+  status: (s.needsSetup ? "needs_setup" : "active") as "active" | "needs_setup",
+  last_verified_at: nowIso,
+  plan: s.plan,
+}));
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
@@ -1149,12 +1185,14 @@ git commit -m "feat: thread needs_setup through provisionVendorKits"
 ## Task 8: merqo — `ActivateKitsButton` needs-setup rendering
 
 **Files:**
+
 - Modify: `merqo/src/components/dashboard/activate-kits-button.tsx`
 - Create: `merqo/src/components/dashboard/activate-kits-button.test.tsx`
 
 **Existing pattern:** `merqo/src/app/dashboard/(app)/page.test.tsx` — jsdom, `next/navigation`'s `useRouter` mocked, `@testing-library/react`.
 
 **Interfaces:**
+
 - Consumes: `ProvisionResult.needsSetup` from Task 7; `KITS` from `@/lib/kits` (for the config-page link, same `${kit.href}/...` convention the dashboard pages already use for external links).
 - Produces: no new exported interface — this is a leaf UI component. Consumed by Task 9 unchanged (same props).
 
@@ -1191,7 +1229,9 @@ describe("ActivateKitsButton", () => {
   it("shows a success toast and refreshes when a kit reaches active", async () => {
     activateKitsActionMock.mockResolvedValue({
       success: true,
-      results: [{ ok: true, slug: "qkit", alreadyExisted: false, plan: "free" }],
+      results: [
+        { ok: true, slug: "qkit", alreadyExisted: false, plan: "free" },
+      ],
     });
     render(<ActivateKitsButton slugs={["qkit"]} label="Add qkit" />);
     fireEvent.click(screen.getByText("Add qkit"));
@@ -1397,6 +1437,7 @@ git commit -m "feat: render needs-setup outcome distinctly in ActivateKitsButton
 ## Task 9: merqo — dashboard pages render the `needsSetup` bucket
 
 **Files:**
+
 - Modify: `merqo/src/app/dashboard/(app)/page.tsx`
 - Modify: `merqo/src/app/dashboard/(app)/page.test.tsx` (extend)
 - Modify: `merqo/src/app/dashboard/pending/page.tsx`
@@ -1405,6 +1446,7 @@ git commit -m "feat: render needs-setup outcome distinctly in ActivateKitsButton
 `(app)/page.tsx` and the "You're on the list" copy in `pending/page.tsx`.
 
 **Interfaces:**
+
 - Consumes: `tilesForLinks`'s `needsSetup` array from Task 6.
 - Produces: nothing new for other tasks to consume — this is the final
   rendering layer.
@@ -1416,31 +1458,29 @@ Add this test to the existing `describe("DashboardPage", ...)` block in
 already there):
 
 ```tsx
-  it("shows a Finish setup section for a needs_setup kit", async () => {
-    requireActiveVendorMock.mockResolvedValue({
-      user: { email: "vendor@business.sg" },
-      isTeam: false,
-      links: [
-        { product_slug: "qkit", status: "active", plan: "free" },
-        { product_slug: "paykit", status: "needs_setup", plan: null },
-      ],
-    });
-    syncVendorKitsMock.mockResolvedValue([
+it("shows a Finish setup section for a needs_setup kit", async () => {
+  requireActiveVendorMock.mockResolvedValue({
+    user: { email: "vendor@business.sg" },
+    isTeam: false,
+    links: [
       { product_slug: "qkit", status: "active", plan: "free" },
       { product_slug: "paykit", status: "needs_setup", plan: null },
-    ]);
-
-    const { default: DashboardPage } = await import("./page");
-    render(await DashboardPage());
-
-    expect(screen.getByText("Finish setup")).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "Finish setup" }),
-    ).toHaveAttribute(
-      "href",
-      expect.stringContaining("/dashboard/config"),
-    );
+    ],
   });
+  syncVendorKitsMock.mockResolvedValue([
+    { product_slug: "qkit", status: "active", plan: "free" },
+    { product_slug: "paykit", status: "needs_setup", plan: null },
+  ]);
+
+  const { default: DashboardPage } = await import("./page");
+  render(await DashboardPage());
+
+  expect(screen.getByText("Finish setup")).toBeInTheDocument();
+  expect(screen.getByRole("link", { name: "Finish setup" })).toHaveAttribute(
+    "href",
+    expect.stringContaining("/dashboard/config"),
+  );
+});
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -1453,7 +1493,7 @@ Expected: FAIL — no "Finish setup" text exists on the page yet.
 Change the destructuring on line 29:
 
 ```tsx
-  const { active, pending, needsSetup } = tilesForLinks(links);
+const { active, pending, needsSetup } = tilesForLinks(links);
 ```
 
 Insert a new section immediately after the existing `{pending.length > 0 && (...)}`
@@ -1461,36 +1501,38 @@ block (which ends at line 97) and before the `<section className="mt-10">`
 "Explore more kits" section (which starts at line 99):
 
 ```tsx
-      {needsSetup.length > 0 && (
-        <section className="mt-8">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Finish setup
-          </h2>
-          <ul className="mt-3 space-y-2">
-            {needsSetup.map((t) => (
-              <li
-                key={t.slug}
-                className="rounded-xl border border-dashed bg-card px-4 py-3 text-sm"
+{
+  needsSetup.length > 0 && (
+    <section className="mt-8">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        Finish setup
+      </h2>
+      <ul className="mt-3 space-y-2">
+        {needsSetup.map((t) => (
+          <li
+            key={t.slug}
+            className="rounded-xl border border-dashed bg-card px-4 py-3 text-sm"
+          >
+            <span className="font-medium">{t.name}</span>
+            <span className="ml-2 text-muted-foreground">
+              — one step left to activate.
+            </span>
+            {t.href && (
+              <a
+                href={`${t.href}/dashboard/config`}
+                target="_blank"
+                rel="noreferrer"
+                className="ml-2 font-medium text-foreground hover:underline"
               >
-                <span className="font-medium">{t.name}</span>
-                <span className="ml-2 text-muted-foreground">
-                  — one step left to activate.
-                </span>
-                {t.href && (
-                  <a
-                    href={`${t.href}/dashboard/config`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="ml-2 font-medium text-foreground hover:underline"
-                  >
-                    Finish setup
-                  </a>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+                Finish setup
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
@@ -1509,13 +1551,13 @@ this task.
 Change line 38 from:
 
 ```tsx
-  const { pending } = tilesForLinks(links);
+const { pending } = tilesForLinks(links);
 ```
 
 to:
 
 ```tsx
-  const { pending, needsSetup } = tilesForLinks(links);
+const { pending, needsSetup } = tilesForLinks(links);
 ```
 
 Replace the conditional block that currently starts at line 69
@@ -1523,63 +1565,61 @@ Replace the conditional block that currently starts at line 69
 the `{addable.length > 0 && (` block) with:
 
 ```tsx
-          {pending.length > 0 || needsSetup.length > 0 ? (
-            <>
-              <h1 className="mt-6 font-display text-3xl font-bold tracking-tight">
-                {pending.length > 0 ? "You're on the list" : "Almost there"}
-              </h1>
-              {pending.length > 0 && (
-                <>
-                  <p className="mt-3 text-sm text-muted-foreground">
-                    We&rsquo;ll email{" "}
-                    <span className="font-medium text-foreground">
-                      {user.email}
-                    </span>{" "}
-                    when {pending.length === 1 ? "it opens" : "these open"}:
-                  </p>
-                  <ul className="mt-4 space-y-1.5 text-sm">
-                    {pending.map((t) => (
-                      <li key={t.slug} className="font-medium">
-                        {t.name}
-                      </li>
-                    ))}
-                  </ul>
-                </>
+{
+  pending.length > 0 || needsSetup.length > 0 ? (
+    <>
+      <h1 className="mt-6 font-display text-3xl font-bold tracking-tight">
+        {pending.length > 0 ? "You're on the list" : "Almost there"}
+      </h1>
+      {pending.length > 0 && (
+        <>
+          <p className="mt-3 text-sm text-muted-foreground">
+            We&rsquo;ll email{" "}
+            <span className="font-medium text-foreground">{user.email}</span>{" "}
+            when {pending.length === 1 ? "it opens" : "these open"}:
+          </p>
+          <ul className="mt-4 space-y-1.5 text-sm">
+            {pending.map((t) => (
+              <li key={t.slug} className="font-medium">
+                {t.name}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {needsSetup.length > 0 && (
+        <ul className="mt-4 space-y-1.5 text-sm">
+          {needsSetup.map((t) => (
+            <li key={t.slug} className="font-medium">
+              {t.name} — one step left.{" "}
+              {t.href && (
+                <a
+                  href={`${t.href}/dashboard/config`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-normal underline"
+                >
+                  Finish setup
+                </a>
               )}
-              {needsSetup.length > 0 && (
-                <ul className="mt-4 space-y-1.5 text-sm">
-                  {needsSetup.map((t) => (
-                    <li key={t.slug} className="font-medium">
-                      {t.name} — one step left.{" "}
-                      {t.href && (
-                        <a
-                          href={`${t.href}/dashboard/config`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="font-normal underline"
-                        >
-                          Finish setup
-                        </a>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </>
-          ) : (
-            <>
-              <h1 className="mt-6 font-display text-3xl font-bold tracking-tight">
-                No kits yet
-              </h1>
-              <p className="mt-3 text-sm text-muted-foreground">
-                You&rsquo;re signed in as{" "}
-                <span className="font-medium text-foreground">
-                  {user.email}
-                </span>
-                , but no kits are active on this account yet.
-              </p>
-            </>
-          )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
+  ) : (
+    <>
+      <h1 className="mt-6 font-display text-3xl font-bold tracking-tight">
+        No kits yet
+      </h1>
+      <p className="mt-3 text-sm text-muted-foreground">
+        You&rsquo;re signed in as{" "}
+        <span className="font-medium text-foreground">{user.email}</span>, but
+        no kits are active on this account yet.
+      </p>
+    </>
+  );
+}
 ```
 
 - [ ] **Step 6: Manual smoke check**

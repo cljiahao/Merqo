@@ -3,6 +3,10 @@
 -- src/lib/kits.ts already showing it as fully live — listLiveProducts()
 -- filters on THIS column, so paykit has been silently excluded from vendor
 -- auto-discovery since 0004 (same bug class as loopkit, fixed in 0013).
+-- As with loopkit in 0013, this only flips the status column: paykit's
+-- provision_secret/metrics_secret values are set out-of-band (Supabase
+-- dashboard/SQL editor) — until that's done, paykit stays silently excluded
+-- from provisioning despite now being 'live' here.
 update merqo.products set status = 'live' where slug = 'paykit';
 
 -- Widen vendor_links.status to a third value: 'needs_setup', for kits
@@ -23,7 +27,8 @@ begin
   where nsp.nspname = 'merqo'
     and rel.relname = 'vendor_links'
     and con.contype = 'c'
-    and pg_get_constraintdef(con.oid) ilike '%status%';
+    and pg_get_constraintdef(con.oid) ilike '%status%'
+  limit 1;
 
   if existing_constraint is not null then
     execute format(

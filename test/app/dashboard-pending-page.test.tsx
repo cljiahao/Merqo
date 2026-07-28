@@ -121,6 +121,24 @@ describe("PendingPage — provisionable (addable) kits", () => {
     expect(link).toHaveAttribute("target", "_blank");
   });
 
+  it("re-syncs when the vendor's only link is needs_setup, so finishing paykit setup is picked up without a fresh login", async () => {
+    loadVendorContextMock.mockResolvedValue({
+      user: { id: "u1", email: "v@x.com" },
+      isTeam: false,
+      links: [{ product_slug: "paykit", status: "needs_setup", plan: "free" }],
+    });
+    // Vendor just finished real payment setup on paykit's own dashboard —
+    // merqo's vendor_links row still says needs_setup until this re-sync.
+    syncVendorKitsMock.mockResolvedValue([
+      { product_slug: "paykit", status: "active", plan: "free" },
+    ]);
+    listLiveProductsMock.mockResolvedValue([]);
+
+    await PendingPage();
+
+    expect(syncVendorKitsMock).toHaveBeenCalledWith("v@x.com");
+  });
+
   it("degrades to no addable kits (no activate button) instead of crashing when listLiveProducts throws", async () => {
     loadVendorContextMock.mockResolvedValue({
       user: { id: "u1", email: "v@x.com" },

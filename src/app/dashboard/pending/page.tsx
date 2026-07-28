@@ -27,9 +27,14 @@ export default async function PendingPage() {
   // A vendor with zero links may have signed up directly on a kit — check
   // before showing "no kits yet" (see vendor-sync.ts; best-effort, never
   // throws, so a sync failure just leaves `links` as the empty array it
-  // already was).
+  // already was). Also re-sync when a link is stuck at `needs_setup`: that's
+  // paykit before the vendor finishes real payment setup, and re-syncing is
+  // the only way this page ever picks up their kit going active without a
+  // full logout/login.
   const links =
-    initialLinks.length === 0 && user.email
+    (initialLinks.length === 0 ||
+      initialLinks.some((l) => l.status === "needs_setup")) &&
+    user.email
       ? await syncVendorKits(user.email)
       : initialLinks;
 
@@ -69,7 +74,7 @@ export default async function PendingPage() {
           {pending.length > 0 || needsSetup.length > 0 ? (
             <>
               <h1 className="mt-6 font-display text-3xl font-bold tracking-tight">
-                {pending.length > 0 ? "You're on the list" : "Almost there"}
+                {pending.length > 0 ? "You’re on the list" : "Almost there"}
               </h1>
               {pending.length > 0 && (
                 <>

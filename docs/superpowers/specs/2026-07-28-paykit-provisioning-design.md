@@ -40,7 +40,7 @@ Mirrors qkit/loopkit's existing vendor-status contract. Bearer-secured (`MERQO_M
 
 Bearer-secured (`MERQO_PROVISION_SECRET`, paykit's own value). Takes `{ user_id: uuid }` (Zod-validated, same shape as qkit/loopkit).
 
-- Does the *same* existence read as vendor-status. Writes nothing, ever.
+- Does the _same_ existence read as vendor-status. Writes nothing, ever.
 - Response: `{ ok: true, needs_setup: boolean, plan: string | null }`.
   - `needs_setup: true` when no `vendor_payment_config` row exists (first-time activation — the common case).
   - `needs_setup: false` when the vendor already configured PayNow directly on paykit before ever touching merqo hub (idempotent, honest either way — re-clicking "Activate" never regresses a configured vendor back to "needs setup").
