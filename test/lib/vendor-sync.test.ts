@@ -273,14 +273,15 @@ describe("provisionVendorKit", () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 
-  it("ok:false when the kit has no app_url or provision_secret (never calls fetch)", async () => {
+  it("ok:false when the kit has no app_url or provision_secret, no retry (fetch never called, not even twice)", async () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch");
     const r = await provisionVendorKit(
       { slug: "ghostkit", app_url: null, provision_secret: null },
       "u1",
+      { retryDelayMs: 1 },
     );
     expect(r).toEqual({ ok: false, slug: "ghostkit" });
-    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(fetchSpy).toHaveBeenCalledTimes(0);
   });
 });
 
@@ -372,4 +373,57 @@ describe("provisionVendorKits", () => {
       { product_slug: "qkit", status: "active", plan: "free" },
     ]);
   }, 10000);
+
+  it("results.length always equals slugs.length, even for a requested slug with no live-registry match", async () => {
+    // Defense in depth for kits.ts/DB drift (the paykit bug this was found
+    // from): a requested slug that never makes it into `targets` must still
+    // surface as an explicit ok:false result, not silently vanish from both
+    // the success and failure buckets.
+    const products = await import("@/lib/products");
+    vi.spyOn(products, "listLiveProducts").mockResolvedValue([
+      {
+        slug: "qkit",
+        name: "QKit",
+        app_url: "https://qkit.vercel.app",
+        metrics_url: null,
+        metrics_secret: null,
+        provision_secret: "p1",
+      },
+    ]);
+
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({ ok: true, already_existed: false, plan: "free" }),
+        { status: 200 },
+      ),
+    );
+
+    const vendorLinksUpsertMock = vi.fn().mockResolvedValue({ error: null });
+    const vendorLinksEqMock = vi.fn().mockResolvedValue({
+      data: [{ product_slug: "qkit", status: "active", plan: "free" }],
+      error: null,
+    });
+    const vendorLinksSelectMock = vi.fn(() => ({ eq: vendorLinksEqMock }));
+    createServiceClientMock.mockResolvedValue({
+      from: vi.fn(() => ({
+        upsert: vendorLinksUpsertMock,
+        select: vendorLinksSelectMock,
+      })),
+    });
+
+    const { results } = await provisionVendorKits(
+      { id: "u1", email: "v@x.com" },
+      ["qkit", "nonexistent-kit"],
+    );
+
+    expect(results).toHaveLength(2);
+    const bySlug = new Map<string, ProvisionResult>(
+      results.map((r) => [r.slug, r]),
+    );
+    expect(bySlug.get("qkit")?.ok).toBe(true);
+    expect(bySlug.get("nonexistent-kit")).toEqual({
+      ok: false,
+      slug: "nonexistent-kit",
+    });
+  });
 });
