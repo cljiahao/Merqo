@@ -16,7 +16,12 @@
 > via the Supabase SQL editor, (4) add `MERQO_PROVISION_SECRET=` to qkit's
 > `.env.example` (blocked from automated edit in the implementation session —
 > one-line manual addition needed). Until all four are done, every activation
-> attempt will fail with a retry prompt — this is expected, not a bug.
+> attempt will fail with a retry prompt — this is expected, not a bug. Separately,
+> loopkit's `0032` migration (see loopkit's own progress ledger) was edited in
+> place twice during development rather than appended to — any environment
+> that already applied an earlier version of it needs a fresh
+> `supabase db reset` (or a manual `create or replace function` re-run), not a
+> normal `db push`, since Supabase's migration tracking won't detect the file changed.
 
 ## Global Constraints
 
