@@ -12,8 +12,8 @@ export const vendorMetricSchema = z.object({
 
 export const vendorMetricsPayloadSchema = z.object({
   product: z.string(),
-  generated_at: z.string(),
-  metrics: z.array(vendorMetricSchema),
+  generated_at: z.string().datetime(),
+  metrics: z.array(vendorMetricSchema).max(8),
 });
 
 export type VendorMetric = z.infer<typeof vendorMetricSchema>;

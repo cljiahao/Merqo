@@ -11,7 +11,10 @@ import { syncVendorKits } from "@/lib/vendor-sync";
 import { KITS, LIVE_KITS } from "@/lib/kits";
 import { computeVendorSavings } from "@/lib/savings";
 import { SavingsSummary } from "./savings-summary";
-import { fetchVendorMetrics } from "@/lib/vendor-metrics-client";
+import {
+  fetchVendorMetrics,
+  type VendorMetricsResult,
+} from "@/lib/vendor-metrics-client";
 import { VendorKitCard } from "./vendor-kit-card";
 import { KitDiscoveryCard } from "@/components/dashboard/kit-discovery-card";
 import { JoinWaitlistButton } from "@/components/dashboard/join-waitlist-button";
@@ -65,8 +68,9 @@ export default async function DashboardPage() {
   const now = Date.now();
 
   const registryBySlug = new Map(liveProducts.map((r) => [r.slug, r]));
-  const metricsByTile = user.email
-    ? new Map(
+  const email = user.email;
+  const metricsByTile = email
+    ? new Map<string, VendorMetricsResult>(
         await Promise.all(
           active.map(async (t) => {
             const row = registryBySlug.get(t.slug) ?? {
@@ -74,14 +78,11 @@ export default async function DashboardPage() {
               app_url: null,
               metrics_secret: null,
             };
-            return [
-              t.slug,
-              await fetchVendorMetrics(row, user.email as string),
-            ] as const;
+            return [t.slug, await fetchVendorMetrics(row, email)] as const;
           }),
         ),
       )
-    : new Map();
+    : new Map<string, VendorMetricsResult>();
 
   return (
     <>

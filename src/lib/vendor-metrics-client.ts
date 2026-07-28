@@ -36,7 +36,7 @@ export async function fetchVendorMetrics(
   }
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? 5000);
+  const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? 2000);
   try {
     const res = await fetch(url, {
       headers: { Authorization: `Bearer ${kit.metrics_secret}` },

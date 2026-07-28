@@ -27,7 +27,7 @@ export function VendorMetricList({
   return (
     <div className="mt-4 border-t pt-4">
       <div className="flex items-baseline gap-2">
-        <span className="font-display text-2xl font-bold tabular-nums text-gold">
+        <span className="font-display text-2xl font-bold tabular-nums text-gold-foreground">
           {headline.value}
         </span>
         <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
