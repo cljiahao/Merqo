@@ -40,6 +40,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **paykit joins the vendor push-provisioning system as a read-only identity
+  check.** Unlike qkit/loopkit, paykit's provisioning route can't safely
+  activate a vendor with a default plan (payments has no safe default to
+  write), so it only verifies the vendor's identity and leaves activation to
+  the vendor themselves. A new `vendor_links.status = 'needs_setup'` state
+  covers this: `/dashboard` and `/dashboard/pending` render it as a
+  "Finish payment setup" deep-link to the kit's own dashboard instead of
+  treating it as active or pending.
 - **One-click vendor kit activation.** A signed-in vendor can now activate
   qkit and/or loopkit directly from the Merqo dashboard — a bulk "Activate
   all my kits" button on `/dashboard/pending` plus per-kit "Add {kit}"

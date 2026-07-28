@@ -141,13 +141,20 @@ type ProvisionSource = Pick<
 >;
 
 export type ProvisionResult =
-  | { ok: true; slug: string; alreadyExisted: boolean; plan: string | null }
+  | {
+      ok: true;
+      slug: string;
+      alreadyExisted: boolean;
+      plan: string | null;
+      needsSetup?: boolean;
+    }
   | { ok: false; slug: string };
 
 const provisionResponseSchema = z.object({
   ok: z.literal(true),
   already_existed: z.boolean(),
   plan: z.string().nullable(),
+  needs_setup: z.boolean().optional(),
 });
 
 async function provisionOnce(
@@ -194,6 +201,7 @@ async function provisionOnce(
       slug: kit.slug,
       alreadyExisted: parsed.data.already_existed,
       plan: parsed.data.plan,
+      needsSetup: parsed.data.needs_setup,
     };
   } catch {
     return { ok: false, slug: kit.slug };
@@ -265,7 +273,8 @@ export async function provisionVendorKits(
     const upserts = successes.map((s) => ({
       email: user.email.toLowerCase(),
       product_slug: s.slug,
-      status: "active" as const,
+      status: (s.needsSetup ? "needs_setup" : "active") as
+        "active" | "needs_setup",
       last_verified_at: nowIso,
       plan: s.plan,
     }));

@@ -54,10 +54,11 @@ export function tilesForLinks(
     status: GrantStatus;
     plan?: string | null;
   }[],
-): { active: KitTile[]; pending: KitTile[] } {
+): { active: KitTile[]; pending: KitTile[]; needsSetup: KitTile[] } {
   const bySlug = new Map(KITS.map((k) => [k.slug, k]));
   const active: KitTile[] = [];
   const pending: KitTile[] = [];
+  const needsSetup: KitTile[] = [];
   for (const l of links) {
     const kit = bySlug.get(l.product_slug);
     if (!kit) continue;
@@ -68,9 +69,11 @@ export function tilesForLinks(
       href: kit.href ?? null,
       plan: l.status === "active" ? l.plan : undefined,
     };
-    (l.status === "active" ? active : pending).push(tile);
+    if (l.status === "active") active.push(tile);
+    else if (l.status === "needs_setup") needsSetup.push(tile);
+    else pending.push(tile);
   }
-  return { active, pending };
+  return { active, pending, needsSetup };
 }
 
 /** Live kits the vendor has no vendor_links row for at all (not active, not

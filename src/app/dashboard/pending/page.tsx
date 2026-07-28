@@ -27,15 +27,20 @@ export default async function PendingPage() {
   // A vendor with zero links may have signed up directly on a kit — check
   // before showing "no kits yet" (see vendor-sync.ts; best-effort, never
   // throws, so a sync failure just leaves `links` as the empty array it
-  // already was).
+  // already was). Also re-sync when a link is stuck at `needs_setup`: that's
+  // paykit before the vendor finishes real payment setup, and re-syncing is
+  // the only way this page ever picks up their kit going active without a
+  // full logout/login.
   const links =
-    initialLinks.length === 0 && user.email
+    (initialLinks.length === 0 ||
+      initialLinks.some((l) => l.status === "needs_setup")) &&
+    user.email
       ? await syncVendorKits(user.email)
       : initialLinks;
 
   if (hasRenderableActiveKit(links)) redirect("/dashboard");
 
-  const { pending } = tilesForLinks(links);
+  const { pending, needsSetup } = tilesForLinks(links);
   // The single bulk/per-kit activate button below is the only add-a-kit
   // affordance on this page — everything else is a link out to "the family".
   // Best-effort: a products-registry read failure degrades to "nothing is
@@ -66,25 +71,48 @@ export default async function PendingPage() {
       <div className="w-full max-w-md text-center">
         <div className="rounded-2xl border bg-card px-7 py-10 shadow-sm">
           <Wordmark className="text-2xl" />
-          {pending.length > 0 ? (
+          {pending.length > 0 || needsSetup.length > 0 ? (
             <>
               <h1 className="mt-6 font-display text-3xl font-bold tracking-tight">
-                You&rsquo;re on the list
+                {pending.length > 0 ? "You’re on the list" : "Almost there"}
               </h1>
-              <p className="mt-3 text-sm text-muted-foreground">
-                We&rsquo;ll email{" "}
-                <span className="font-medium text-foreground">
-                  {user.email}
-                </span>{" "}
-                when {pending.length === 1 ? "it opens" : "these open"}:
-              </p>
-              <ul className="mt-4 space-y-1.5 text-sm">
-                {pending.map((t) => (
-                  <li key={t.slug} className="font-medium">
-                    {t.name}
-                  </li>
-                ))}
-              </ul>
+              {pending.length > 0 && (
+                <>
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    We&rsquo;ll email{" "}
+                    <span className="font-medium text-foreground">
+                      {user.email}
+                    </span>{" "}
+                    when {pending.length === 1 ? "it opens" : "these open"}:
+                  </p>
+                  <ul className="mt-4 space-y-1.5 text-sm">
+                    {pending.map((t) => (
+                      <li key={t.slug} className="font-medium">
+                        {t.name}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {needsSetup.length > 0 && (
+                <ul className="mt-4 space-y-1.5 text-sm">
+                  {needsSetup.map((t) => (
+                    <li key={t.slug} className="font-medium">
+                      {t.name} — one step left.{" "}
+                      {t.href && (
+                        <a
+                          href={`${t.href}/dashboard/config`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-normal underline"
+                        >
+                          Finish setup
+                        </a>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </>
           ) : (
             <>

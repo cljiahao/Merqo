@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { activateKitsAction } from "@/app/actions/activate-kits";
 import { Button } from "@/components/ui/button";
+import { KITS } from "@/lib/kits";
 import type { ProvisionResult } from "@/lib/vendor-sync";
 
 type ButtonVariant = React.ComponentProps<typeof Button>["variant"];
@@ -12,13 +13,14 @@ type ButtonSize = React.ComponentProps<typeof Button>["size"];
 
 /** Bulk ("Activate all my kits", multiple slugs) or single-kit ("Add
  *  {kit}", one slug) activation button — same component, driven entirely
- *  by `slugs`, never a hardcoded count. Renders per-kit failure/retry
- *  affordances rather than one aggregate success/error message — a
- *  partial failure must never look like a page-level error. `variant`/
- *  `size` default to the `<Button>` defaults (primary) so the bulk CTA
- *  reads as primary out of the box; call sites that want the smaller
- *  secondary per-kit look (matching `JoinWaitlistButton`) pass
- *  `variant="secondary" size="sm"` explicitly. */
+ *  by `slugs`, never a hardcoded count. Renders per-kit failure/retry and
+ *  per-kit needs-setup affordances rather than one aggregate message — a
+ *  partial failure (or a kit that only reached needs_setup) must never
+ *  look like a full success or a page-level error. `variant`/`size`
+ *  default to the `<Button>` defaults (primary) so the bulk CTA reads as
+ *  primary out of the box; call sites that want the smaller secondary
+ *  per-kit look (matching `JoinWaitlistButton`) pass `variant="secondary"
+ *  size="sm"` explicitly. */
 export function ActivateKitsButton({
   slugs,
   label,
@@ -50,7 +52,13 @@ export function ActivateKitsButton({
           (slug) => byTargetSlug.get(slug)?.ok === true,
         );
         if (allSucceeded) {
-          toast.success(`Activated ${targetSlugs.join(", ")}`);
+          const anyNeedsSetup = targetSlugs.some((slug) => {
+            const r = byTargetSlug.get(slug);
+            return r?.ok === true && r.needsSetup === true;
+          });
+          if (!anyNeedsSetup) {
+            toast.success(`Activated ${targetSlugs.join(", ")}`);
+          }
           router.refresh();
         }
       } else {
@@ -60,6 +68,10 @@ export function ActivateKitsButton({
   }
 
   const failed = (results ?? []).filter((r) => !r.ok);
+  const needsSetup = (results ?? []).filter(
+    (r): r is Extract<ProvisionResult, { ok: true }> =>
+      r.ok && r.needsSetup === true,
+  );
 
   return (
     <div>
@@ -89,6 +101,28 @@ export function ActivateKitsButton({
               </button>
             </li>
           ))}
+        </ul>
+      )}
+      {needsSetup.length > 0 && (
+        <ul className="mt-2 space-y-1">
+          {needsSetup.map((r) => {
+            const kit = KITS.find((k) => k.slug === r.slug);
+            return (
+              <li key={r.slug} className="text-xs text-muted-foreground">
+                {kit?.name ?? r.slug} added — payment setup still needed.{" "}
+                {kit?.href && (
+                  <a
+                    href={`${kit.href}/dashboard/config`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-foreground underline"
+                  >
+                    Finish payment setup
+                  </a>
+                )}
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
