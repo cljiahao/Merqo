@@ -19,6 +19,12 @@ vi.mock("@/lib/vendor-sync", () => ({
   syncVendorKits: syncVendorKitsMock,
 }));
 
+// ActivateKitsButton (rendered for every "Ready to add" kit) calls
+// next/navigation's useRouter — needs a mount context this test doesn't have.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ refresh: vi.fn() }),
+}));
+
 describe("DashboardPage", () => {
   beforeEach(() => {
     requireActiveVendorMock.mockReset();

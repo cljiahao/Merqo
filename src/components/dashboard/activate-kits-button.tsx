@@ -1,22 +1,36 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { activateKitsAction } from "@/app/actions/activate-kits";
 import { Button } from "@/components/ui/button";
 import type { ProvisionResult } from "@/lib/vendor-sync";
+
+type ButtonVariant = React.ComponentProps<typeof Button>["variant"];
+type ButtonSize = React.ComponentProps<typeof Button>["size"];
 
 /** Bulk ("Activate all my kits", multiple slugs) or single-kit ("Add
  *  {kit}", one slug) activation button — same component, driven entirely
  *  by `slugs`, never a hardcoded count. Renders per-kit failure/retry
  *  affordances rather than one aggregate success/error message — a
- *  partial failure must never look like a page-level error. */
+ *  partial failure must never look like a page-level error. `variant`/
+ *  `size` default to the `<Button>` defaults (primary) so the bulk CTA
+ *  reads as primary out of the box; call sites that want the smaller
+ *  secondary per-kit look (matching `JoinWaitlistButton`) pass
+ *  `variant="secondary" size="sm"` explicitly. */
 export function ActivateKitsButton({
   slugs,
   label,
+  variant,
+  size,
 }: {
   slugs: string[];
   label: string;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
 }) {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [results, setResults] = useState<ProvisionResult[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +45,14 @@ export function ActivateKitsButton({
           for (const r of res.results) bySlug.set(r.slug, r);
           return Array.from(bySlug.values());
         });
+        const byTargetSlug = new Map(res.results.map((r) => [r.slug, r]));
+        const allSucceeded = targetSlugs.every(
+          (slug) => byTargetSlug.get(slug)?.ok === true,
+        );
+        if (allSucceeded) {
+          toast.success(`Activated ${targetSlugs.join(", ")}`);
+          router.refresh();
+        }
       } else {
         setError(res.error);
       }
@@ -41,7 +63,13 @@ export function ActivateKitsButton({
 
   return (
     <div>
-      <Button type="button" onClick={() => activate(slugs)} disabled={pending}>
+      <Button
+        type="button"
+        variant={variant}
+        size={size}
+        onClick={() => activate(slugs)}
+        disabled={pending}
+      >
         {pending ? "Activating…" : label}
       </Button>
       {error && <p className="mt-1 text-xs text-destructive">{error}</p>}

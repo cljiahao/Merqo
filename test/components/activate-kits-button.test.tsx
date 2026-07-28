@@ -6,7 +6,17 @@ vi.mock("@/app/actions/activate-kits", () => ({
   activateKitsAction: vi.fn(),
 }));
 
+const mockRefresh = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: vi.fn(() => ({ refresh: mockRefresh })),
+}));
+
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
+}));
+
 import { activateKitsAction } from "@/app/actions/activate-kits";
+import { toast } from "sonner";
 import { ActivateKitsButton } from "@/components/dashboard/activate-kits-button";
 
 describe("ActivateKitsButton", () => {
@@ -62,6 +72,9 @@ describe("ActivateKitsButton", () => {
     expect(
       screen.queryByRole("button", { name: "Retry qkit" }),
     ).not.toBeInTheDocument();
+    // a partial failure is not a full success — no toast, no refresh
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(mockRefresh).not.toHaveBeenCalled();
   });
 
   it("clicking a single kit's retry re-invokes the action with only that slug", async () => {
@@ -85,5 +98,49 @@ describe("ActivateKitsButton", () => {
     await waitFor(() =>
       expect(activateKitsAction).toHaveBeenLastCalledWith(["loopkit"]),
     );
+  });
+
+  it("shows a success toast and refreshes the router after a fully successful activation", async () => {
+    vi.mocked(activateKitsAction).mockResolvedValue({
+      success: true,
+      results: [
+        { ok: true, slug: "qkit", alreadyExisted: false, plan: "free" },
+        { ok: true, slug: "loopkit", alreadyExisted: false, plan: "free" },
+      ],
+    });
+    render(
+      <ActivateKitsButton
+        slugs={["qkit", "loopkit"]}
+        label="Activate all my kits"
+      />,
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Activate all my kits" }),
+    );
+    await waitFor(() => expect(toast.success).toHaveBeenCalled());
+    expect(mockRefresh).toHaveBeenCalled();
+  });
+
+  it("shows a success toast and refreshes the router after a successful single-kit retry", async () => {
+    vi.mocked(activateKitsAction)
+      .mockResolvedValueOnce({
+        success: true,
+        results: [{ ok: false, slug: "loopkit" }],
+      })
+      .mockResolvedValueOnce({
+        success: true,
+        results: [
+          { ok: true, slug: "loopkit", alreadyExisted: false, plan: "free" },
+        ],
+      });
+    render(<ActivateKitsButton slugs={["loopkit"]} label="Add loopkit" />);
+    fireEvent.click(screen.getByRole("button", { name: "Add loopkit" }));
+    const retryButton = await screen.findByRole("button", {
+      name: "Retry loopkit",
+    });
+    expect(toast.success).not.toHaveBeenCalled();
+    fireEvent.click(retryButton);
+    await waitFor(() => expect(toast.success).toHaveBeenCalled());
+    expect(mockRefresh).toHaveBeenCalled();
   });
 });

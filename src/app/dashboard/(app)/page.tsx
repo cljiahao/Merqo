@@ -89,6 +89,8 @@ export default async function DashboardPage() {
                     <ActivateKitsButton
                       slugs={[kit.slug]}
                       label={`Add ${kit.name}`}
+                      variant="secondary"
+                      size="sm"
                     />
                   }
                 />
