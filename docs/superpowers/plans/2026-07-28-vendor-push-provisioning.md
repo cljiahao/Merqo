@@ -23,11 +23,13 @@
 ### Task 1: Merqo — prerequisite migration (fix loopkit's live status, add `provision_secret`)
 
 **Files:**
+
 - Create: `supabase/migrations/0013_fix_loopkit_live_status_and_provision_secret.sql`
 - Modify: `src/lib/products.ts`
 - Modify: `test/lib/vendor-sync.test.ts` (add one assertion)
 
 **Interfaces:**
+
 - Produces: `RegistryRow.provision_secret: string | null`; `listLiveProducts()` now selects it and includes loopkit (status corrected to `'live'`).
 
 - [ ] **Step 1: Write the migration**
@@ -55,9 +57,11 @@ alter table merqo.products
 - [ ] **Step 2: Apply the migration locally and verify**
 
 Run: `supabase db reset` (or `supabase migration up` if already running), then:
+
 ```sql
 select slug, status, provision_secret from merqo.products where slug in ('loopkit', 'qkit');
 ```
+
 Expected: `loopkit` row shows `status = 'live'`; both rows have a `provision_secret` column (value `null` until set out-of-band).
 
 - [ ] **Step 3: Update `RegistryRow` and `listLiveProducts()`**
@@ -100,7 +104,9 @@ export async function listLiveProducts(): Promise<RegistryRow[]> {
   const supabase = await createServiceClient();
   const { data, error } = await supabase
     .from("products")
-    .select("slug, name, app_url, metrics_url, metrics_secret, provision_secret")
+    .select(
+      "slug, name, app_url, metrics_url, metrics_secret, provision_secret",
+    )
     .eq("status", "live");
   if (error) throw new Error(`products read failed: ${error.message}`);
   return (data ?? []) as RegistryRow[];
@@ -155,10 +161,12 @@ git commit -m "fix: correct loopkit's live status, add provision_secret column"
 ### Task 2: qkit — `provisionBearerOk` auth helper
 
 **Files:**
+
 - Modify: `src/lib/merqo-auth.ts`
 - Create: `test/lib/merqo-auth.test.ts`
 
 **Interfaces:**
+
 - Produces: `provisionBearerOk(request: Request): boolean` — same shape as the existing `bearerOk`, checked against `MERQO_PROVISION_SECRET` instead of `MERQO_METRICS_SECRET`.
 
 - [ ] **Step 1: Write the failing test**
@@ -246,11 +254,13 @@ git commit -m "feat: add provisionBearerOk, distinct secret from metrics bearer 
 ### Task 3: qkit — `vendor-provision` route
 
 **Files:**
+
 - Create: `src/app/api/merqo/vendor-provision/route.ts`
 - Create: `src/app/api/merqo/vendor-provision/README.md`
 - Create: `test/api/merqo/vendor-provision.test.ts`
 
 **Interfaces:**
+
 - Consumes: `provisionBearerOk` (Task 2), `getOrCreateVendorProfile` (existing, `@/lib/merqo-vendor-profile`), `createServiceClient` (existing, `@/lib/supabase/server`).
 - Produces: `POST /api/merqo/vendor-provision` — body `{ user_id: string }`, response `{ ok: true, already_existed: boolean, plan: "free" | "pro" }` / `401` (bad bearer) / `400` (bad body or unknown `user_id`) / `500` (unexpected failure).
 
@@ -526,10 +536,12 @@ git commit -m "feat: add qkit vendor-provision endpoint"
 ### Task 4: loopkit — `provision_default_program` SQL function (migration)
 
 **Files:**
+
 - Create: `supabase/migrations/0032_loopkit_provision_default_program.sql`
 - Modify: `supabase/tests/rls.test.sql` (add 2 grant-check assertions)
 
 **Interfaces:**
+
 - Produces: `loopkit.provision_default_program(p_vendor_id uuid) returns uuid` — `SECURITY DEFINER`, granted to `service_role` ONLY.
 
 - [ ] **Step 1: Write the migration**
@@ -556,7 +568,8 @@ begin
     (vendor_id, type, name, stamps_required, reward_text, config, active)
   values (
     p_vendor_id, 'stamp', 'Starter', 10, '1 free item',
-    '{"points_per_visit": 1, "variant": "dots"}'::jsonb, true
+    '{"stamps_required": 10, "reward_text": "1 free item", "points_per_visit": 1, "variant": "dots"}'::jsonb,
+    true
   )
   returning id into v_id;
   return v_id;
@@ -565,6 +578,11 @@ $$;
 
 revoke all on function loopkit.provision_default_program(uuid) from public;
 grant execute on function loopkit.provision_default_program(uuid) to service_role;
+-- Task 4 review correction: config must duplicate stamps_required/reward_text
+-- (resolveStampConfig in src/lib/engine/index.ts reads programs.config as-is
+-- whenever non-empty, never merging in the table columns as a fallback) —
+-- the original draft omitted these two keys, which breaks the dashboard's
+-- progress/reward-eligibility display for every auto-provisioned vendor.
 -- deliberately NOT granted to authenticated
 ```
 
@@ -607,12 +625,14 @@ git commit -m "feat: add service_role-only provision_default_program function"
 ### Task 5: loopkit — `vendor-provision` route
 
 **Files:**
+
 - Modify: `src/lib/merqo-auth.ts` (loopkit has its own copy, per this repo's existing "ported verbatim" convention)
 - Create: `src/app/api/merqo/vendor-provision/route.ts`
 - Create: `src/app/api/merqo/vendor-provision/README.md`
 - Create: `test/api/merqo/vendor-provision.test.ts`
 
 **Interfaces:**
+
 - Consumes: `provision_default_program` RPC (Task 4).
 - Produces: same contract as qkit's route (Task 3) — `POST /api/merqo/vendor-provision`, `{ ok: true, already_existed: boolean, plan: "free" | "pro" }`.
 
@@ -686,7 +706,9 @@ function tables(opts: {
 }) {
   return (table: string) => {
     if (table === "vendors") {
-      return { insert: () => Promise.resolve({ error: opts.insertError ?? null }) };
+      return {
+        insert: () => Promise.resolve({ error: opts.insertError ?? null }),
+      };
     }
     if (table === "vendor_pro") {
       return {
@@ -917,10 +939,12 @@ git commit -m "feat: add loopkit vendor-provision endpoint with default program"
 ### Task 6: Merqo — extend `vendor-sync.ts` with provisioning
 
 **Files:**
+
 - Modify: `src/lib/vendor-sync.ts`
 - Modify: `test/lib/vendor-sync.test.ts`
 
 **Interfaces:**
+
 - Consumes: `RegistryRow` (Task 1), `listLiveProducts()` (Task 1).
 - Produces: `provisionVendorKit(kit, userId, opts?): Promise<ProvisionResult>`, `provisionVendorKits(user: {id, email}, slugs: string[]): Promise<{ links: VendorLink[]; results: ProvisionResult[] }>` — consumed by Task 7's server action.
 
@@ -951,12 +975,14 @@ describe("provisionVendorKit", () => {
   afterEach(() => vi.restoreAllMocks());
 
   it("calls the kit's vendor-provision endpoint with the bearer and user_id", async () => {
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(
-        JSON.stringify({ ok: true, already_existed: false, plan: "free" }),
-        { status: 200 },
-      ),
-    );
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({ ok: true, already_existed: false, plan: "free" }),
+          { status: 200 },
+        ),
+      );
     const r = await provisionVendorKit(provisionKit, "u1");
     expect(r).toEqual({
       ok: true,
@@ -1024,7 +1050,11 @@ describe("provisionVendorKits", () => {
         if (url.includes("qkit")) {
           return Promise.resolve(
             new Response(
-              JSON.stringify({ ok: true, already_existed: false, plan: "free" }),
+              JSON.stringify({
+                ok: true,
+                already_existed: false,
+                plan: "free",
+              }),
               { status: 200 },
             ),
           );
@@ -1057,7 +1087,10 @@ Expected: FAIL — `provisionVendorKit`/`provisionVendorKits` not exported yet.
 Append to the existing file (do not modify `checkVendorStatus`/`upsertsFromChecks`/`syncVendorKits`):
 
 ```ts
-type ProvisionSource = Pick<RegistryRow, "slug" | "app_url" | "provision_secret">;
+type ProvisionSource = Pick<
+  RegistryRow,
+  "slug" | "app_url" | "provision_secret"
+>;
 
 export type ProvisionResult =
   | { ok: true; slug: string; alreadyExisted: boolean; plan: string | null }
@@ -1212,10 +1245,12 @@ git commit -m "feat: add provisionVendorKit/provisionVendorKits fan-out"
 ### Task 7: Merqo — `activateKitsAction` server action
 
 **Files:**
+
 - Create: `src/app/actions/activate-kits.ts`
 - Create: `test/app/actions/activate-kits.test.ts`
 
 **Interfaces:**
+
 - Consumes: `provisionVendorKits` (Task 6), `loadVendorContext` (existing, `@/lib/vendor`).
 - Produces: `activateKitsAction(slugs: string[]): Promise<ActivateKitsResult>` where `ActivateKitsResult = { success: true; results: ProvisionResult[] } | { success: false; error: string }` — consumed by Task 8's UI components.
 
@@ -1259,12 +1294,16 @@ describe("activateKitsAction", () => {
     });
     provisionVendorKitsMock.mockResolvedValue({
       links: [{ product_slug: "qkit", status: "active", plan: "free" }],
-      results: [{ ok: true, slug: "qkit", alreadyExisted: false, plan: "free" }],
+      results: [
+        { ok: true, slug: "qkit", alreadyExisted: false, plan: "free" },
+      ],
     });
     const res = await activateKitsAction(["qkit"]);
     expect(res).toEqual({
       success: true,
-      results: [{ ok: true, slug: "qkit", alreadyExisted: false, plan: "free" }],
+      results: [
+        { ok: true, slug: "qkit", alreadyExisted: false, plan: "free" },
+      ],
     });
     expect(provisionVendorKitsMock).toHaveBeenCalledWith(
       { id: "u1", email: "v@x.com" },
@@ -1351,6 +1390,7 @@ git commit -m "feat: add activateKitsAction server action"
 ### Task 8: Merqo — dashboard UI (bulk button, upgraded per-kit CTA, partial-failure rendering)
 
 **Files:**
+
 - Create: `src/components/dashboard/activate-kits-button.tsx`
 - Modify: `src/app/dashboard/pending/page.tsx`
 - Modify: `src/app/dashboard/(app)/page.tsx`
@@ -1358,6 +1398,7 @@ git commit -m "feat: add activateKitsAction server action"
 - Create: `test/components/activate-kits-button.test.tsx` (flat under `test/components/`, matching the existing sibling `test/components/join-waitlist-button.test.tsx` — not nested under a `dashboard/` subfolder)
 
 **Interfaces:**
+
 - Consumes: `activateKitsAction` (Task 7).
 - Produces: `<ActivateKitsButton slugs={string[]} label={string} />` — a client component usable both as the bulk primary CTA and as a single-slug per-kit "Add" button.
 
@@ -1387,7 +1428,10 @@ describe("ActivateKitsButton", () => {
       new Promise((r) => (resolveAction = r as typeof resolveAction)),
     );
     render(
-      <ActivateKitsButton slugs={["qkit", "loopkit"]} label="Activate all my kits" />,
+      <ActivateKitsButton
+        slugs={["qkit", "loopkit"]}
+        label="Activate all my kits"
+      />,
     );
     const button = screen.getByRole("button", { name: "Activate all my kits" });
     fireEvent.click(button);
@@ -1411,9 +1455,14 @@ describe("ActivateKitsButton", () => {
       ],
     });
     render(
-      <ActivateKitsButton slugs={["qkit", "loopkit"]} label="Activate all my kits" />,
+      <ActivateKitsButton
+        slugs={["qkit", "loopkit"]}
+        label="Activate all my kits"
+      />,
     );
-    fireEvent.click(screen.getByRole("button", { name: "Activate all my kits" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: "Activate all my kits" }),
+    );
     await waitFor(() =>
       expect(
         screen.getByRole("button", { name: "Retry loopkit" }),
@@ -1502,11 +1551,7 @@ export function ActivateKitsButton({
 
   return (
     <div>
-      <Button
-        type="button"
-        onClick={() => activate(slugs)}
-        disabled={pending}
-      >
+      <Button type="button" onClick={() => activate(slugs)} disabled={pending}>
         {pending ? "Activating…" : label}
       </Button>
       {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
@@ -1552,18 +1597,18 @@ const addable = addableKits(links);
 
 // ... (unchanged JSX above this point) ...
 
-{addable.length > 0 && (
-  <div className="mt-6">
-    <ActivateKitsButton
-      slugs={addable.map((k) => k.slug)}
-      label={
-        addable.length > 1
-          ? "Activate all my kits"
-          : `Add ${addable[0].name}`
-      }
-    />
-  </div>
-)}
+{
+  addable.length > 0 && (
+    <div className="mt-6">
+      <ActivateKitsButton
+        slugs={addable.map((k) => k.slug)}
+        label={
+          addable.length > 1 ? "Activate all my kits" : `Add ${addable[0].name}`
+        }
+      />
+    </div>
+  );
+}
 ```
 
 Remove the now-unused `KitDiscoveryCard` import/usage from this file if nothing else in it still references it (check the rest of the file first — `KitDiscoveryCard` is currently imported here specifically for this one block).
@@ -1618,6 +1663,7 @@ git commit -m "feat: wire one-click kit activation into the dashboard"
 ### Task 9: Operator step — secrets and follow-up tracking (not app code)
 
 **Files:**
+
 - Modify: `.env.example` in qkit, loopkit, and merqo (add `MERQO_PROVISION_SECRET=`, following the exact existing line for `MERQO_METRICS_SECRET=` in each file — read the surrounding lines first with `Read`, since the exact comment/formatting must match this repo's existing convention rather than being invented here)
 - No code changes beyond `.env.example` — the rest of this task is manual, operator-run
 

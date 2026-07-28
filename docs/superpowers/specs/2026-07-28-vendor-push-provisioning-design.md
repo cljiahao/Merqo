@@ -35,7 +35,7 @@ caused by this feature):**
 - `merqo.products.status` — the DB column `listLiveProducts()` actually
   filters on for the existing pull-sync — has loopkit and paykit both
   seeded as `coming_soon` (migration `0004_kit_consolidation.sql`), despite
-  `src/lib/kits.ts` (the landing/dashboard *display* config, a separate,
+  `src/lib/kits.ts` (the landing/dashboard _display_ config, a separate,
   static source of truth) showing both as fully `live`. This means
   **today's existing sync already silently excludes loopkit and paykit
   from vendor auto-discovery** — a vendor who signs up directly on either
@@ -165,7 +165,8 @@ begin
     (vendor_id, type, name, stamps_required, reward_text, config, active)
   values (
     p_vendor_id, 'stamp', 'Starter', 10, '1 free item',
-    '{"points_per_visit": 1, "variant": "dots"}'::jsonb, true
+    '{"stamps_required": 10, "reward_text": "1 free item", "points_per_visit": 1, "variant": "dots"}'::jsonb,
+    true
   )
   returning id into v_id;
   return v_id;
@@ -177,12 +178,16 @@ grant execute on function loopkit.provision_default_program(uuid) to service_rol
 ```
 
 `type: 'stamp'` (singular — matches `buildProgramFields`'s branch and
-every other reference in this codebase; not `'stamps'`), `config` matches
-the exact shape `buildProgramFields` produces for a vendor-created stamp
-card via `/setup` (`points_per_visit: 1`, `variant: "dots"`, no
-`stamp_mark`/`reward_text`/`stamps_required` duplicated into config beyond
-what `add_stamp` actually reads at runtime — `stamps_required` and
-`reward_text` live on the `programs` row itself, not inside `config`).
+every other reference in this codebase; not `'stamps'`). **Correction
+found during Task 4's review:** `config` must duplicate `stamps_required`
+and `reward_text` inside the JSONB, matching `buildProgramFields`'s real
+stamp-card output exactly — `resolveStampConfig`
+(`src/lib/engine/index.ts`) reads `programs.config` as-is whenever it's
+non-empty and never merges in the table columns as a fallback, so an
+incomplete config (the original draft here omitted these two keys) breaks
+the dashboard's progress/reward-eligibility display for every
+auto-provisioned vendor. `stamp_mark` is omitted (optional, read via `?.`
+downstream) — only `stamps_required`/`reward_text` are load-bearing.
 Fully editable afterward via the vendor's own `/setup` (`saveProgramAction`
 already supports editing any existing program regardless of how it was
 created).
@@ -255,7 +260,7 @@ duplicate work across layers.
 ## Testing
 
 - **qkit / loopkit — `vendor-provision` route:** bearer required (401
-  without/with the wrong secret — specifically confirm the *metrics*
+  without/with the wrong secret — specifically confirm the _metrics_
   secret does NOT also authorize this route); first call creates the
   tenant row at `plan: "free"`; second call with the same `user_id` is a
   no-op returning `already_existed: true`; a non-existent `user_id` fails
