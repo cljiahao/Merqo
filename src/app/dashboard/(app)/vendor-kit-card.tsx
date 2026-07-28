@@ -1,17 +1,23 @@
 import type { KitTile } from "@/lib/vendor";
 import type { KitSavings } from "@/lib/savings";
-import { money } from "@/lib/format";
+import type { VendorMetricsResult } from "@/lib/vendor-metrics-client";
+import { money, timeAgo } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { UpgradeButton } from "./upgrade-button";
 import { DowngradeButton } from "./downgrade-button";
+import { VendorMetricList } from "./vendor-metric-list";
 
 export function VendorKitCard({
   tile,
   savings,
+  metrics,
+  now,
 }: {
   tile: KitTile;
   savings?: KitSavings;
+  metrics: VendorMetricsResult;
+  now: number;
 }) {
   return (
     <div className="rounded-xl border bg-card p-5 shadow-[0_0_0_1px_rgba(0,0,0,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md">
@@ -33,6 +39,9 @@ export function VendorKitCard({
           saved this month · ~{savings.hoursPerWeek} hrs/week back
         </p>
       )}
+
+      <VendorMetricList result={metrics} now={now} />
+
       <div className="mt-4 flex flex-wrap items-center gap-3">
         {tile.href && (
           <Button asChild size="sm">
@@ -55,6 +64,12 @@ export function VendorKitCard({
             more (+{savings.upsideHoursPerWeek} hrs/week)
           </p>
         )}
+
+      {tile.lastVerifiedAt && (
+        <p className="mt-3 text-[0.7rem] text-muted-foreground">
+          Synced {timeAgo(tile.lastVerifiedAt, now)}
+        </p>
+      )}
     </div>
   );
 }

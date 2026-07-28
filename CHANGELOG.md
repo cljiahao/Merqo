@@ -88,3 +88,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   product a message is about (`null` stays the existing "about Merqo hub"
   meaning). The admin page shows the raw category plus which kit a message
   came from. paykit is the first kit wired up as a consumer.
+- **Last-synced timestamp on each active kit card.** `/dashboard` now shows
+  "As of {time ago}" as a trust signal per kit. Paired with a new per-vendor
+  usage metrics section, backed by a `GET /api/merqo/vendor-metrics`
+  contract kits can optionally implement — degrades gracefully to "Stats
+  aren't connected here yet" for every kit today, since none implement it
+  yet.
