@@ -30,10 +30,10 @@ vi.mock("@/components/dashboard/activate-kits-button", () => ({
 
 import DashboardPage from "@/app/dashboard/(app)/page";
 
-describe("DashboardPage — provisionable (readyToAdd) kits", () => {
+describe("DashboardPage — Ready to add kits", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("excludes paykit (kits.ts-live but no provisioning capability) from Ready to add, keeps qkit/loopkit", async () => {
+  it("still shows a KitDiscoveryCard for paykit (kits.ts-live but no provisioning capability), with the old external login link instead of an activate button; loopkit gets the activate button", async () => {
     requireActiveVendorMock.mockResolvedValue({
       user: { id: "u1", email: "v@x.com" },
       isTeam: false,
@@ -76,13 +76,40 @@ describe("DashboardPage — provisionable (readyToAdd) kits", () => {
 
     // qkit is already active (linked), so it's never in "ready to add" —
     // loopkit (live + provisionable + not linked) must render its own
-    // per-kit activate button; paykit must not.
+    // per-kit activate button.
     expect(
       screen.getByTestId("activate-kits-button-loopkit"),
     ).toBeInTheDocument();
+
+    // paykit is display-live but not provisionable — it must still get a
+    // discovery card, just with the old external "log in on that kit" link
+    // instead of an ActivateKitsButton.
     expect(
       screen.queryByTestId("activate-kits-button-paykit"),
     ).not.toBeInTheDocument();
-    expect(screen.queryByText("paykit")).not.toBeInTheDocument();
+    const paykitLink = screen.getByRole("link", { name: "Add paykit" });
+    expect(paykitLink).toHaveAttribute(
+      "href",
+      "https://paykit-sg.vercel.app/login",
+    );
+    expect(paykitLink).toHaveAttribute("target", "_blank");
+  });
+
+  it("degrades to no provisionable kits (old external links for every ready-to-add kit) when listLiveProducts throws", async () => {
+    requireActiveVendorMock.mockResolvedValue({
+      user: { id: "u1", email: "v@x.com" },
+      isTeam: false,
+      links: [],
+    });
+    syncVendorKitsMock.mockResolvedValue([]);
+    listLiveProductsMock.mockRejectedValue(new Error("products read failed"));
+
+    const jsx = await DashboardPage();
+    render(jsx);
+
+    // No crash, and since no kit is provisionable, every live kit falls
+    // back to the old external login link rather than an activate button.
+    expect(screen.queryByTestId(/^activate-kits-button-/)).toBeNull();
+    expect(screen.getByRole("link", { name: "Add qkit" })).toBeInTheDocument();
   });
 });

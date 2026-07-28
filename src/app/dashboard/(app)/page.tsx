@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   requireActiveVendor,
   tilesForLinks,
+  addableKits,
   provisionableKits,
   comingKits,
 } from "@/lib/vendor";
@@ -28,10 +29,30 @@ export default async function DashboardPage() {
   const { active, pending } = tilesForLinks(links);
   const savings = computeVendorSavings(links);
   const savingsBySlug = new Map(savings.perKit.map((s) => [s.slug, s]));
-  const liveProducts = await listLiveProducts();
-  const readyToAdd = provisionableKits(
-    links,
-    new Set(liveProducts.filter((p) => p.provision_secret).map((p) => p.slug)),
+  // Best-effort: a products-registry read failure degrades to "nothing is
+  // provisionable" rather than crashing the whole dashboard — matches
+  // syncVendorKits' graceful-degradation philosophy on this same page.
+  let liveProducts: Awaited<ReturnType<typeof listLiveProducts>> = [];
+  try {
+    liveProducts = await listLiveProducts();
+  } catch (err) {
+    console.error(
+      "listLiveProducts failed; treating no kits as provisionable",
+      err,
+    );
+  }
+  // "Ready to add" shows a card for every kit.ts-live kit the vendor doesn't
+  // already have (addableKits) — paykit included, even though it can't yet be
+  // one-click-activated. provisionableSlugs narrows just which of those cards
+  // get the ActivateKitsButton vs. the old external "log in on that kit" link.
+  const readyToAdd = addableKits(links);
+  const provisionableSlugs = new Set(
+    provisionableKits(
+      links,
+      new Set(
+        liveProducts.filter((p) => p.provision_secret).map((p) => p.slug),
+      ),
+    ).map((k) => k.slug),
   );
   const comingSoon = comingKits(links);
   const planned = KITS.filter((k) => k.status === "planned");
@@ -91,12 +112,25 @@ export default async function DashboardPage() {
                   key={kit.slug}
                   kit={kit}
                   cta={
-                    <ActivateKitsButton
-                      slugs={[kit.slug]}
-                      label={`Add ${kit.name}`}
-                      variant="secondary"
-                      size="sm"
-                    />
+                    provisionableSlugs.has(kit.slug) ? (
+                      <ActivateKitsButton
+                        slugs={[kit.slug]}
+                        label={`Add ${kit.name}`}
+                        variant="secondary"
+                        size="sm"
+                      />
+                    ) : (
+                      kit.href && (
+                        <a
+                          href={`${kit.href}/login`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm font-medium text-foreground hover:underline"
+                        >
+                          Add {kit.name}
+                        </a>
+                      )
+                    )
                   }
                 />
               ))}

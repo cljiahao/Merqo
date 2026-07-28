@@ -37,7 +37,17 @@ export default async function PendingPage() {
   const { pending } = tilesForLinks(links);
   // The single bulk/per-kit activate button below is the only add-a-kit
   // affordance on this page — everything else is a link out to "the family".
-  const liveProducts = await listLiveProducts();
+  // Best-effort: a products-registry read failure degrades to "nothing is
+  // provisionable" (no activate button) rather than crashing this page.
+  let liveProducts: Awaited<ReturnType<typeof listLiveProducts>> = [];
+  try {
+    liveProducts = await listLiveProducts();
+  } catch (err) {
+    console.error(
+      "listLiveProducts failed; treating no kits as provisionable",
+      err,
+    );
+  }
   const addable = provisionableKits(
     links,
     new Set(liveProducts.filter((p) => p.provision_secret).map((p) => p.slug)),

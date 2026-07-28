@@ -82,4 +82,22 @@ describe("PendingPage — provisionable (addable) kits", () => {
     expect(slugs).not.toContain("paykit");
     expect(button.textContent).toBe("Activate all my kits");
   });
+
+  it("degrades to no addable kits (no activate button) instead of crashing when listLiveProducts throws", async () => {
+    loadVendorContextMock.mockResolvedValue({
+      user: { id: "u1", email: "v@x.com" },
+      isTeam: false,
+      links: [],
+    });
+    syncVendorKitsMock.mockResolvedValue([]);
+    listLiveProductsMock.mockRejectedValue(new Error("products read failed"));
+
+    const jsx = await PendingPage();
+    render(jsx);
+
+    expect(
+      screen.queryByTestId("activate-kits-button"),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("No kits yet")).toBeInTheDocument();
+  });
 });
