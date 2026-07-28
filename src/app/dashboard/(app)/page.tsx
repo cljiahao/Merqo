@@ -12,6 +12,7 @@ import { SavingsSummary } from "./savings-summary";
 import { VendorKitCard } from "./vendor-kit-card";
 import { KitDiscoveryCard } from "@/components/dashboard/kit-discovery-card";
 import { JoinWaitlistButton } from "@/components/dashboard/join-waitlist-button";
+import { ActivateKitsButton } from "@/components/dashboard/activate-kits-button";
 
 export const revalidate = 0;
 
@@ -85,16 +86,10 @@ export default async function DashboardPage() {
                   key={kit.slug}
                   kit={kit}
                   cta={
-                    kit.href && (
-                      <a
-                        href={`${kit.href}/login`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-sm font-medium text-foreground hover:underline"
-                      >
-                        Add {kit.name}
-                      </a>
-                    )
+                    <ActivateKitsButton
+                      slugs={[kit.slug]}
+                      label={`Add ${kit.name}`}
+                    />
                   }
                 />
               ))}

@@ -10,7 +10,7 @@ import { syncVendorKits } from "@/lib/vendor-sync";
 import { signOutAction } from "@/app/actions/auth";
 import { Wordmark } from "@/components/landing/wordmark";
 import { Button } from "@/components/ui/button";
-import { KitDiscoveryCard } from "@/components/dashboard/kit-discovery-card";
+import { ActivateKitsButton } from "@/components/dashboard/activate-kits-button";
 
 export const revalidate = 0;
 
@@ -38,7 +38,7 @@ export default async function PendingPage() {
   // featured, actionable card plus a link out, per the empty-state research
   // (Nielsen Norman Group: give a direct pathway, not a full catalog dump
   // right after signup).
-  const featured = addableKits(links)[0];
+  const addable = addableKits(links);
 
   return (
     <main className="flex min-h-screen items-center justify-center p-5">
@@ -80,19 +80,14 @@ export default async function PendingPage() {
             </>
           )}
 
-          {featured?.href && (
-            <div className="mt-6 text-left">
-              <KitDiscoveryCard
-                kit={featured}
-                cta={
-                  <a
-                    href={`${featured.href}/login`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-sm font-medium text-foreground hover:underline"
-                  >
-                    Add {featured.name}
-                  </a>
+          {addable.length > 0 && (
+            <div className="mt-6">
+              <ActivateKitsButton
+                slugs={addable.map((k) => k.slug)}
+                label={
+                  addable.length > 1
+                    ? "Activate all my kits"
+                    : `Add ${addable[0].name}`
                 }
               />
             </div>
