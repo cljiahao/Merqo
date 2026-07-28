@@ -5,12 +5,14 @@ import {
   tilesForLinks,
   hasRenderableActiveKit,
   addableKits,
+  provisionableKits,
 } from "@/lib/vendor";
+import { listLiveProducts } from "@/lib/products";
 import { syncVendorKits } from "@/lib/vendor-sync";
 import { signOutAction } from "@/app/actions/auth";
 import { Wordmark } from "@/components/landing/wordmark";
 import { Button } from "@/components/ui/button";
-import { KitDiscoveryCard } from "@/components/dashboard/kit-discovery-card";
+import { ActivateKitsButton } from "@/components/dashboard/activate-kits-button";
 
 export const revalidate = 0;
 
@@ -34,11 +36,30 @@ export default async function PendingPage() {
   if (hasRenderableActiveKit(links)) redirect("/dashboard");
 
   const { pending } = tilesForLinks(links);
-  // Deliberately NOT the full "Explore more kits" grid from /dashboard — one
-  // featured, actionable card plus a link out, per the empty-state research
-  // (Nielsen Norman Group: give a direct pathway, not a full catalog dump
-  // right after signup).
-  const featured = addableKits(links)[0];
+  // The single bulk/per-kit activate button below is the only add-a-kit
+  // affordance on this page — everything else is a link out to "the family".
+  // Best-effort: a products-registry read failure degrades to "nothing is
+  // provisionable" (no activate button) rather than crashing this page.
+  let liveProducts: Awaited<ReturnType<typeof listLiveProducts>> = [];
+  try {
+    liveProducts = await listLiveProducts();
+  } catch (err) {
+    console.error(
+      "listLiveProducts failed; treating no kits as provisionable",
+      err,
+    );
+  }
+  const addable = provisionableKits(
+    links,
+    new Set(liveProducts.filter((p) => p.provision_secret).map((p) => p.slug)),
+  );
+  // Currently unreachable given the live lineup (qkit/loopkit are always
+  // provisionable, so `addable` is never empty while some kit is addable at
+  // all) — but if a future kit is display-live with no provisioning route
+  // yet, fall back to the same external "log in on that kit" link the
+  // dashboard's per-card discovery section uses, instead of showing nothing.
+  const fallbackKit =
+    addable.length === 0 ? addableKits(links).find((k) => k.href) : undefined;
 
   return (
     <main className="flex min-h-screen items-center justify-center p-5">
@@ -80,21 +101,29 @@ export default async function PendingPage() {
             </>
           )}
 
-          {featured?.href && (
-            <div className="mt-6 text-left">
-              <KitDiscoveryCard
-                kit={featured}
-                cta={
-                  <a
-                    href={`${featured.href}/login`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-sm font-medium text-foreground hover:underline"
-                  >
-                    Add {featured.name}
-                  </a>
+          {addable.length > 0 && (
+            <div className="mt-6">
+              <ActivateKitsButton
+                slugs={addable.map((k) => k.slug)}
+                label={
+                  addable.length > 1
+                    ? "Activate all my kits"
+                    : `Add ${addable[0].name}`
                 }
               />
+            </div>
+          )}
+
+          {addable.length === 0 && fallbackKit && (
+            <div className="mt-6">
+              <a
+                href={`${fallbackKit.href}/login`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-medium text-foreground hover:underline"
+              >
+                Add {fallbackKit.name}
+              </a>
             </div>
           )}
 

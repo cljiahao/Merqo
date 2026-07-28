@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **loopkit's `products.status` was incorrectly `coming_soon`**, excluding it
+  from vendor auto-discovery (`listLiveProducts()`) since the `0004` kit-
+  consolidation migration, despite `src/lib/kits.ts` already showing it as
+  fully live. Corrected in `0013_fix_loopkit_live_status_and_provision_secret.sql`.
 - **A newly-added kit never appeared on `/dashboard` without a full logout/
   login.** "Add {kit}" just opens the other kit's own signup page — merqo
   only re-checks `vendor_links` via `syncVendorKits` from `/post-login`
@@ -36,6 +40,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **One-click vendor kit activation.** A signed-in vendor can now activate
+  qkit and/or loopkit directly from the Merqo dashboard — a bulk "Activate
+  all my kits" button on `/dashboard/pending` plus per-kit "Add {kit}"
+  buttons on `/dashboard`'s "Ready to add" section — without visiting that
+  kit's own signup page. Backed by a new server action
+  (`activateKitsAction`) that fans out to each kit's new
+  `POST /api/merqo/vendor-provision` route in parallel, and by
+  `provisionableKits()` (`src/lib/vendor.ts`), which derives the addable-kit
+  list from the live registry's actual provisioning capability
+  (`merqo.products.provision_secret`), not `kits.ts`'s display tier.
 - **Estimated savings panel on the vendor dashboard.** Each active kit card on
   `/dashboard` now shows an estimated dollar/hours-saved figure for the
   vendor's current plan tier, with a Pro-upgrade delta shown when the vendor
