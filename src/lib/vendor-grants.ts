@@ -3,7 +3,7 @@
 // comment in metrics-client.ts for why that boundary matters: pulling
 // "next/headers" into a client bundle fails the Next.js build.
 
-export type GrantStatus = "active" | "waitlist";
+export type GrantStatus = "active" | "waitlist" | "needs_setup";
 
 export type VendorGrant = {
   email: string;
