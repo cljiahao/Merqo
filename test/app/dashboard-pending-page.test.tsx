@@ -83,6 +83,44 @@ describe("PendingPage — provisionable (addable) kits", () => {
     expect(button.textContent).toBe("Activate all my kits");
   });
 
+  it("falls back to an external login link when addable kits exist but none are provisionable", async () => {
+    loadVendorContextMock.mockResolvedValue({
+      user: { id: "u1", email: "v@x.com" },
+      isTeam: false,
+      links: [
+        { product_slug: "qkit", status: "active", plan: "free" },
+        { product_slug: "loopkit", status: "active", plan: "free" },
+      ],
+    });
+    syncVendorKitsMock.mockResolvedValue([
+      { product_slug: "qkit", status: "active", plan: "free" },
+      { product_slug: "loopkit", status: "active", plan: "free" },
+    ]);
+    // Only paykit is addable (qkit/loopkit already active), and paykit has
+    // no provision_secret — the provisionable subset is empty even though
+    // addableKits(links) is not.
+    listLiveProductsMock.mockResolvedValue([
+      {
+        slug: "paykit",
+        name: "paykit",
+        app_url: "https://paykit.vercel.app",
+        metrics_url: null,
+        metrics_secret: null,
+        provision_secret: null,
+      },
+    ]);
+
+    const jsx = await PendingPage();
+    render(jsx);
+
+    expect(
+      screen.queryByTestId("activate-kits-button"),
+    ).not.toBeInTheDocument();
+    const link = screen.getByRole("link", { name: "Add paykit" });
+    expect(link).toHaveAttribute("href", "https://paykit-sg.vercel.app/login");
+    expect(link).toHaveAttribute("target", "_blank");
+  });
+
   it("degrades to no addable kits (no activate button) instead of crashing when listLiveProducts throws", async () => {
     loadVendorContextMock.mockResolvedValue({
       user: { id: "u1", email: "v@x.com" },

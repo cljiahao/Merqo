@@ -4,6 +4,7 @@ import {
   loadVendorContext,
   tilesForLinks,
   hasRenderableActiveKit,
+  addableKits,
   provisionableKits,
 } from "@/lib/vendor";
 import { listLiveProducts } from "@/lib/products";
@@ -52,6 +53,13 @@ export default async function PendingPage() {
     links,
     new Set(liveProducts.filter((p) => p.provision_secret).map((p) => p.slug)),
   );
+  // Currently unreachable given the live lineup (qkit/loopkit are always
+  // provisionable, so `addable` is never empty while some kit is addable at
+  // all) — but if a future kit is display-live with no provisioning route
+  // yet, fall back to the same external "log in on that kit" link the
+  // dashboard's per-card discovery section uses, instead of showing nothing.
+  const fallbackKit =
+    addable.length === 0 ? addableKits(links).find((k) => k.href) : undefined;
 
   return (
     <main className="flex min-h-screen items-center justify-center p-5">
@@ -103,6 +111,19 @@ export default async function PendingPage() {
                     : `Add ${addable[0].name}`
                 }
               />
+            </div>
+          )}
+
+          {addable.length === 0 && fallbackKit && (
+            <div className="mt-6">
+              <a
+                href={`${fallbackKit.href}/login`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm font-medium text-foreground hover:underline"
+              >
+                Add {fallbackKit.name}
+              </a>
             </div>
           )}
 
