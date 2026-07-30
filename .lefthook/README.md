@@ -10,7 +10,9 @@ when the checkout path itself contains a space.
 
 ## Contents
 
-- `commit-msg/`
+- `commit-msg/commit-msg.sh` — thin entry point lefthook execs directly (via its
+  `scripts:` convention) with the message-file path as `$1`; immediately
+  delegates to `../commit-msg.sh`
 - `commit-msg.sh` — Conventional Commits gate: validates the commit message's first line against `^(feat|fix|chore|docs|style|refactor|test|ci|perf|build|revert)(\(scope\))?: description`, exempting merge commits and `chore(release):`; non-zero exit rejects the commit
 - `readme-coupling.sh` — pre-commit nudge (non-blocking): warns to stderr when staged files touch a folder whose `README.md` wasn't also staged; the commit still proceeds
 

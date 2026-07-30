@@ -1,8 +1,9 @@
 # Merqo
 
 House brand + operator console for a modular family of small-business tools
-("kits") for Singapore micro/small sellers. `qkit` (queue/orders) is the
-first live product; `loopkit` (stamp-card loyalty) is the second.
+("kits") for Singapore micro/small sellers. `qkit` (queue/orders), `loopkit`
+(stamp-card loyalty), and `paykit` (payments) are live; `shopkit`, `stockkit`,
+and `reachkit` are upcoming (see `src/lib/kits.ts`).
 
 This app is the public brand landing plus a role-gated operator console:
 
@@ -34,16 +35,22 @@ pnpm format       # prettier --write
 ## File layout
 
 ```
-src/app/                    — app router (landing, dashboard, server actions)
+src/app/                    — app router (landing, dashboard, admin console, server actions)
 src/app/page.tsx            — public brand landing (static-prerendered)
-src/app/dashboard/          — cross-product metrics overview (auth-gated home)
-src/app/admin/vendors/      — grant/revoke vendor kit access (auth-gated)
-src/app/admin/team/         — manage Merqo-team members (auth-gated)
+src/app/dashboard/          — vendor dashboard: (app)/ (active-kit overview + kit discovery)
+                               and pending/ (no-active-kit state)
+src/app/admin/              — Merqo-team console: overview (page.tsx) + vendors/, team/,
+                               products/, feedback/ (all auth-gated)
+src/app/profile/            — shared account page (signed-in gate only — reachable from
+                               both the vendor dashboard and the admin console)
 src/app/login/              — email/password sign-in
 src/proxy.ts                — Supabase session refresh + route guard (Next 16)
-src/components/landing/     — landing sections (nav, hero, kit-grid, …)
+src/components/landing/     — landing sections (nav, hero, kit-stacker, …)
+src/components/dashboard/   — dashboard widgets (stat cards, kit discovery/preview cards)
+src/hooks/use-async-action.ts — shared pending/error state for server-action buttons
 src/lib/kits.ts             — kit family config (landing roadmap source of truth)
 src/lib/metrics-client.ts   — fetch of a kit's HTTP metrics endpoint
+src/lib/supabase/           — browser / server (schema=merqo) / service-role clients
 supabase/migrations/        — SQL schema (merqo.* tables) + RLS + grants
 ```
 
