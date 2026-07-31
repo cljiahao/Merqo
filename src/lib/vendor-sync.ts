@@ -122,7 +122,7 @@ export async function syncVendorKits(email: string): Promise<VendorLink[]> {
 
     const { data, error: readError } = await supabase
       .from("vendor_links")
-      .select("product_slug, status, plan")
+      .select("product_slug, status, plan, last_verified_at")
       .eq("email", email.toLowerCase());
     if (readError) {
       console.error("vendor sync: read failed", readError.message);

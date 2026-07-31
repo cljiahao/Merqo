@@ -13,12 +13,17 @@ export type KitTile = {
   href: string | null;
   /** Only meaningful on an active tile — the tier the kit last reported. */
   plan?: string | null;
+  /** Only meaningful on an active tile — when syncVendorKits last confirmed
+   *  this link, null if it's never been through a sync (e.g. granted by
+   *  hand on /admin/vendors rather than self-serve signup). */
+  lastVerifiedAt?: string | null;
 };
 
 export type VendorLink = {
   product_slug: string;
   status: GrantStatus;
   plan: string | null;
+  last_verified_at?: string | null;
 };
 
 /** Where a signed-in user belongs. Pure so it can be unit-tested; callers
@@ -53,6 +58,7 @@ export function tilesForLinks(
     product_slug: string;
     status: GrantStatus;
     plan?: string | null;
+    last_verified_at?: string | null;
   }[],
 ): { active: KitTile[]; pending: KitTile[]; needsSetup: KitTile[] } {
   const bySlug = new Map(KITS.map((k) => [k.slug, k]));
@@ -68,6 +74,7 @@ export function tilesForLinks(
       tagline: kit.tagline,
       href: kit.href ?? null,
       plan: l.status === "active" ? l.plan : undefined,
+      lastVerifiedAt: l.status === "active" ? l.last_verified_at : undefined,
     };
     if (l.status === "active") active.push(tile);
     else if (l.status === "needs_setup") needsSetup.push(tile);
@@ -185,7 +192,7 @@ export async function loadVendorContext(): Promise<{
   const linksQuery = user.email
     ? supabase
         .from("vendor_links")
-        .select("product_slug, status, plan")
+        .select("product_slug, status, plan, last_verified_at")
         .eq("email", user.email.toLowerCase())
     : null;
 

@@ -3,6 +3,8 @@ import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { VendorKitCard } from "@/app/dashboard/(app)/vendor-kit-card";
 
+const NOW = Date.parse("2026-07-26T12:00:00Z");
+
 describe("VendorKitCard", () => {
   it("applies the hover-lift treatment to the card root", () => {
     render(
@@ -14,6 +16,8 @@ describe("VendorKitCard", () => {
           href: "https://qkit-sg.vercel.app",
           plan: "free",
         }}
+        metrics={{ ok: false, slug: "qkit" }}
+        now={NOW}
       />,
     );
     const card = screen.getByText("qkit").closest("div")?.parentElement;
@@ -31,6 +35,8 @@ describe("VendorKitCard", () => {
           href: "https://qkit-sg.vercel.app",
           plan: "free",
         }}
+        metrics={{ ok: false, slug: "qkit" }}
+        now={NOW}
       />,
     );
     expect(screen.queryByText(/saved this month/)).not.toBeInTheDocument();
@@ -53,6 +59,8 @@ describe("VendorKitCard", () => {
           upsideHoursPerWeek: 3,
           upsideCostCentsPerMonth: 24000,
         }}
+        metrics={{ ok: false, slug: "qkit" }}
+        now={NOW}
       />,
     );
     expect(screen.getByText(/saved this month/)).toBeInTheDocument();
@@ -76,6 +84,8 @@ describe("VendorKitCard", () => {
           upsideHoursPerWeek: 3,
           upsideCostCentsPerMonth: 24000,
         }}
+        metrics={{ ok: false, slug: "qkit" }}
+        now={NOW}
       />,
     );
     expect(screen.getByText(/Pro saves/)).toBeInTheDocument();
@@ -98,8 +108,45 @@ describe("VendorKitCard", () => {
           upsideHoursPerWeek: 0,
           upsideCostCentsPerMonth: 0,
         }}
+        metrics={{ ok: false, slug: "loopkit" }}
+        now={NOW}
       />,
     );
     expect(screen.queryByText(/Pro saves/)).not.toBeInTheDocument();
+  });
+
+  it("shows a last-synced line when the tile carries lastVerifiedAt", () => {
+    render(
+      <VendorKitCard
+        tile={{
+          slug: "qkit",
+          name: "qkit",
+          tagline: "Take orders and run your queue.",
+          href: "https://qkit-sg.vercel.app",
+          plan: "free",
+          lastVerifiedAt: "2026-07-26T11:57:00Z",
+        }}
+        metrics={{ ok: false, slug: "qkit" }}
+        now={NOW}
+      />,
+    );
+    expect(screen.getByText("Synced 3m ago")).toBeInTheDocument();
+  });
+
+  it("omits the last-synced line when the tile has never been through a sync", () => {
+    render(
+      <VendorKitCard
+        tile={{
+          slug: "qkit",
+          name: "qkit",
+          tagline: "Take orders and run your queue.",
+          href: "https://qkit-sg.vercel.app",
+          plan: "free",
+        }}
+        metrics={{ ok: false, slug: "qkit" }}
+        now={NOW}
+      />,
+    );
+    expect(screen.queryByText(/^Synced/)).not.toBeInTheDocument();
   });
 });
