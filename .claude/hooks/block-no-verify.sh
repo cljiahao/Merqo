@@ -24,11 +24,11 @@ if echo "$cmd" | grep -qE 'git[[:space:]]+push' && { { echo "$cmd" | grep -qE '\
   echo "BLOCKED: force-push to a protected branch (--force/-f or +refspec). Open a PR instead." >&2
   exit 2
 fi
-if echo "$cmd" | grep -qE 'git[[:space:]]+(checkout|restore)\b' && echo "$cmd" | grep -qE '(^|[[:space:]])(\.claude/|\.lefthook/|\.github/|lefthook\.yml|\.gitleaks\.toml|AGENTS\.md|CLAUDE\.md|docs/CONSTITUTION\.md)'; then
+if echo "$cmd" | grep -qE 'git[[:space:]]+(checkout|restore)\b' && echo "$cmd" | grep -qE '(^|[[:space:]])(\.claude/|\.husky/|\.github/|\.gitleaks\.toml|AGENTS\.md|CLAUDE\.md|docs/CONSTITUTION\.md)'; then
   echo "BLOCKED: 'git checkout/restore' on a guard-layer file discards enforcement config (this is how settings.json gets silently wiped). Confirm with a human first." >&2
   exit 2
 fi
-if echo "$cmd" | grep -qE '(^|[[:space:]])rm([[:space:]]|$)' && echo "$cmd" | grep -qE '[[:space:]]-[a-zA-Z]*r|[[:space:]]--recursive' && echo "$cmd" | grep -qE '[[:space:]]-[a-zA-Z]*f|[[:space:]]--force' && echo "$cmd" | grep -qE '(^|[[:space:]/"])(src|app|lib|test|\.claude|\.lefthook|\.git|node_modules)([[:space:]/"]|$)'; then
+if echo "$cmd" | grep -qE '(^|[[:space:]])rm([[:space:]]|$)' && echo "$cmd" | grep -qE '[[:space:]]-[a-zA-Z]*r|[[:space:]]--recursive' && echo "$cmd" | grep -qE '[[:space:]]-[a-zA-Z]*f|[[:space:]]--force' && echo "$cmd" | grep -qE '(^|[[:space:]/"])(src|app|lib|test|\.claude|\.husky|\.git|node_modules)([[:space:]/"]|$)'; then
   echo "BLOCKED: recursive rm on a source directory. Confirm with a human first." >&2
   exit 2
 fi

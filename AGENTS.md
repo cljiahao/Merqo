@@ -148,7 +148,7 @@ requires GitHub Advanced Security, unavailable on this private repo's free
 tier; this line previously and incorrectly claimed CodeQL was configured).
 `.github/dependabot.yml` (security-only).
 Project skills (directory form, `<name>/SKILL.md`): `.claude/skills/` |
-Manifest: `.claude/harness.json` (`templatecentral_version: 5.11.0`) — all 21
+Manifest: `.claude/harness.json` (`templatecentral_version: 5.11.0`) — all 24
 `seeded_files` entries carry real `origin_hash` values (no `<pending>`
 markers); `verify-harness.sh` checks the subset under its guard regex
 (`.claude/hooks/`, `.claude/settings.json`, `.claude/(verify|regen)-harness.sh`,

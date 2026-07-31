@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Harness integrity sensor. Recomputes sha256 of the enforcement-layer seeded files and
 # compares to the origin_hash baseline in .claude/harness.json. Read-only; exits non-zero
-# on drift. Wired into CI and lefthook pre-push. Bless intentional changes with regen-harness.sh.
+# on drift. Wired into CI and husky pre-push. Bless intentional changes with regen-harness.sh.
 set -euo pipefail
 manifest=".claude/harness.json"
 [ -f "$manifest" ] || { echo "verify-harness: $manifest missing" >&2; exit 2; }
