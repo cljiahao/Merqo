@@ -7,7 +7,7 @@
   "review_note": "Adopted 5.7→5.8 delta + lefthook: comment hygiene (no-inline-comments:warn + AGENTS.md doctrine), packageManager pnpm@11.10.0. 5.8→5.11 delta adopted: added the missing .claude/hooks/* Claude-Code-hook script layer (previously inline `node -e` one-liners embedded in settings.json — block-no-verify.sh, protect-files.sh, user-prompt-guard.cjs, post-edit-typecheck.sh, post-tool-failure.sh, session-context.sh, skill-usage-log.sh, stop-checks.sh, subagent-stop.sh), rewired settings.json's hooks section to reference these scripts, added SubagentStop (net-new) and PostToolUseFailure, and fixed lefthook.yml's format-lint command missing an `exclude` list (was letting prettier/eslint reformat staged files — including these new hook scripts — and drift them off their harness.json baseline on first commit); version marker bumped 5.8.0 → 5.11.0. NOT adopted (same divergence as qkit, and still standing after this change): full tc harness-kit (bespoke CI here), pino route-logging enforcement, verify-harness/.harness-base re-sync (none seeded), better-auth/Drizzle add-skills. settings.json omits broad permissions.allow (auto-mode self-grant guard). This migration closes the Claude-Code-hook-script gap only, not a full harness-kit re-sync.",
   "seeded_files": {
     "AGENTS.md": {
-      "origin_hash": "682a1c0a5d5daac88cba8f21ec85174fb25f0ca3cfb385d15dde0beff6d3c85a",
+      "origin_hash": "3ef825aad043ef065ddda59fc1790e6e19b77e089991f8775f9bf57e004047cd",
       "path": "AGENTS.md"
     },
     "CLAUDE.md": {
@@ -23,7 +23,7 @@
       "path": ".claude/hooks/verify.sh"
     },
     ".claude/hooks/block-no-verify.sh": {
-      "origin_hash": "984c63715dabfe655094aa8b8f1ed60e82d67992833f3078382d958dc172e65d",
+      "origin_hash": "67afe20ecd0385dfce522810379642f21bbc1320739220e27c84e7d227634b95",
       "path": ".claude/hooks/block-no-verify.sh"
     },
     ".claude/hooks/protect-files.sh": {
@@ -67,7 +67,7 @@
       "path": ".claude/skills/supabase-migrate/SKILL.md"
     },
     ".husky/pre-commit": {
-      "origin_hash": "2ee3bb97fe9072fc6a505161220e79204bfedeca91dcc391d5bb21aced234212",
+      "origin_hash": "d2e7fc67c52c52b92b59483cb2ff7192622327df7eede66fcc1b2606ea5f239c",
       "path": ".husky/pre-commit"
     },
     ".husky/commit-msg": {
@@ -75,7 +75,7 @@
       "path": ".husky/commit-msg"
     },
     ".husky/pre-push": {
-      "origin_hash": "41e14be97718ce02e5b39bd63cceaea29d149a7f13b88cc33aa2d75a788992b6",
+      "origin_hash": "6a188b7cbbb034423607cd91ce20c78e62823775d24ce0c13ebdab9606f2b68c",
       "path": ".husky/pre-push"
     },
     ".husky/lib/readme-coupling.sh": {
@@ -86,8 +86,14 @@
       "origin_hash": "f5347b89ef6d530b5ae388cc4dea3bfce10898c89e5218dcfd908876ccc0659e",
       "path": ".husky/lib/commit-msg-check.sh"
     },
-    ".husky/lib/pre-commit.sh": { "origin_hash": "<pending>", "path": ".husky/lib/pre-commit.sh" },
-    ".husky/lib/pre-push.sh": { "origin_hash": "<pending>", "path": ".husky/lib/pre-push.sh" },
+    ".husky/lib/pre-commit.sh": {
+      "origin_hash": "69661adac00ddf03a53971cea448c015ddc67748af875af640de0b6838671768",
+      "path": ".husky/lib/pre-commit.sh"
+    },
+    ".husky/lib/pre-push.sh": {
+      "origin_hash": "41e14be97718ce02e5b39bd63cceaea29d149a7f13b88cc33aa2d75a788992b6",
+      "path": ".husky/lib/pre-push.sh"
+    },
     ".gitleaks.toml": {
       "origin_hash": "f9cd4aac35f474f9a48c691b4fd46642388389fa650481342fc4d5ad6216de4e",
       "path": ".gitleaks.toml"
