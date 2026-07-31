@@ -99,4 +99,20 @@ describe("updateSocialLinks", () => {
     expect(result.success).toBe(false);
     expect(upsertVendorProfile).not.toHaveBeenCalled();
   });
+
+  it("returns a friendly error when the RPC throws", async () => {
+    upsertVendorProfile.mockRejectedValue(new Error("db down"));
+    const result = await updateSocialLinks({ website: "https://example.com" });
+    expect(result).toEqual({
+      success: false,
+      error: "Could not save links",
+    });
+  });
+
+  it("returns an error when not signed in", async () => {
+    getUser.mockResolvedValue({ data: { user: null } });
+    const result = await updateSocialLinks({ website: "https://example.com" });
+    expect(result).toEqual({ success: false, error: "Not signed in" });
+    expect(upsertVendorProfile).not.toHaveBeenCalled();
+  });
 });

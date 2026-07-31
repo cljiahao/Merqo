@@ -6,6 +6,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Savings-estimate info tooltips on the dashboard, explaining the flat
+  per-kit/per-plan methodology behind the "Est. $X saved" figures.
+
+### Fixed
+
+- Dashboard navbar/logo, avatar menu, and profile page brought to parity with
+  qkit/loopkit/paykit's established patterns: the dashboard Wordmark is now
+  a clickable link and the header uses fluid padding instead of a fixed
+  height; the avatar menu's "Get help" and "Report a problem" items are
+  merged into one, matching every sibling kit; the profile page now has
+  stall name, profile icon upload, change password, display name, and
+  social links, wired to the shared `merqo.vendor_profile` RPCs.
+- Google OAuth sign-in now forces English (`hl=en`) so the consent screen
+  doesn't fall back to the browser/account locale.
+
 ### Changed
 
 - Migrated git hooks from lefthook to husky — lefthook's unsigned
