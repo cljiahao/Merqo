@@ -109,7 +109,7 @@ definitions, `secrets/**`) and asks for human approval on governance files
 (AGENTS.md/CLAUDE.md, `.claude/settings.json`, `.claude/hooks/*`,
 `.husky/*`, `.gitleaks.toml`, Dockerfile, etc). PreToolUse(Bash) →
 `block-no-verify.sh` blocks `--no-verify`/`-n`, hook-layer bypasses
-(`core.hooksPath=…`), direct commits to `main`, force-pushes to
+(`HUSKY=0`, `HUSKY_SKIP_HOOKS`, `core.hooksPath=…`), direct commits to `main`, force-pushes to
 `main`, `checkout`/`restore` of guard-layer files, and recursive-forced `rm`
 on source directories. App code, skills, specs unrestricted.
 UserPromptSubmit → `user-prompt-guard.cjs` pattern-checks prompts for
