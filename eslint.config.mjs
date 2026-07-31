@@ -19,7 +19,7 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     // Enforcement-layer scripts, not app code — integrity is hash-checked via
-    // .claude/harness.json, not style-checked here (mirrors lefthook.yml's
+    // .claude/harness.json, not style-checked here (mirrors .husky/pre-commit's
     // format-lint exclude for the same directory).
     ".claude/hooks/**",
     // Agent worktrees are independent checkouts (their own node_modules,

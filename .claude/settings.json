@@ -114,6 +114,8 @@
       "Read(.env.staging)",
       "Read(.env.test)",
       "Read(./secrets/**)",
+      "Read(./.secrets/**)",
+      "Read(**/.env.*)",
       "Edit(.env)",
       "Edit(.env.local)",
       "Edit(.env.development)",
@@ -124,7 +126,9 @@
       "Read(node_modules/**)",
       "Read(.next/**)",
       "Read(coverage/**)",
-      "Read(*.tsbuildinfo)"
+      "Read(*.tsbuildinfo)",
+      "Read(./**/dist/**)",
+      "Read(./**/.turbo/**)"
     ]
   },
   "skillListingBudgetFraction": 0.02

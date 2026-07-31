@@ -107,9 +107,9 @@ PreToolUse(Edit|Write) → `protect-files.sh` hard-blocks secret files (exit 2:
 `.env*` except `.env.example`, cert/credential files, CI/CD pipeline
 definitions, `secrets/**`) and asks for human approval on governance files
 (AGENTS.md/CLAUDE.md, `.claude/settings.json`, `.claude/hooks/*`,
-`lefthook.yml`, `.gitleaks.toml`, Dockerfile, etc). PreToolUse(Bash) →
+`.husky/*`, `.gitleaks.toml`, Dockerfile, etc). PreToolUse(Bash) →
 `block-no-verify.sh` blocks `--no-verify`/`-n`, hook-layer bypasses
-(`LEFTHOOK=0`, `core.hooksPath=…`), direct commits to `main`, force-pushes to
+(`HUSKY=0`, `HUSKY_SKIP_HOOKS`, `core.hooksPath=…`), direct commits to `main`, force-pushes to
 `main`, `checkout`/`restore` of guard-layer files, and recursive-forced `rm`
 on source directories. App code, skills, specs unrestricted.
 UserPromptSubmit → `user-prompt-guard.cjs` pattern-checks prompts for
@@ -129,12 +129,15 @@ always-on invariants.
 irreversible ops (`rm -rf`, `git push --force`/`-f`, `git reset --hard`,
 `git clean -fd/-fx`, `git filter-branch`, ref-delete). `ask` gates edits to
 AGENTS.md / CLAUDE.md / settings.json.
-Git hooks (lefthook): pre-commit runs format/lint/typecheck + lockfile-sync
+Git hooks (husky): pre-commit runs format/lint/typecheck + lockfile-sync
 (`--frozen-lockfile`) + gitleaks secret-scan on staged files, plus a
-readme-coupling staleness warning (`format-lint` excludes `.claude/hooks/*`
-and `.claude/.harness-base/**` so it can't reformat scripts off their
+readme-coupling staleness warning (excludes `.claude/hooks/*` and
+`.claude/.harness-base/**` so it can't reformat scripts off their
 harness.json baseline); commit-msg enforces Conventional Commits; pre-push
-runs the harness integrity check + quality gate.
+runs the harness integrity check + quality gate. Migrated 2026-08-01 off
+lefthook, whose unsigned `lefthook.exe` Windows Smart App Control blocks
+unconditionally — see
+`docs/superpowers/specs/2026-08-01-lefthook-to-husky-migration-design.md`.
 CI (GitHub Actions, `ci.yml`, 6 jobs): `test` (harness integrity, changed-line
 coverage via `diff-cover` ≥80%, lockfile-in-sync via `--frozen-lockfile`),
 `build` (`next build`), `e2e` (Playwright public smoke), `changelog`
@@ -145,11 +148,11 @@ requires GitHub Advanced Security, unavailable on this private repo's free
 tier; this line previously and incorrectly claimed CodeQL was configured).
 `.github/dependabot.yml` (security-only).
 Project skills (directory form, `<name>/SKILL.md`): `.claude/skills/` |
-Manifest: `.claude/harness.json` (`templatecentral_version: 5.11.0`) — all 21
+Manifest: `.claude/harness.json` (`templatecentral_version: 5.11.0`) — all 26
 `seeded_files` entries carry real `origin_hash` values (no `<pending>`
 markers); `verify-harness.sh` checks the subset under its guard regex
 (`.claude/hooks/`, `.claude/settings.json`, `.claude/(verify|regen)-harness.sh`,
-`lefthook.yml`, `.lefthook/`, `.gitleaks.toml`, `.github/workflows/`) against
+`.husky/`, `.gitleaks.toml`, `.github/workflows/`) against
 the git blob at HEAD on every pre-push and in CI.
 
 > Note: unlike the qkit reference, `settings.json` here omits the broad
@@ -172,6 +175,13 @@ the git blob at HEAD on every pre-push and in CI.
   replacing husky). **Not adopted** (same divergences as qkit):
   - the full tc harness-kit (bespoke CI here), pino route-logging,
     harness-verifier / `.harness-base` re-sync layer, better-auth/Drizzle.
+- **husky migration (2026-08-01):** superseded the 2026-07-24 (repo-local:
+  see the lefthook-adoption bullet above) git-hook decision — lefthook's
+  `lefthook.exe` is unsigned and Windows Smart App Control blocks it
+  unconditionally on this machine, with no signed-binary alternative
+  available in any distribution channel. husky v9 has no native binary.
+  Same checks ported into `.husky/*` shell scripts; see
+  `docs/superpowers/specs/2026-08-01-lefthook-to-husky-migration-design.md`.
 - Landing design spec: `docs/superpowers/specs/2026-07-06-merqo-home-landing-design.md`.
 - Deploy runbook: `docs/DEPLOY.md`.
 

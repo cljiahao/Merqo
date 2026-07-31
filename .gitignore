@@ -38,6 +38,7 @@ yarn-error.log*
 
 # claude code local overrides
 .claude/settings.local.json
+.claude/skill-usage.log
 
 # typescript
 *.tsbuildinfo
