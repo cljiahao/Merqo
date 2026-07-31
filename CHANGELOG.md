@@ -11,9 +11,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Migrated git hooks from lefthook to husky — lefthook's unsigned
   `lefthook.exe` is unconditionally blocked by Windows Smart App Control on
   this machine; husky has no native binary. Same checks, same rigor.
-- **templateCentral 5.12 harness migration.** `prepare` script now tolerates
-  a missing `.git` (`lefthook install || true`) so Docker builds that exclude
-  `.git` via `.dockerignore` don't hard-fail on `pnpm install`. `next` pin
+- **templateCentral 5.12 harness migration.** `next` pin
   loosened from an exact version to `^16.2.11` to match the canonical scaffold
   convention (already on the CVE-2026-64642 floor, no behavior change).
   `.claude/settings.json`'s `permissions.deny` gained the canonical
