@@ -7,7 +7,7 @@
   "review_note": "Adopted 5.7→5.8 delta + lefthook: comment hygiene (no-inline-comments:warn + AGENTS.md doctrine), packageManager pnpm@11.10.0. 5.8→5.11 delta adopted: added the missing .claude/hooks/* Claude-Code-hook script layer (previously inline `node -e` one-liners embedded in settings.json — block-no-verify.sh, protect-files.sh, user-prompt-guard.cjs, post-edit-typecheck.sh, post-tool-failure.sh, session-context.sh, skill-usage-log.sh, stop-checks.sh, subagent-stop.sh), rewired settings.json's hooks section to reference these scripts, added SubagentStop (net-new) and PostToolUseFailure, and fixed lefthook.yml's format-lint command missing an `exclude` list (was letting prettier/eslint reformat staged files — including these new hook scripts — and drift them off their harness.json baseline on first commit); version marker bumped 5.8.0 → 5.11.0. NOT adopted (same divergence as qkit, and still standing after this change): full tc harness-kit (bespoke CI here), pino route-logging enforcement, verify-harness/.harness-base re-sync (none seeded), better-auth/Drizzle add-skills. settings.json omits broad permissions.allow (auto-mode self-grant guard). This migration closes the Claude-Code-hook-script gap only, not a full harness-kit re-sync.",
   "seeded_files": {
     "AGENTS.md": {
-      "origin_hash": "c05be805a01edeb5904d6af0bbe42869a6ccbcaa0eda190d08e8258763bd59c0",
+      "origin_hash": "682a1c0a5d5daac88cba8f21ec85174fb25f0ca3cfb385d15dde0beff6d3c85a",
       "path": "AGENTS.md"
     },
     "CLAUDE.md": {
@@ -23,7 +23,7 @@
       "path": ".claude/hooks/verify.sh"
     },
     ".claude/hooks/block-no-verify.sh": {
-      "origin_hash": "d487c59fd778ec7d5bbe2a1e0da4084d34fc47088f8dd88e57e3d3b4ad256c90",
+      "origin_hash": "984c63715dabfe655094aa8b8f1ed60e82d67992833f3078382d958dc172e65d",
       "path": ".claude/hooks/block-no-verify.sh"
     },
     ".claude/hooks/protect-files.sh": {
