@@ -8,6 +8,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **The admin console had no mobile burger/hamburger menu.** `AdminNav` was a
+  flat, non-collapsing link row that wrapped or overflowed on small screens —
+  the only nav in the whole kit family without a collapsing mobile menu.
+  Restructured `AdminNav` to own the entire sticky header (burger + wordmark
+  - `AccountMenu`) instead of splitting it across `layout.tsx` and a client
+    subcomponent, so the burger's open/close state and the mobile tab panel it
+    reveals live in one place. Now matches every kit's burger-beside-logo
+    pattern. `AGENTS.md` and the affected READMEs were synced to the current
+    file layout in the same pass.
 - **loopkit's `products.status` was incorrectly `coming_soon`**, excluding it
   from vendor auto-discovery (`listLiveProducts()`) since the `0004` kit-
   consolidation migration, despite `src/lib/kits.ts` already showing it as
