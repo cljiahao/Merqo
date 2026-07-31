@@ -7,7 +7,7 @@
   "review_note": "Adopted 5.7→5.8 delta + lefthook: comment hygiene (no-inline-comments:warn + AGENTS.md doctrine), packageManager pnpm@11.10.0. 5.8→5.11 delta adopted: added the missing .claude/hooks/* Claude-Code-hook script layer (previously inline `node -e` one-liners embedded in settings.json — block-no-verify.sh, protect-files.sh, user-prompt-guard.cjs, post-edit-typecheck.sh, post-tool-failure.sh, session-context.sh, skill-usage-log.sh, stop-checks.sh, subagent-stop.sh), rewired settings.json's hooks section to reference these scripts, added SubagentStop (net-new) and PostToolUseFailure, and fixed lefthook.yml's format-lint command missing an `exclude` list (was letting prettier/eslint reformat staged files — including these new hook scripts — and drift them off their harness.json baseline on first commit); version marker bumped 5.8.0 → 5.11.0. NOT adopted (same divergence as qkit, and still standing after this change): full tc harness-kit (bespoke CI here), pino route-logging enforcement, verify-harness/.harness-base re-sync (none seeded), better-auth/Drizzle add-skills. settings.json omits broad permissions.allow (auto-mode self-grant guard). This migration closes the Claude-Code-hook-script gap only, not a full harness-kit re-sync.",
   "seeded_files": {
     "AGENTS.md": {
-      "origin_hash": "fb165edbbb25814f067f50a215813154974f42dd8f9188e2b5e1b2ba6beafb7d",
+      "origin_hash": "efe57b0c849d0aca72a24377b28e128b75762831085fdcd05f2382676ad644ee",
       "path": "AGENTS.md"
     },
     "CLAUDE.md": {
@@ -15,7 +15,7 @@
       "path": "CLAUDE.md"
     },
     ".claude/settings.json": {
-      "origin_hash": "633f30895427713f0f9b3463f3493562fe7ee933bf647c0e0426bef4626e31b4",
+      "origin_hash": "3c8a9ca817455c0ed8544e1d894285fb2190b5ac45cf51117305025af94fa98b",
       "path": ".claude/settings.json"
     },
     ".claude/hooks/verify.sh": {
@@ -23,11 +23,11 @@
       "path": ".claude/hooks/verify.sh"
     },
     ".claude/hooks/block-no-verify.sh": {
-      "origin_hash": "f0f147dcf4bd5df66bd723a7b5c3bde69df758f232b1403e9eb02ab7500d35ea",
+      "origin_hash": "45c0b132dcd86ff0201ede25fa4a99e8510d96aa2d88b9def4eb949431bf12c1",
       "path": ".claude/hooks/block-no-verify.sh"
     },
     ".claude/hooks/protect-files.sh": {
-      "origin_hash": "2ba25f7c278bbd4c803b283b91fcb1ef4836af2429b8ae9847a9e64a4a0e3b76",
+      "origin_hash": "cedefb778eee8a3b8c79bb1a4eb7b7680a0a5e1ef3c9b1a08d3cac6c8793d6b1",
       "path": ".claude/hooks/protect-files.sh"
     },
     ".claude/hooks/user-prompt-guard.cjs": {
@@ -66,17 +66,32 @@
       "origin_hash": "1b2a2963ef427b22f7d2ff8d7c7c3e6cb4b2757acfb2c1de5b79a8e57b96d15b",
       "path": ".claude/skills/supabase-migrate/SKILL.md"
     },
-    ".husky/pre-commit": { "origin_hash": "<pending>", "path": ".husky/pre-commit" },
-    ".husky/commit-msg": { "origin_hash": "<pending>", "path": ".husky/commit-msg" },
-    ".husky/pre-push": { "origin_hash": "<pending>", "path": ".husky/pre-push" },
-    ".husky/lib/readme-coupling.sh": { "origin_hash": "<pending>", "path": ".husky/lib/readme-coupling.sh" },
-    ".husky/lib/commit-msg-check.sh": { "origin_hash": "<pending>", "path": ".husky/lib/commit-msg-check.sh" },
+    ".husky/pre-commit": {
+      "origin_hash": "2ee3bb97fe9072fc6a505161220e79204bfedeca91dcc391d5bb21aced234212",
+      "path": ".husky/pre-commit"
+    },
+    ".husky/commit-msg": {
+      "origin_hash": "542e5d3b30c42e64b3234d23d2e385ce4b1a3671231aa406b5ba2a80560dd35b",
+      "path": ".husky/commit-msg"
+    },
+    ".husky/pre-push": {
+      "origin_hash": "41e14be97718ce02e5b39bd63cceaea29d149a7f13b88cc33aa2d75a788992b6",
+      "path": ".husky/pre-push"
+    },
+    ".husky/lib/readme-coupling.sh": {
+      "origin_hash": "368a87cf51dbc4b5bfacafd80e44b8033cb926e2e2c09daa76eaac69a15756bd",
+      "path": ".husky/lib/readme-coupling.sh"
+    },
+    ".husky/lib/commit-msg-check.sh": {
+      "origin_hash": "f5347b89ef6d530b5ae388cc4dea3bfce10898c89e5218dcfd908876ccc0659e",
+      "path": ".husky/lib/commit-msg-check.sh"
+    },
     ".gitleaks.toml": {
       "origin_hash": "f9cd4aac35f474f9a48c691b4fd46642388389fa650481342fc4d5ad6216de4e",
       "path": ".gitleaks.toml"
     },
     ".claude/verify-harness.sh": {
-      "origin_hash": "8c50cc319c80fb1b6e4129f149b69a7341803dc078f388fe0e3127e64d7f08bd",
+      "origin_hash": "74915be4fe3af153d28be775e30e84fa4eb4b2a4d4e4c509dbee28e138dc749c",
       "path": ".claude/verify-harness.sh"
     },
     ".claude/regen-harness.sh": {
