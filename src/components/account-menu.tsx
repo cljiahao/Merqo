@@ -2,15 +2,13 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
+import { User, LifeBuoy, MessageSquarePlus, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -34,19 +32,17 @@ export function initials(email: string | null | undefined): string {
 
 /** Shared account-menu trigger for /dashboard and /admin headers — an image
  *  avatar (or initials fallback) that opens a dropdown with the signed-in
- *  email, a Profile link, a Get Help submenu (listing the vendor's active
- *  kits' support links), Feedback and Report a problem (each opening a
- *  Sheet form for hub-level input), an optional switch link for dual-role
- *  accounts, and Sign out. */
+ *  email, a Profile link, Get help and Feedback (each opening a Sheet form),
+ *  an optional switch link for dual-role accounts, and Sign out. Matches the
+ *  qkit/loopkit/paykit avatar-menu pattern: a single "Get help" item opens
+ *  the support form rather than deep-linking to another kit's dashboard. */
 export function AccountMenu({
   email,
   avatarUrl,
-  activeKits = [],
   switchTo,
 }: {
   email?: string | null;
   avatarUrl?: string | null;
-  activeKits?: { slug: string; name: string; href: string }[];
   switchTo?: { href: string; label: string };
 }) {
   const [, startTransition] = useTransition();
@@ -93,43 +89,21 @@ export function AccountMenu({
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild className="cursor-pointer">
-            <Link href="/profile">Profile</Link>
-          </DropdownMenuItem>
-          {activeKits.length > 0 && (
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="cursor-pointer">
-                Get help
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent>
-                {activeKits.map((k) => (
-                  <DropdownMenuItem
-                    key={k.slug}
-                    asChild
-                    className="cursor-pointer"
-                  >
-                    <a
-                      href={`${k.href}/dashboard`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {k.name} support
-                    </a>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-          )}
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onSelect={() => setFeedbackOpen(true)}
-          >
-            Feedback
+            <Link href="/profile">
+              <User /> Profile
+            </Link>
           </DropdownMenuItem>
           <DropdownMenuItem
             className="cursor-pointer"
             onSelect={() => setSupportOpen(true)}
           >
-            Report a problem
+            <LifeBuoy /> Get help
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onSelect={() => setFeedbackOpen(true)}
+          >
+            <MessageSquarePlus /> Feedback
           </DropdownMenuItem>
           {switchTo && (
             <>
@@ -145,7 +119,7 @@ export function AccountMenu({
             className="cursor-pointer"
             onSelect={() => startTransition(() => signOutAction())}
           >
-            Sign out
+            <LogOut /> Sign out
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -168,9 +142,7 @@ export function AccountMenu({
       <Sheet open={supportOpen} onOpenChange={setSupportOpen}>
         <SheetContent side="right" className="w-full sm:max-w-md">
           <SheetHeader>
-            <SheetTitle className="font-display text-2xl">
-              Report a problem
-            </SheetTitle>
+            <SheetTitle className="font-display text-2xl">Get help</SheetTitle>
             <SheetDescription>
               Something not working, or need help with your Merqo account? Tell
               us and we&apos;ll follow up.

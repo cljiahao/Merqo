@@ -23,17 +23,19 @@ describe("getAvatarUrl", () => {
 });
 
 describe("getDisplayName", () => {
-  it("returns the trimmed full_name when present", () => {
+  it("returns the trimmed display_name when present", () => {
     expect(
-      getDisplayName({ user_metadata: { full_name: "  Alice Tan  " } }),
+      getDisplayName({ user_metadata: { display_name: "  Alice Tan  " } }),
     ).toBe("Alice Tan");
   });
 
-  it("returns null when full_name is blank or whitespace-only", () => {
-    expect(getDisplayName({ user_metadata: { full_name: "   " } })).toBeNull();
+  it("returns null when display_name is blank or whitespace-only", () => {
+    expect(
+      getDisplayName({ user_metadata: { display_name: "   " } }),
+    ).toBeNull();
   });
 
-  it("returns null when full_name is absent", () => {
+  it("returns null when display_name is absent", () => {
     expect(getDisplayName({ user_metadata: {} })).toBeNull();
   });
 

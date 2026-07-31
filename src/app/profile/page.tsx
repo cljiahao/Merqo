@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
 import { getAvatarUrl, getDisplayName } from "@/lib/account";
+import { getOrCreateVendorProfile } from "@/lib/merqo-vendor-profile";
 import { ProfileForm } from "./profile-form";
 
 export const revalidate = 0;
@@ -18,22 +19,37 @@ export default async function ProfilePage() {
   const user = data.user;
   if (!user) redirect("/login");
 
+  const profile = await getOrCreateVendorProfile(supabase, user.id, null);
+
   return (
-    <main className="mx-auto max-w-xl px-5 py-8">
-      <Link
-        href="/dashboard"
-        className="text-sm text-muted-foreground hover:underline"
-      >
-        ← Back
-      </Link>
-      <h1 className="mt-2 font-display text-2xl font-bold tracking-tight">
-        Profile
-      </h1>
+    <div className="mx-auto max-w-lg space-y-8 px-5 py-8 md:max-w-4xl">
+      <header>
+        <Link
+          href="/dashboard"
+          className="text-sm text-muted-foreground hover:underline"
+        >
+          ← Back
+        </Link>
+        <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          Your account
+        </p>
+        <h1 className="font-display text-4xl font-semibold leading-none">
+          Profile
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Your stall name, profile icon, how we address you, and your sign-in
+          password. Each section saves on its own.
+        </p>
+      </header>
+
       <ProfileForm
-        email={user.email ?? null}
+        stallName={profile.stall_name}
+        displayName={getDisplayName(user) ?? ""}
+        email={user.email ?? ""}
+        vendorId={user.id}
         avatarUrl={getAvatarUrl(user)}
-        displayName={getDisplayName(user)}
+        socialLinks={profile.social_links}
       />
-    </main>
+    </div>
   );
 }

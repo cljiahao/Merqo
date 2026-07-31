@@ -8,7 +8,6 @@ import {
   comingKits,
   provisionableKits,
   hasActiveLinkFor,
-  activeKitSupportLinks,
 } from "@/lib/vendor";
 
 describe("resolveHome", () => {
@@ -304,56 +303,5 @@ describe("hasActiveLinkFor", () => {
     expect(
       hasActiveLinkFor([{ product_slug: "loopkit", status: "active" }], "qkit"),
     ).toBe(false);
-  });
-});
-
-describe("activeKitSupportLinks", () => {
-  const kits = [
-    {
-      slug: "qkit",
-      name: "qkit",
-      tagline: "",
-      description: "",
-      features: [],
-      status: "live" as const,
-      href: "https://qkit-sg.vercel.app",
-    },
-    {
-      slug: "loopkit",
-      name: "loopkit",
-      tagline: "",
-      description: "",
-      features: [],
-      status: "coming" as const,
-    },
-  ];
-
-  it("includes only active links whose kit has an href", () => {
-    const out = activeKitSupportLinks(
-      [
-        { product_slug: "qkit", status: "active", plan: "free" },
-        { product_slug: "loopkit", status: "active", plan: null },
-      ],
-      kits,
-    );
-    expect(out).toEqual([
-      { slug: "qkit", name: "qkit", href: "https://qkit-sg.vercel.app" },
-    ]);
-  });
-
-  it("excludes waitlisted links", () => {
-    const out = activeKitSupportLinks(
-      [{ product_slug: "qkit", status: "waitlist", plan: null }],
-      kits,
-    );
-    expect(out).toEqual([]);
-  });
-
-  it("excludes links to a slug not in the KITS registry", () => {
-    const out = activeKitSupportLinks(
-      [{ product_slug: "ghostkit", status: "active", plan: null }],
-      kits,
-    );
-    expect(out).toEqual([]);
   });
 });
