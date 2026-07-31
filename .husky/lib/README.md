@@ -10,7 +10,7 @@ lives here instead of directly in the hook files husky invokes.
 ## Contents
 
 - `pre-commit.sh` — pre-commit body: `prettier --write` + `eslint --fix
-  --max-warnings=0` on staged `.ts/.tsx/.js/.mjs/.cjs` (excluding
+--max-warnings=0` on staged `.ts/.tsx/.js/.mjs/.cjs` (excluding
   `.claude/hooks/*` and `.claude/.harness-base/**`, and re-staging with
   `xargs -d '\n'` so filenames with spaces/quotes survive), `tsc --noEmit`,
   a frozen-lockfile install check when `package.json` is staged, a gitleaks

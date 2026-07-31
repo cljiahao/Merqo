@@ -11,7 +11,7 @@ Smart App Control to block, unlike lefthook's unsigned `lefthook.exe`).
 
 - `pre-commit` — thin dispatcher: `exec bash .husky/lib/pre-commit.sh "$@"`.
 - `commit-msg` — thin dispatcher: `exec bash .husky/lib/commit-msg-check.sh
-  "$1"`.
+"$1"`.
 - `pre-push` — thin dispatcher: `exec bash .husky/lib/pre-push.sh "$@"`.
 - `lib/` — the real script bodies the three dispatchers above hand off to
   (see `lib/README.md`).

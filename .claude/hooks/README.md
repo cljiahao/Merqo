@@ -34,7 +34,7 @@ behavioral description of each hook and the events they're wired to.
 - `session-context.sh` — SessionStart (startup|resume|clear|compact):
   re-injects the first 30 lines of `AGENTS.md` plus always-on invariants.
 - `verify.sh` — manual verification gate (`pnpm build && pnpm check &&
-  pnpm test`), not wired to a Claude Code hook event; run by hand after
+pnpm test`), not wired to a Claude Code hook event; run by hand after
   substantial changes. Distinct from `.claude/verify-harness.sh`, the
   harness-manifest drift check wired into `.husky/pre-push` and CI.
 
