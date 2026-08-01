@@ -11,7 +11,7 @@ const { metadata } = await import("./layout");
 describe("root layout metadata", () => {
   it("sets the browser-tab title", () => {
     expect(metadata.title).toEqual({
-      default: "Merqo: hub for small-business kits",
+      default: "Merqo | Hub For Small-Business Kits",
       template: "%s · Merqo",
     });
   });
