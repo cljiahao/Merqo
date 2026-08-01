@@ -86,7 +86,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <div>
+      <div data-tour="dashboard-welcome">
         <h1 className="font-display text-2xl font-bold tracking-tight">
           Your kits
         </h1>
