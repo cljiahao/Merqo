@@ -14,7 +14,7 @@ export function getAvatarUrl(user: MetadataUser): string | null {
 }
 
 export function getDisplayName(user: MetadataUser): string | null {
-  const raw = stringField(user, "full_name");
+  const raw = stringField(user, "display_name");
   const trimmed = raw?.trim();
   return trimmed ? trimmed : null;
 }

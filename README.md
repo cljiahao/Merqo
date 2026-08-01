@@ -47,9 +47,14 @@ src/app/login/              — email/password sign-in
 src/proxy.ts                — Supabase session refresh + route guard (Next 16)
 src/components/landing/     — landing sections (nav, hero, kit-stacker, …)
 src/components/dashboard/   — dashboard widgets (stat cards, kit discovery/preview cards)
+src/components/section.tsx  — field-group card shell for account-settings-style pages
+src/components/image-uploader.tsx — vendor-avatars Storage upload (resize-to-WebP client-side)
+src/components/social-icons.tsx / social-links-fields.tsx — shared social-link field list + form
 src/hooks/use-async-action.ts — shared pending/error state for server-action buttons
 src/lib/kits.ts             — kit family config (landing roadmap source of truth)
 src/lib/metrics-client.ts   — fetch of a kit's HTTP metrics endpoint
+src/lib/schemas.ts          — Zod schemas for the profile page's forms
+src/lib/merqo-vendor-profile.ts — typed wrapper over the shared vendor_profile RPCs
 src/lib/supabase/           — browser / server (schema=merqo) / service-role clients
 supabase/migrations/        — SQL schema (merqo.* tables) + RLS + grants
 ```

@@ -4,6 +4,7 @@ import type { VendorMetricsResult } from "@/lib/vendor-metrics-client";
 import { money, timeAgo } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { InfoTooltip } from "@/components/info-tooltip";
 import { UpgradeButton } from "./upgrade-button";
 import { DowngradeButton } from "./downgrade-button";
 import { VendorMetricList } from "./vendor-metric-list";
@@ -31,12 +32,18 @@ export function VendorKitCard({
       </div>
       <p className="mt-2 text-sm text-muted-foreground">{tile.tagline}</p>
       {savings && (
-        <p className="mt-2 text-sm text-foreground">
+        <p className="mt-2 inline-flex flex-wrap items-center gap-1 text-sm text-foreground">
           Est.{" "}
           <span className="font-semibold">
             {money(savings.costCentsPerMonth)}
           </span>{" "}
           saved this month · ~{savings.hoursPerWeek} hrs/week back
+          <InfoTooltip ariaLabel="How this estimate is calculated">
+            A flat per-kit, per-plan estimate — not tracked from your actual
+            usage. Based on ~S$18/hr (Singapore hawker-stall staff wage), ×
+            hours/week this kit saves you on your current plan × 4.33
+            weeks/month.
+          </InfoTooltip>
         </p>
       )}
 

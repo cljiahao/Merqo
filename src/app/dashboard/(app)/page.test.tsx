@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const {
   requireActiveVendorMock,
@@ -85,7 +86,7 @@ describe("DashboardPage", () => {
     ]);
 
     const { default: DashboardPage } = await import("./page");
-    render(await DashboardPage());
+    render(<TooltipProvider>{await DashboardPage()}</TooltipProvider>);
 
     expect(syncVendorKitsMock).toHaveBeenCalledWith("vendor@business.sg");
     expect(screen.getByText("paykit")).toBeInTheDocument();
@@ -102,7 +103,7 @@ describe("DashboardPage", () => {
     });
 
     const { default: DashboardPage } = await import("./page");
-    render(await DashboardPage());
+    render(<TooltipProvider>{await DashboardPage()}</TooltipProvider>);
 
     expect(syncVendorKitsMock).not.toHaveBeenCalled();
     expect(fetchVendorMetricsMock).not.toHaveBeenCalled();
@@ -124,7 +125,7 @@ describe("DashboardPage", () => {
     ]);
 
     const { default: DashboardPage } = await import("./page");
-    render(await DashboardPage());
+    render(<TooltipProvider>{await DashboardPage()}</TooltipProvider>);
 
     // NOTE: deviates from the brief's verbatim `getByText("Finish setup")`
     // assertion here — the section heading and the CTA link both render the
@@ -153,7 +154,7 @@ describe("DashboardPage", () => {
 
     const { default: DashboardPage } = await import("./page");
     const { LIVE_KITS } = await import("@/lib/kits");
-    render(await DashboardPage());
+    render(<TooltipProvider>{await DashboardPage()}</TooltipProvider>);
 
     expect(
       screen.getByText(`1 of ${LIVE_KITS.length} kits connected`, {
@@ -191,7 +192,7 @@ describe("DashboardPage", () => {
     });
 
     const { default: DashboardPage } = await import("./page");
-    render(await DashboardPage());
+    render(<TooltipProvider>{await DashboardPage()}</TooltipProvider>);
 
     expect(fetchVendorMetricsMock).toHaveBeenCalledWith(
       expect.objectContaining({

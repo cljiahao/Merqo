@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const { requireActiveVendorMock, syncVendorKitsMock, listLiveProductsMock } =
   vi.hoisted(() => ({
@@ -72,7 +73,7 @@ describe("DashboardPage — Ready to add kits", () => {
     ]);
 
     const jsx = await DashboardPage();
-    render(jsx);
+    render(<TooltipProvider>{jsx}</TooltipProvider>);
 
     // qkit is already active (linked), so it's never in "ready to add" —
     // loopkit (live + provisionable + not linked) must render its own

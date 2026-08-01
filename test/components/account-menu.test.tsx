@@ -105,42 +105,23 @@ describe("AccountMenu", () => {
     ).toBeInTheDocument();
   });
 
-  it("opens the Report a problem sheet when its menu item is selected", () => {
+  it("opens the Get help sheet when its menu item is selected", () => {
     render(<AccountMenu email="vendor@example.com" />);
     fireEvent.pointerDown(screen.getByRole("button", { name: "Account menu" }));
-    fireEvent.click(screen.getByRole("menuitem", { name: "Report a problem" }));
+    fireEvent.click(screen.getByRole("menuitem", { name: "Get help" }));
     expect(
       screen.getByText(/something not working, or need help/i),
     ).toBeInTheDocument();
   });
 
-  it("hides the Get help submenu when there are no active kits, but keeps Feedback and Report a problem", () => {
+  it("always shows Get help and Feedback as top-level menu items", () => {
     render(<AccountMenu email="vendor@example.com" />);
     fireEvent.pointerDown(screen.getByRole("button", { name: "Account menu" }));
     expect(
-      screen.queryByRole("menuitem", { name: "Get help" }),
-    ).not.toBeInTheDocument();
+      screen.getByRole("menuitem", { name: "Get help" }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("menuitem", { name: "Feedback" }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("menuitem", { name: "Report a problem" }),
-    ).toBeInTheDocument();
-  });
-
-  it("lists each active kit's support link inside Get help", () => {
-    render(
-      <AccountMenu
-        email="vendor@example.com"
-        activeKits={[
-          { slug: "qkit", name: "qkit", href: "https://qkit-sg.vercel.app" },
-        ]}
-      />,
-    );
-    fireEvent.pointerDown(screen.getByRole("button", { name: "Account menu" }));
-    fireEvent.click(screen.getByRole("menuitem", { name: "Get help" }));
-    expect(
-      screen.getByRole("menuitem", { name: "qkit support" }),
-    ).toHaveAttribute("href", "https://qkit-sg.vercel.app/dashboard");
   });
 });
