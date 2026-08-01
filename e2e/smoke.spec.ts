@@ -14,7 +14,7 @@ test("login page renders", async ({ page }) => {
 });
 
 // The landing renders and funnels to the dashboard.
-test("landing renders with a Log in action", async ({ page }) => {
+test("landing renders with a Sign in action", async ({ page }) => {
   await page.goto("/");
   await expect(
     page.getByRole("heading", {
@@ -22,7 +22,7 @@ test("landing renders with a Log in action", async ({ page }) => {
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Log in" }).first(),
+    page.getByRole("link", { name: "Sign in" }).first(),
   ).toBeVisible();
   // the interactive kit stacker is the centerpiece
   await expect(
