@@ -45,7 +45,7 @@ src/app/profile/            — shared account page (signed-in gate only — rea
                                both the vendor dashboard and the admin console)
 src/app/login/              — email/password sign-in
 src/proxy.ts                — Supabase session refresh + route guard (Next 16)
-src/components/landing/     — landing sections (nav, hero, kit-stacker, …)
+src/components/landing/     — landing sections (nav, hero, kit-stacker, back-to-top, …)
 src/components/dashboard/   — dashboard widgets (stat cards, kit discovery/preview cards)
 src/components/section.tsx  — field-group card shell for account-settings-style pages
 src/components/image-uploader.tsx — vendor-avatars Storage upload (resize-to-WebP client-side)

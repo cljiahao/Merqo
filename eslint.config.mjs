@@ -26,6 +26,7 @@ const eslintConfig = defineConfig([
     // .next, etc.) — not app code, and .gitignore's mismatch (see that file)
     // meant they were never actually excluded before.
     ".claude/worktrees/**",
+    ".worktrees/**",
   ]),
 ]);
 
