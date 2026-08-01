@@ -69,6 +69,7 @@ service-role client only, so `metrics_secret` never reaches a browser.
 
 ## Docs
 
+- Changelog: `CHANGELOG.md`
 - Deploy runbook: `docs/DEPLOY.md`
 - Plans/specs: `docs/superpowers/`
 - AI harness/hooks/skills map: `.claude/README.md`
