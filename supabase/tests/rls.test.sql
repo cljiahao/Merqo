@@ -12,7 +12,7 @@
 -- Runs in ONE rolled-back transaction with inline fixed-UUID fixtures.
 
 begin;
-select plan(28);
+select plan(38);
 
 -- ── Fixtures (created under the default/superuser test role → RLS + grants
 -- are bypassed here) ─────────────────────────────────────────────────────────
@@ -45,6 +45,17 @@ values ('00000000-0000-0000-0000-00000000000b', 'Vendor B Stall');
 insert into merqo.vendor_feedback (id, kit_slug, vendor_id, nps, message)
 values ('00000000-0000-0000-0000-000000100001', 'qkit-rlstest', '00000000-0000-0000-0000-00000000000b', 8, 'great kit');
 
+-- A third user with no dashboard_prefs row at all — used only to prove a
+-- non-owner insert is rejected without also tripping a primary-key conflict.
+insert into auth.users (id, instance_id, aud, role, email)
+values
+  ('00000000-0000-0000-0000-00000000000c',
+   '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+   'vendor-c@test.local');
+
+insert into merqo.dashboard_prefs (user_id, tour_seen_at)
+values ('00000000-0000-0000-0000-00000000000b', now());
+
 -- ── RLS is actually enabled on every protected table ─────────────────────────
 select ok((select relrowsecurity from pg_class where oid = 'merqo.merqo_team'::regclass), 'RLS on merqo_team');
 select ok((select relrowsecurity from pg_class where oid = 'merqo.products'::regclass), 'RLS on products');
@@ -52,6 +63,7 @@ select ok((select relrowsecurity from pg_class where oid = 'merqo.vendor_links':
 select ok((select relrowsecurity from pg_class where oid = 'merqo.kit_events'::regclass), 'RLS on kit_events');
 select ok((select relrowsecurity from pg_class where oid = 'merqo.vendor_profile'::regclass), 'RLS on vendor_profile');
 select ok((select relrowsecurity from pg_class where oid = 'merqo.vendor_feedback'::regclass), 'RLS on vendor_feedback');
+select ok((select relrowsecurity from pg_class where oid = 'merqo.dashboard_prefs'::regclass), 'RLS on dashboard_prefs');
 
 -- ── Act as a team member ─────────────────────────────────────────────────────
 set local role authenticated;
@@ -109,6 +121,24 @@ select throws_ok(
 select isnt_empty(
   $$ select 1 from merqo.vendor_feedback where id = '00000000-0000-0000-0000-000000100001' $$,
   'team member reads vendor_feedback (team-select policy)');
+
+-- dashboard_prefs is owner-only (no team-sees-all override, unlike
+-- merqo_team/vendor_links/vendor_feedback above) — a team member's own
+-- first-visit insert works, but they see only their own row, never a
+-- vendor's.
+select lives_ok(
+  $$ insert into merqo.dashboard_prefs (user_id, tour_seen_at) values ('00000000-0000-0000-0000-00000000000a', null) $$,
+  'team member inserts their own dashboard_prefs row (first mark-seen path)');
+select isnt_empty(
+  $$ select 1 from merqo.dashboard_prefs where user_id = '00000000-0000-0000-0000-00000000000a' $$,
+  'team member reads its own dashboard_prefs row');
+select is_empty(
+  $$ select 1 from merqo.dashboard_prefs where user_id = '00000000-0000-0000-0000-00000000000b' $$,
+  'team member cannot read another user''s dashboard_prefs row (owner-only, no team override)');
+select throws_ok(
+  $$ insert into merqo.dashboard_prefs (user_id, tour_seen_at) values ('00000000-0000-0000-0000-00000000000c', now()) $$,
+  '42501', null,
+  'team member cannot insert a dashboard_prefs row for a different user (insert-policy check)');
 
 -- ── Act as an ordinary vendor (not on the team) ───────────────────────────────
 select set_config(
@@ -172,6 +202,20 @@ select throws_like(
   'not authorized to modify vendor_id%',
   'vendor cannot upsert another vendor_id''s profile (ownership check in upsert_vendor_profile)');
 
+select isnt_empty(
+  $$ select 1 from merqo.dashboard_prefs where user_id = '00000000-0000-0000-0000-00000000000b' $$,
+  'vendor reads its own dashboard_prefs row');
+select is_empty(
+  $$ select 1 from merqo.dashboard_prefs where user_id = '00000000-0000-0000-0000-00000000000a' $$,
+  'vendor cannot read another user''s dashboard_prefs row');
+select lives_ok(
+  $$ update merqo.dashboard_prefs set tour_seen_at = now() where user_id = '00000000-0000-0000-0000-00000000000b' $$,
+  'vendor updates its own dashboard_prefs row (markTourSeen''s upsert path)');
+select throws_ok(
+  $$ insert into merqo.dashboard_prefs (user_id, tour_seen_at) values ('00000000-0000-0000-0000-00000000000c', now()) $$,
+  '42501', null,
+  'vendor cannot insert a dashboard_prefs row for a different user either (insert-policy check)');
+
 -- ── Act as anon ───────────────────────────────────────────────────────────
 -- `anon` only ever received `grant usage on schema merqo` (0001) — schema
 -- USAGE lets it resolve object names but grants no table-level privilege.
@@ -211,6 +255,10 @@ select throws_ok(
   $$ select 1 from merqo.vendor_feedback $$,
   '42501', null,
   'anon cannot read vendor_feedback (no SELECT grant)');
+select throws_ok(
+  $$ select 1 from merqo.dashboard_prefs $$,
+  '42501', null,
+  'anon cannot read dashboard_prefs (no SELECT grant)');
 
 -- submit_vendor_feedback's explicit grant (0011) is to `authenticated`, but
 -- Postgres' default PUBLIC execute grant on new functions isn't revoked, so

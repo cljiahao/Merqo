@@ -55,6 +55,7 @@ export function AccountMenu({
         <DropdownMenuTrigger asChild>
           <button
             type="button"
+            data-tour="account-menu"
             aria-label="Account menu"
             className="flex items-center gap-2 rounded-lg py-1 pr-2 pl-1 text-left outline-none transition-colors hover:bg-secondary focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
