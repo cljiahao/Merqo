@@ -1,19 +1,32 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
 // vi.mock factories are hoisted above top-level `const`s that back them, so
-// the mock's backing values must be created via vi.hoisted() rather than
-// plain top-level consts (avoids "Cannot access ... before initialization").
+// the mock's backing value must be created via vi.hoisted() rather than a
+// plain top-level const (avoids "Cannot access ... before initialization").
+// createServerClient is a bare vi.fn() (no fixed mockReturnValue) so
+// individual tests can swap in a different getUser behavior — in
+// particular, one that simulates @supabase/ssr rotating cookies as a side
+// effect of getUser(), the way a real token refresh does.
 const { createServerClient } = vi.hoisted(() => {
-  const getUser = vi.fn().mockResolvedValue({ data: { user: { id: "u1" } } });
-  const createServerClient = vi.fn().mockReturnValue({ auth: { getUser } });
-  return { getUser, createServerClient };
+  const createServerClient = vi.fn();
+  return { createServerClient };
 });
 vi.mock("@supabase/ssr", () => ({ createServerClient }));
 
 import { updateSession } from "./middleware";
 
 describe("updateSession — legacy host-only cookie cleanup", () => {
+  beforeEach(() => {
+    // Default: an authenticated user, no cookie rotation as a side effect
+    // of getUser() (no token refresh on this request).
+    createServerClient.mockImplementation(() => ({
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: { id: "u1" } } }),
+      },
+    }));
+  });
+
   afterEach(() => {
     delete process.env.NEXT_PUBLIC_AUTH_COOKIE_DOMAIN;
     vi.clearAllMocks();
@@ -66,5 +79,44 @@ describe("updateSession — legacy host-only cookie cleanup", () => {
       .getAll()
       .find((c) => c.name === "sb-project-auth-token");
     expect(cleared).toBeUndefined();
+  });
+
+  it("does not clobber a same-request token refresh, and defers the marker to a later request", async () => {
+    process.env.NEXT_PUBLIC_AUTH_COOKIE_DOMAIN = ".merqo.io";
+    createServerClient.mockImplementation((_url, _key, options) => ({
+      auth: {
+        getUser: vi.fn().mockImplementation(async () => {
+          // Simulate @supabase/ssr rotating the session as a side effect of
+          // getUser(), the way it does on a real token refresh.
+          options.cookies.setAll([
+            {
+              name: "sb-project-auth-token",
+              value: "freshly-refreshed",
+              options: {},
+            },
+          ]);
+          return { data: { user: { id: "u1" } } };
+        }),
+      },
+    }));
+    const request = new NextRequest("https://merqo.io/dashboard", {
+      headers: { cookie: "sb-project-auth-token=stale-host-only-value" },
+    });
+
+    const response = await updateSession(request);
+
+    const setCookies = response.cookies.getAll();
+    const authCookie = setCookies.find(
+      (c) => c.name === "sb-project-auth-token",
+    );
+    // The freshly-refreshed cookie must survive untouched — not cleared to "".
+    expect(authCookie?.value).toBe("freshly-refreshed");
+
+    // Marker must NOT be set — this pass didn't fully clear every legacy
+    // cookie, so the next request should retry.
+    const marker = setCookies.find(
+      (c) => c.name === "sb-auth-cookie-domain-migrated",
+    );
+    expect(marker).toBeUndefined();
   });
 });
