@@ -36,6 +36,9 @@ export async function createServerClient() {
       // qkit's in `public`. Default every .from() to merqo. auth.* is unaffected.
       db: { schema: "merqo" },
       cookies: cookieMethods(cookieStore),
+      cookieOptions: process.env.NEXT_PUBLIC_AUTH_COOKIE_DOMAIN
+        ? { domain: process.env.NEXT_PUBLIC_AUTH_COOKIE_DOMAIN }
+        : undefined,
     },
   );
 }
