@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 
+// vi.mock factories are hoisted above top-level `const`s that back them, so
+// the mock's backing values must be created via vi.hoisted() rather than
+// plain top-level consts (avoids "Cannot access ... before initialization").
 const { createServerClient } = vi.hoisted(() => {
   const getUser = vi.fn().mockResolvedValue({ data: { user: { id: "u1" } } });
   const createServerClient = vi.fn().mockReturnValue({ auth: { getUser } });
@@ -8,16 +11,7 @@ const { createServerClient } = vi.hoisted(() => {
 });
 vi.mock("@supabase/ssr", () => ({ createServerClient }));
 
-// `middleware.ts` reads NEXT_PUBLIC_AUTH_COOKIE_DOMAIN into a module-level
-// const at import time, so each test that varies that env var must force a
-// fresh module evaluation via a post-mutation dynamic import (vi.resetModules
-// does not itself re-run a static top-level import). vi.mock registrations
-// survive vi.resetModules(), so the @supabase/ssr mock still applies.
-async function importUpdateSession() {
-  vi.resetModules();
-  const mod = await import("./middleware");
-  return mod.updateSession;
-}
+import { updateSession } from "./middleware";
 
 describe("updateSession — legacy host-only cookie cleanup", () => {
   afterEach(() => {
@@ -27,7 +21,6 @@ describe("updateSession — legacy host-only cookie cleanup", () => {
 
   it("clears a pre-existing sb-*-auth-token cookie once when the cookie domain is enabled", async () => {
     process.env.NEXT_PUBLIC_AUTH_COOKIE_DOMAIN = ".merqo.io";
-    const updateSession = await importUpdateSession();
     const request = new NextRequest("https://merqo.io/dashboard", {
       headers: { cookie: "sb-project-auth-token=stale-value" },
     });
@@ -47,7 +40,6 @@ describe("updateSession — legacy host-only cookie cleanup", () => {
 
   it("does not clear again once the migration marker cookie is already present", async () => {
     process.env.NEXT_PUBLIC_AUTH_COOKIE_DOMAIN = ".merqo.io";
-    const updateSession = await importUpdateSession();
     const request = new NextRequest("https://merqo.io/dashboard", {
       headers: {
         cookie:
@@ -64,7 +56,6 @@ describe("updateSession — legacy host-only cookie cleanup", () => {
   });
 
   it("does nothing when NEXT_PUBLIC_AUTH_COOKIE_DOMAIN is unset", async () => {
-    const updateSession = await importUpdateSession();
     const request = new NextRequest("https://merqo.io/dashboard", {
       headers: { cookie: "sb-project-auth-token=stale-value" },
     });

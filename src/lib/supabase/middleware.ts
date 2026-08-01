@@ -10,7 +10,6 @@ function isProtectedPath(path: string): boolean {
   return path.startsWith("/admin") || path.startsWith("/dashboard");
 }
 
-const AUTH_COOKIE_DOMAIN = process.env.NEXT_PUBLIC_AUTH_COOKIE_DOMAIN;
 const MIGRATION_MARKER = "sb-auth-cookie-domain-migrated";
 
 // One-time cleanup after enabling the shared .merqo.io cookie domain: a
@@ -27,7 +26,8 @@ function clearLegacyHostOnlyCookie(
   request: NextRequest,
   response: NextResponse,
 ) {
-  if (!AUTH_COOKIE_DOMAIN || request.cookies.get(MIGRATION_MARKER)) return;
+  const authCookieDomain = process.env.NEXT_PUBLIC_AUTH_COOKIE_DOMAIN;
+  if (!authCookieDomain || request.cookies.get(MIGRATION_MARKER)) return;
   request.cookies
     .getAll()
     .filter((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"))
