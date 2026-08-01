@@ -13,7 +13,11 @@ This app is the public brand landing plus a role-gated operator console:
 
 Each kit runs its own app on its own schema in a shared Supabase project.
 Merqo pulls per-kit metrics over an HTTP API (bearer secret) — it never
-queries another kit's schema directly.
+queries another kit's schema directly. In production, every kit's auth
+cookie is scoped to `.merqo.io` (`NEXT_PUBLIC_AUTH_COOKIE_DOMAIN`,
+`src/lib/supabase/`), so signing in on one kit signs you in on the rest —
+unset in dev/preview, where each kit still runs on its own `*.vercel.app`
+host.
 
 ## Stack
 
