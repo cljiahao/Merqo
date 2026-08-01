@@ -6,8 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- FAQ nav link and a back-to-top button on the landing page, matching the
+  cross-kit landing-page parity pass.
+
 ### Fixed
 
+- Landing nav and mobile sticky CTA now say "Sign in" (was "Log in"),
+  matching the cross-kit landing-page parity pass.
 - Browser-tab title now matches sibling kits' "name: tagline" shape
   ("Merqo: hub for small-business kits") instead of an em dash + full
   sentence.
