@@ -15,6 +15,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Landing nav and mobile sticky CTA now say "Sign in" (was "Log in"),
   matching the cross-kit landing-page parity pass.
+- Browser-tab title now uses the cross-kit "Name | Tagline" Title Case
+  format: "Merqo | Hub For Small-Business Kits" (was "Merqo: hub for
+  small-business kits").
+- `.husky/lib/pre-commit.sh` used `xargs -d '\n'`, a GNU-only flag not
+  supported by BSD xargs (macOS default) — broke every local commit
+  touching a staged .ts/.tsx/.js/.mjs/.cjs file. Swapped for portable
+  `tr '\n' '\0' | xargs -0`.
+
 - Browser-tab title now matches sibling kits' "name: tagline" shape
   ("Merqo: hub for small-business kits") instead of an em dash + full
   sentence.

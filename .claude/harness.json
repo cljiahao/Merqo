@@ -87,7 +87,7 @@
       "path": ".husky/lib/commit-msg-check.sh"
     },
     ".husky/lib/pre-commit.sh": {
-      "origin_hash": "69661adac00ddf03a53971cea448c015ddc67748af875af640de0b6838671768",
+      "origin_hash": "634dd183e4725f5e62f2504ddf920cf6e9f3960f76081b8edff0d5e05d8ac875",
       "path": ".husky/lib/pre-commit.sh"
     },
     ".husky/lib/pre-push.sh": {
