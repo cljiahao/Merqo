@@ -13,6 +13,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Login page's card container now uses the shared `ElevatedCard` and its
+  Google icon lives in its own `google-mark.tsx` component, matching the
+  pattern used across every kit's login page (cross-kit login-page parity
+  pass).
 - Landing nav and mobile sticky CTA now say "Sign in" (was "Log in"),
   matching the cross-kit landing-page parity pass.
 - Browser-tab title now uses the cross-kit "Name | Tagline" Title Case
