@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- Browser-tab title now matches sibling kits' "name: tagline" shape
+  ("Merqo: hub for small-business kits") instead of an em dash + full
+  sentence.
+
 ### Added
 
 - Savings-estimate info tooltips on the dashboard, explaining the flat

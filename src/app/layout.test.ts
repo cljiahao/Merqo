@@ -1,0 +1,18 @@
+import { describe, it, expect, vi } from "vitest";
+
+vi.mock("next/font/google", () => ({
+  Geist: () => ({ variable: "--font-geist-sans" }),
+  Geist_Mono: () => ({ variable: "--font-geist-mono" }),
+  Bricolage_Grotesque: () => ({ variable: "--font-bricolage" }),
+}));
+
+const { metadata } = await import("./layout");
+
+describe("root layout metadata", () => {
+  it("sets the browser-tab title", () => {
+    expect(metadata.title).toEqual({
+      default: "Merqo: hub for small-business kits",
+      template: "%s · Merqo",
+    });
+  });
+});
