@@ -14,14 +14,14 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-40 border-b bg-background/85 py-3.5 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5">
+      <header className="sticky top-0 z-20 border-b border-border bg-background/85 px-5 py-3.5 backdrop-blur-md print:hidden">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Link
             href="/dashboard"
             aria-label="merqo dashboard home"
             className="shrink-0 transition-opacity hover:opacity-80"
           >
-            <Wordmark className="text-2xl" />
+            <Wordmark className="text-3xl" />
           </Link>
           <AccountMenu
             email={user.email}

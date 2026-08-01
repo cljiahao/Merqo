@@ -11,6 +11,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Browser-tab title now matches sibling kits' "name: tagline" shape
   ("Merqo: hub for small-business kits") instead of an em dash + full
   sentence.
+- Dashboard, admin console, and landing navbar height, padding, and logo
+  size now match qkit's spec (`px-5 py-3.5`/`py-4`, `text-3xl` logo).
 
 ### Added
 

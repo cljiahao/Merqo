@@ -43,9 +43,9 @@ export function AdminNav({
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b bg-background/85 backdrop-blur">
-        <div className="relative mx-auto max-w-7xl px-5">
-          <div className="flex h-14 items-center justify-between">
+      <header className="sticky top-0 z-20 border-b border-border bg-background/85 px-5 py-3.5 backdrop-blur-md print:hidden">
+        <div className="relative mx-auto max-w-7xl">
+          <div className="flex items-center justify-between">
             <div className="flex min-w-0 items-center gap-1 sm:gap-2">
               <Button
                 variant="ghost"
@@ -59,9 +59,9 @@ export function AdminNav({
               </Button>
               <Link
                 href="/admin"
-                className="flex items-center gap-2 rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                className="flex items-center gap-2 rounded-sm outline-none transition-opacity hover:opacity-80 focus-visible:ring-[3px] focus-visible:ring-ring/50"
               >
-                <Wordmark className="text-2xl" />
+                <Wordmark className="text-3xl" />
                 <span className="rounded bg-muted px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Admin
                 </span>
