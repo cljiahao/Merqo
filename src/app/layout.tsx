@@ -24,7 +24,7 @@ const bricolage = Bricolage_Grotesque({
 
 export const metadata: Metadata = {
   title: {
-    default: "Merqo — Simple tools to run your small business",
+    default: "Merqo: hub for small-business kits",
     template: "%s · Merqo",
   },
   description:
