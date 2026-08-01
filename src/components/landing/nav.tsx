@@ -20,9 +20,17 @@ export function Nav({ authed = false }: { authed?: boolean }) {
           >
             Kits
           </Link>
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="hidden sm:inline-flex"
+          >
+            <a href="#faq">FAQ</a>
+          </Button>
           <Button asChild size="sm">
             <Link href={authed ? "/admin" : "/login"}>
-              {authed ? "Dashboard" : "Log in"}
+              {authed ? "Dashboard" : "Sign in"}
             </Link>
           </Button>
         </div>
