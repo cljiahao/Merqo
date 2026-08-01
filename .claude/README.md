@@ -20,7 +20,9 @@ map of what lives where.
   per file, `templatecentral_version`), checked by `verify-harness.sh` on
   every pre-push and in CI.
 - `verify-harness.sh` / `regen-harness.sh` — drift check / human-run baseline
-  regen for the files listed in `harness.json`.
+  regen for the files listed in `harness.json` (most recently re-run
+  2026-08-01 after the `.husky/lib/pre-commit.sh` `xargs -d` → `xargs -0`
+  portability fix).
 
 ## Parent
 
