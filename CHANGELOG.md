@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- First-visit dashboard onboarding tour (driver.js overlay + floating "?"
+  replay button), ported from Qkit/Stockkit per the cross-kit dashboard-nav
+  standard's "Standard 3". Seen-state lives in a new, Merqo-dashboard-only
+  `merqo.dashboard_prefs` table with owner-only RLS, not on the shared
+  `merqo.vendor_profile` table other kits also write to.
 - FAQ nav link and a back-to-top button on the landing page, matching the
   cross-kit landing-page parity pass.
 - Shared-session SSO across `*.merqo.io` kits: `NEXT_PUBLIC_AUTH_COOKIE_DOMAIN`
