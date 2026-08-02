@@ -19,7 +19,7 @@ console, auth, and shared account pages.
 - `login/` — email/password sign-in.
 - `no-access/` — shown when a signed-in user has no kit access and no admin role.
 - `not-found.tsx` — branded 404.
-- `page.tsx` — `Home` async server component, the public brand landing page. Composes `Nav`, `Hero`, `Benefits`, `KitStacker`, `HowItWorks`, `Faq`, `Cta`, `Footer`, and `BackToTop` from `@/components/landing/`.
+- `page.tsx` — `Home` async server component, the public brand landing page. Composes `Nav`, `Hero`, `Benefits`, `KitStacker`, `HowItWorks`, `Faq`, `Footer`, and `BackToTop` from `@/components/landing/`. No CTA band above the footer, matching qkit.
 - `post-login/` — post-authentication redirect router (dashboard vs admin vs no-access).
 - `profile/` — shared account page (signed-in gate only — reachable from both the vendor dashboard and the admin console).
 - `reset-password/` — password-reset flow.

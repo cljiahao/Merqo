@@ -4,7 +4,6 @@ import { Benefits } from "@/components/landing/benefits";
 import { KitStacker } from "@/components/landing/kit-stacker/kit-stacker";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { Faq } from "@/components/landing/faq";
-import { Cta } from "@/components/landing/cta";
 import { Footer } from "@/components/landing/footer";
 import { BackToTop } from "@/components/landing/back-to-top";
 import { Button } from "@/components/ui/button";
@@ -29,7 +28,6 @@ export default async function Home() {
         <KitStacker />
         <HowItWorks />
         <Faq />
-        <Cta authed={authed} />
       </main>
       <Footer />
       <BackToTop />

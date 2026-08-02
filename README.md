@@ -20,6 +20,8 @@ unset in dev/preview, where each kit still runs on its own `*.vercel.app`
 host. The dashboard's onboarding tour (`src/components/dashboard-tour.tsx`)
 stamps its "seen" state as soon as it auto-runs rather than when it
 finishes, so a refresh mid-tour can't make it re-trigger on the next load.
+The landing footer matches qkit's exactly (single-row wordmark/tagline/
+credit-line/sign-in link, no CTA band above it).
 
 ## Stack
 
