@@ -22,6 +22,8 @@ per file. Presentational only — no data fetching, no client state beyond the
   Merqo kit" suffix — Merqo is the parent, per the landing-page standard),
   `Sign in →` link. No bottom call-to-action band above it (removed to
   match qkit, which never had one).
+- `footer.test.tsx` — asserts the wordmark link, tagline, copyright line,
+  and sign-in link all render.
 - `waitlist-form.tsx` — email capture for kits not yet live.
 - `wordmark.tsx` — the "Merqo" brand mark.
 - `back-to-top.tsx` — fixed-position scroll-to-top button (ported from

@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Landing footer rebuilt to match qkit's exact single-row layout
+  (wordmark, tagline, copyright, sign-in link as flex siblings), dropping
+  the extra `qkit`/`Kits` links to keep a single link like qkit's footer.
+  The bottom call-to-action band above it was also removed — qkit's
+  landing page never had one.
+
 ### Fixed
 
 - Dashboard onboarding tour now stamps `tour_seen_at` as soon as it
