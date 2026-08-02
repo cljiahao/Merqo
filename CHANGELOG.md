@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- Dashboard onboarding tour now stamps `tour_seen_at` as soon as it
+  auto-runs, not when it finishes — a refresh mid-tour no longer makes
+  it re-run on every dashboard load.
+
 ### Added
 
 - First-visit dashboard onboarding tour (driver.js overlay + floating "?"
