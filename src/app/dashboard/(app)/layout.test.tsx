@@ -12,9 +12,12 @@ vi.mock("@/lib/vendor", async (importOriginal) => {
   return { ...actual, requireActiveVendor: requireActiveVendorMock };
 });
 
-// DashboardTour reads dashboard_prefs directly off the RLS-scoped client.
+// DashboardTour reads dashboard_prefs directly off the RLS-scoped client, and
+// (since it now stamps tour-seen on mount rather than on tour completion)
+// also calls markTourSeen's own auth.getUser() as soon as it auto-runs.
 vi.mock("@/lib/supabase/server", () => ({
   createServerClient: vi.fn().mockResolvedValue({
+    auth: { getUser: vi.fn().mockResolvedValue({ data: { user: null } }) },
     from: () => ({
       select: () => ({
         eq: () => ({ maybeSingle: maybeSingleMock }),

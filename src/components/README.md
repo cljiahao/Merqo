@@ -12,6 +12,21 @@ or scoped to `dashboard/`/`landing/`.
   header avatar — profile link, plan, Get help (opens `SupportForm` in a
   Sheet), Feedback (opens `FeedbackForm` in a Sheet), sign out, and an
   optional admin-switch link.
+- `dashboard-tour.tsx` — `DashboardTour({ seen })`: owns the dashboard
+  onboarding tour — a floating "?" replay button plus a lazily-imported
+  `driver.js` overlay (loaded only when the tour actually runs). Auto-runs
+  once for a user who hasn't seen it (server-tracked, stamped via
+  `markTourSeen` as soon as the tour starts rather than when it finishes,
+  so a mid-tour refresh can't re-trigger it), and can be replayed from any
+  page (navigates back to `/dashboard` first if needed).
+- `dashboard-tour.dom.test.tsx` — RTL tests for the tour's auto-run,
+  mark-seen, and cross-page replay behavior.
+- `tour-steps.ts` — `tourSteps()`: pure step config (element selector +
+  title + description) for the dashboard tour, kept free of any DOM/React
+  dependency so it's trivially unit-testable.
+- `tour-steps.test.ts` — unit tests asserting the step list.
+- `tour.css` — scoped styles for the `driver.js` popover (`.merqo-tour`
+  class) so the tour overlay matches the app's visual language.
 - `elevated-card.tsx` — `ElevatedCard({ as, className, children })`: the
   shared raised-card container (rounded, bordered, soft shadow) used by the
   login page and other kits' matching cards.
