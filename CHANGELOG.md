@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- `merqo/src/lib/kits.ts` and the landing ecosystem graph now mark
+  stockkit `live` (with a new env-overridable `STOCKKIT_URL`) instead of
+  `planned` — the config had never caught up to stockkit's actual shipped
+  inventory tracking + Free/Pro tier.
+
 ### Changed
 
 - Landing footer rebuilt to match qkit's exact single-row layout

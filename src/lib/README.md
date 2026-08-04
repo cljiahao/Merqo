@@ -1,0 +1,46 @@
+# lib
+
+## Purpose
+
+Shared server/client logic: Supabase clients, domain types, Zod schemas, and
+the pure functions the app router pages/components call into — everything
+that isn't a route or a component.
+
+## Contents
+
+- `account.ts` — reads `display_name`/`avatar_url` defensively off the auth user's untyped `user_metadata`.
+- `action-result.ts` — `ActionResult<T>`, the discriminated success/error return type every Server Action uses.
+- `admin.ts` — Merqo-team admin gate (`requireTeamMember`-style helpers) and vendor-grant status queries used by `/admin`.
+- `brand-icon.tsx` — Merqo's mark as concrete hex constants, for `ImageResponse`-based icon routes (`icon.tsx`/`apple-icon.tsx`).
+- `downgrade-request.ts` — posts a vendor's Pro→Free downgrade request to a kit's metrics API.
+- `ecosystem.ts` — data for the landing "kit stacker" graph (node positions, edges, status) — display-only; `kits.ts` stays the status source of truth, keep both in sync.
+- `feedback-support-schemas.ts` — Zod schemas for the vendor feedback (NPS) and support-message forms.
+- `format.ts` — `money()`, relative-time, and other small display formatters shared across dashboard/team pages.
+- `funnel.ts` — onboarding funnel counts (waitlisted/needs-setup/granted) for the admin overview.
+- `health.ts` — classifies a kit's metrics-call latency into `reporting`/`lagging`/`down`.
+- `image-resize.ts` — client-side (Canvas) image downscale + WebP encode before an avatar upload.
+- `kits.ts` — the kit family config (status/tagline/description/href per kit) — the landing roadmap and dashboard discovery cards' source of truth.
+- `merqo-vendor-profile.ts` — typed wrapper over `merqo.get_or_create_vendor_profile`/`upsert_vendor_profile`.
+- `metrics-client.ts` / `metrics-schema.ts` — fetch + Zod-validate a kit's platform-wide metrics payload (admin overview).
+- `nps.ts` — Net Promoter Score bucketing/scoring, ported from qkit's own `nps.ts`.
+- `overview.ts` — aggregates per-kit metrics into the admin overview's platform totals.
+- `products.ts` — the kit registry (`RegistryRow`) read/cache from `merqo.products`, including each kit's `metrics_secret`.
+- `schemas.ts` — Zod schemas for the shared `merqo.vendor_profile` social/website links.
+- `support.ts` — reads open cross-kit support messages for the admin console.
+- `team.ts` — gates an operator page on Merqo-team membership, redirecting a non-member.
+- `types.ts` — hand-maintained DB types mirroring `supabase/migrations` (`SocialLinks`, etc.).
+- `upgrade-request.ts` — posts a vendor's Free→Pro upgrade request to a kit's metrics API.
+- `utils.ts` — `cn()` (clsx + tailwind-merge), shared across every component.
+- `vendor-feedback.ts` — reads cross-kit `merqo.vendor_feedback` (NPS) rows for the admin feedback page.
+- `vendor-grants.ts` — pure `GrantStatus` (`active`/`waitlist`/`needs_setup`) helpers; client-safe (no `supabase/server` import) since `vendor-list.tsx` imports it directly.
+- `vendor-metrics-client.ts` / `vendor-metrics-schema.ts` — fetch + Zod-validate a single vendor's per-kit stats for the vendor dashboard.
+- `vendor-sync.ts` — provisions/syncs a vendor's `vendor_links` rows against the live kit registry.
+- `vendor.ts` — gates the vendor dashboard on an authenticated session with at least one kit grant.
+- `waitlist.ts` — adds an email to a kit's waitlist, from either the public landing form or the signed-in dashboard.
+- `savings.ts` / `savings.test.ts` — the "hours/cost saved" estimate shown on the vendor dashboard.
+- `vendor-feedback.test.ts`, `vendor-sync.test.ts`, `vendor.test.ts` — co-located unit tests for the same-named modules above.
+- `supabase/` — browser / server (schema=merqo) / service-role Supabase clients + the session-refresh middleware helper.
+
+## Parent
+
+See the repo root [README.md](../../README.md) for the full `src/` layout.
