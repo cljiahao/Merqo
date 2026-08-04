@@ -13,8 +13,13 @@ describe("kit family config", () => {
     ]);
   });
 
-  it("has qkit, loopkit, and paykit as live kits, each with a link", () => {
-    expect(LIVE_KITS.map((k) => k.slug)).toEqual(["qkit", "loopkit", "paykit"]);
+  it("has qkit, loopkit, paykit, and stockkit as live kits, each with a link", () => {
+    expect(LIVE_KITS.map((k) => k.slug)).toEqual([
+      "qkit",
+      "loopkit",
+      "paykit",
+      "stockkit",
+    ]);
     for (const k of LIVE_KITS) expect(k.href).toBeTruthy();
   });
 

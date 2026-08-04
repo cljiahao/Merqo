@@ -32,7 +32,7 @@ export const KIT_NODES: KitNode[] = [
   { slug: "qkit", short: "Queue", status: "live", x: 260, y: 80 },
   { slug: "shopkit", short: "Store", status: "planned", x: 120, y: 160 },
   { slug: "loopkit", short: "Loyalty", status: "coming", x: 400, y: 160 },
-  { slug: "stockkit", short: "Stock", status: "planned", x: 120, y: 320 },
+  { slug: "stockkit", short: "Stock", status: "live", x: 120, y: 320 },
   { slug: "paykit", short: "Payments", status: "planned", x: 260, y: 380 },
   { slug: "reachkit", short: "Reach", status: "planned", x: 400, y: 320 },
 ];
