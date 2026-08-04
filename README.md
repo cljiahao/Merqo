@@ -2,8 +2,8 @@
 
 House brand + operator console for a modular family of small-business tools
 ("kits") for Singapore micro/small sellers. `qkit` (queue/orders), `loopkit`
-(stamp-card loyalty), and `paykit` (payments) are live; `shopkit`, `stockkit`,
-and `reachkit` are upcoming (see `src/lib/kits.ts`).
+(stamp-card loyalty), `paykit` (payments), and `stockkit` (inventory) are
+live; `shopkit` and `reachkit` are upcoming (see `src/lib/kits.ts`).
 
 This app is the public brand landing plus a role-gated operator console:
 
