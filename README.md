@@ -25,6 +25,26 @@ finishes, so a refresh mid-tour can't make it re-trigger on the next load.
 The landing footer matches qkit's exactly (single-row wordmark/tagline/
 credit-line/sign-in link, no CTA band above it).
 
+Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.8.1`), the shared
+component package for the kit family (see qkit/loopkit/paykit/stockkit for
+the same dependency). `useAsyncAction`, `InfoTooltip`, `Section`,
+`TwoColumnSections`, `ImageUploader`, and `DashboardTour` are used directly
+or through a thin per-app adapter (`src/hooks/use-async-action.ts`,
+`src/lib/image-upload-adapter.ts`, `src/components/dashboard-tour.tsx`).
+`account-menu.tsx` composes `@merqo/ui`'s `AccountMenu` for **both** the
+vendor dashboard and admin-console headers — Merqo's own dual-persona
+structure (unlike a single-persona kit) means neither header uses the
+shared package's composed `DashboardNav` (burger + inline nav links): the
+vendor dashboard has no nav links to show, and the admin console's own
+tab-row-below-header nav (`admin-nav.tsx`) is visually distinct enough to
+keep hand-rolled. `@merqo/ui`'s `ProfileForm` (an all-in-one form) is not
+used either — `src/app/profile/profile-form.tsx` needs a password-change
+section the shared component doesn't have, so it composes `Section`/
+`TwoColumnSections`/`ImageUploader` individually instead, same as qkit.
+`@merqo/ui`'s `AccountMenu` hardcodes its Profile link to
+`/dashboard/profile`; `src/app/dashboard/profile/page.tsx` redirects that
+to Merqo's real, persona-shared `/profile` route.
+
 ## Stack
 
 Next.js 16 · App Router · Turbopack · TypeScript strict · Tailwind v4 ·

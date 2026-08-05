@@ -11,9 +11,9 @@ console, auth, and shared account pages.
 - `admin/` — Merqo-team console: overview + vendors/, team/, products/, feedback/ (all auth-gated).
 - `apple-icon.tsx` — `AppleIcon` route handler; renders a 180×180 PNG for iOS home-screen touch icons.
 - `auth/` — Supabase auth callback route (OAuth code exchange).
-- `dashboard/` — vendor dashboard: `(app)/` (active-kit overview + kit discovery) and `pending/` (no-active-kit state).
+- `dashboard/` — vendor dashboard: `(app)/` (active-kit overview + kit discovery), `pending/` (no-active-kit state), and `profile/` (a redirect shim to `/profile` — `@merqo/ui`'s `AccountMenu` hardcodes its Profile link to `/dashboard/profile`, the convention every other kit follows, but Merqo's real shared account page lives at the top-level `/profile`).
 - `error.tsx` / `global-error.tsx` — root React error boundaries.
-- `globals.css` — Tailwind v4 entry point: theme tokens, base layer, custom utility classes.
+- `globals.css` — Tailwind v4 entry point: theme tokens, base layer, custom utility classes, and `@source "../../node_modules/@merqo/ui/dist"` (tells Tailwind to scan the built `@merqo/ui` package for utility classes, since it lives outside `src/` and wouldn't otherwise be picked up by Tailwind's default content scan).
 - `icon.tsx` — `Icon` route handler; renders the 32×32 PNG favicon.
 - `layout.tsx` — `RootLayout`; fonts, metadata, `Providers`.
 - `login/` — email/password sign-in.

@@ -6,6 +6,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Migrated onto `@merqo/ui` (`github:cljiahao/merqo-ui#v0.8.1`), the shared
+  component package for the kit family. `useAsyncAction`, `InfoTooltip`,
+  `Section`, `TwoColumnSections`, and `ImageUploader` are now delegated
+  (`src/hooks/use-async-action.ts` and `src/lib/image-upload-adapter.ts`
+  are thin adapters); `DashboardTour` and `account-menu.tsx` compose the
+  shared `DashboardTour`/`AccountMenu` instead of hand-rolling the tour
+  overlay and dropdown. The now-redundant local `feedback-form.tsx`/
+  `support-form.tsx`/`info-tooltip.tsx`/`section.tsx`/`image-uploader.tsx`/
+  `tour.css` were deleted. `account-menu.tsx` is shared by both the vendor
+  dashboard and admin-console headers; neither header adopts the shared
+  package's composed `DashboardNav` (Merqo's dashboard has no nav links to
+  show, and the admin console's tab-row nav is visually distinct enough to
+  keep hand-rolled) — see the root README for the full scope writeup.
+- Added `src/app/dashboard/profile/page.tsx`, a redirect to `/profile` —
+  `@merqo/ui`'s `AccountMenu` hardcodes its Profile link to
+  `/dashboard/profile`, but Merqo's real account page is shared across
+  personas and lives at the top level.
+
 ### Fixed
 
 - `.env.example` was unreadable via Read/Bash tools — a `Read(**/.env.*)`
