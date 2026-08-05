@@ -4,14 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Store, IdCard, KeyRound, UserRound, Share2 } from "lucide-react";
+import { ImageUploader, Section, TwoColumnSections } from "@merqo/ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ImageUploader } from "@/components/image-uploader";
-import { Section } from "@/components/section";
 import { SocialLinksFields } from "@/components/social-links-fields";
 import { createClient } from "@/lib/supabase/client";
 import { useAsyncAction } from "@/hooks/use-async-action";
+import { uploadVendorAvatar } from "@/lib/image-upload-adapter";
+import { resizeToWebp } from "@/lib/image-resize";
 import {
   profileNameSchema,
   displayNameSchema,
@@ -163,202 +164,208 @@ export function ProfileForm({
   }
 
   return (
-    // Two independent flex-column stacks, not a CSS grid — see the cross-kit
-    // profile-page standard §2.3: a grid's row height tracks the tallest
-    // cell in that row, so once a multi-field section (Social & website)
-    // outgrows a single-input one (Stall name), every row after it starts
-    // late in both columns. Column order (§2.4): stall name, profile
-    // picture, change password | display name, social links.
-    <div className="flex flex-col gap-5 md:flex-row md:items-start">
-      <div className="flex flex-1 flex-col gap-5">
-        <Section
-          icon={<Store className="size-5" />}
-          eyebrow="Shown to customers"
-          title="Stall name"
-          description="The name shown across every kit you use."
-        >
-          <div className="space-y-2">
-            <Label htmlFor="stall-name" className={FORM_LABEL_CLASS}>
-              Stall name
-            </Label>
-            <Input
-              id="stall-name"
-              value={name}
-              maxLength={100}
-              onChange={(e) => setName(e.target.value)}
-              className="h-11 rounded-xl"
-              aria-invalid={!!nameError}
-              aria-describedby={nameError ? "stall-name-error" : undefined}
-            />
-            {nameError && (
-              <p id="stall-name-error" className={FORM_ERROR_CLASS}>
-                {nameError}
+    // Column order (cross-kit profile-page standard §2.4): stall name,
+    // profile picture, change password | display name, social links.
+    <TwoColumnSections
+      columnOne={
+        <>
+          <Section
+            icon={<Store className="size-5" />}
+            eyebrow="Shown to customers"
+            title="Stall name"
+            description="The name shown across every kit you use."
+          >
+            <div className="space-y-2">
+              <Label htmlFor="stall-name" className={FORM_LABEL_CLASS}>
+                Stall name
+              </Label>
+              <Input
+                id="stall-name"
+                value={name}
+                maxLength={100}
+                onChange={(e) => setName(e.target.value)}
+                className="h-11 rounded-xl"
+                aria-invalid={!!nameError}
+                aria-describedby={nameError ? "stall-name-error" : undefined}
+              />
+              {nameError && (
+                <p id="stall-name-error" className={FORM_ERROR_CLASS}>
+                  {nameError}
+                </p>
+              )}
+            </div>
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                onClick={saveStall}
+                disabled={savingName || name === stallName}
+                className="h-10 rounded-xl font-semibold"
+              >
+                {savingName ? "Saving…" : "Save stall name"}
+              </Button>
+            </div>
+          </Section>
+
+          <Section
+            icon={<UserRound className="size-5" />}
+            eyebrow="Your account menu"
+            title="Profile icon"
+            description="A small image for your account menu. Defaults to your initials."
+          >
+            <div className="flex items-center gap-4">
+              <ImageUploader
+                bucket="vendor-avatars"
+                pathPrefix={vendorId}
+                value={avatar}
+                onChange={saveAvatar}
+                onUpload={uploadVendorAvatar}
+                resizeImage={resizeToWebp}
+              />
+              <p className="text-xs text-muted-foreground">
+                Square images look best. Remove it any time to fall back to your
+                initials badge.
               </p>
-            )}
-          </div>
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              onClick={saveStall}
-              disabled={savingName || name === stallName}
-              className="h-10 rounded-xl font-semibold"
-            >
-              {savingName ? "Saving…" : "Save stall name"}
-            </Button>
-          </div>
-        </Section>
+            </div>
+          </Section>
 
-        <Section
-          icon={<UserRound className="size-5" />}
-          eyebrow="Your account menu"
-          title="Profile icon"
-          description="A small image for your account menu. Defaults to your initials."
-        >
-          <div className="flex items-center gap-4">
-            <ImageUploader
-              vendorId={vendorId}
-              value={avatar}
-              onChange={saveAvatar}
-            />
-            <p className="text-xs text-muted-foreground">
-              Square images look best. Remove it any time to fall back to your
-              initials badge.
-            </p>
-          </div>
-        </Section>
-
-        <Section
-          icon={<KeyRound className="size-5" />}
-          eyebrow="Sign-in security"
-          title="Change password"
-          description="Set a new password. At least 8 characters."
-        >
-          <div className="space-y-2">
-            <Label htmlFor="email" className={FORM_LABEL_CLASS}>
-              Email
-            </Label>
-            <Input
-              id="email"
-              value={email}
-              readOnly
-              disabled
-              className="h-11 rounded-xl bg-secondary/60"
-            />
-            <p className="text-xs text-muted-foreground">
-              Your sign-in email. It can&apos;t be changed here.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="new-password" className={FORM_LABEL_CLASS}>
-              New password
-            </Label>
-            <Input
-              id="new-password"
-              type="password"
-              autoComplete="new-password"
-              value={password}
-              placeholder="••••••••"
-              onChange={(e) => setPassword(e.target.value)}
-              className="h-11 rounded-xl"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="confirm-password" className={FORM_LABEL_CLASS}>
-              Confirm new password
-            </Label>
-            <Input
-              id="confirm-password"
-              type="password"
-              autoComplete="new-password"
-              value={confirm}
-              placeholder="••••••••"
-              onChange={(e) => setConfirm(e.target.value)}
-              className="h-11 rounded-xl"
-              aria-invalid={!!pwError}
-              aria-describedby={pwError ? "confirm-password-error" : undefined}
-            />
-            {pwError && (
-              <p id="confirm-password-error" className={FORM_ERROR_CLASS}>
-                {pwError}
+          <Section
+            icon={<KeyRound className="size-5" />}
+            eyebrow="Sign-in security"
+            title="Change password"
+            description="Set a new password. At least 8 characters."
+          >
+            <div className="space-y-2">
+              <Label htmlFor="email" className={FORM_LABEL_CLASS}>
+                Email
+              </Label>
+              <Input
+                id="email"
+                value={email}
+                readOnly
+                disabled
+                className="h-11 rounded-xl bg-secondary/60"
+              />
+              <p className="text-xs text-muted-foreground">
+                Your sign-in email. It can&apos;t be changed here.
               </p>
-            )}
-          </div>
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              onClick={savePassword}
-              disabled={savingPw || !password || !confirm}
-              className="h-10 rounded-xl font-semibold"
-            >
-              {savingPw ? "Updating…" : "Update password"}
-            </Button>
-          </div>
-        </Section>
-      </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-password" className={FORM_LABEL_CLASS}>
+                New password
+              </Label>
+              <Input
+                id="new-password"
+                type="password"
+                autoComplete="new-password"
+                value={password}
+                placeholder="••••••••"
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-11 rounded-xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password" className={FORM_LABEL_CLASS}>
+                Confirm new password
+              </Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                autoComplete="new-password"
+                value={confirm}
+                placeholder="••••••••"
+                onChange={(e) => setConfirm(e.target.value)}
+                className="h-11 rounded-xl"
+                aria-invalid={!!pwError}
+                aria-describedby={
+                  pwError ? "confirm-password-error" : undefined
+                }
+              />
+              {pwError && (
+                <p id="confirm-password-error" className={FORM_ERROR_CLASS}>
+                  {pwError}
+                </p>
+              )}
+            </div>
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                onClick={savePassword}
+                disabled={savingPw || !password || !confirm}
+                className="h-10 rounded-xl font-semibold"
+              >
+                {savingPw ? "Updating…" : "Update password"}
+              </Button>
+            </div>
+          </Section>
+        </>
+      }
+      columnTwo={
+        <>
+          <Section
+            icon={<IdCard className="size-5" />}
+            eyebrow="Just for you"
+            title="Display name"
+            description="How Merqo addresses you. Customers never see this."
+          >
+            <div className="space-y-2">
+              <Label htmlFor="display-name" className={FORM_LABEL_CLASS}>
+                Display name
+              </Label>
+              <Input
+                id="display-name"
+                value={display}
+                maxLength={60}
+                placeholder="e.g. Aisha"
+                onChange={(e) => setDisplay(e.target.value)}
+                className="h-11 rounded-xl"
+                aria-invalid={!!displayError}
+                aria-describedby={
+                  displayError ? "display-name-error" : undefined
+                }
+              />
+              {displayError && (
+                <p id="display-name-error" className={FORM_ERROR_CLASS}>
+                  {displayError}
+                </p>
+              )}
+            </div>
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                onClick={saveDisplayName}
+                disabled={savingDisplay || display === displayName}
+                className="h-10 rounded-xl font-semibold"
+              >
+                {savingDisplay ? "Saving…" : "Save display name"}
+              </Button>
+            </div>
+          </Section>
 
-      <div className="flex flex-1 flex-col gap-5">
-        <Section
-          icon={<IdCard className="size-5" />}
-          eyebrow="Just for you"
-          title="Display name"
-          description="How Merqo addresses you. Customers never see this."
-        >
-          <div className="space-y-2">
-            <Label htmlFor="display-name" className={FORM_LABEL_CLASS}>
-              Display name
-            </Label>
-            <Input
-              id="display-name"
-              value={display}
-              maxLength={60}
-              placeholder="e.g. Aisha"
-              onChange={(e) => setDisplay(e.target.value)}
-              className="h-11 rounded-xl"
-              aria-invalid={!!displayError}
-              aria-describedby={displayError ? "display-name-error" : undefined}
+          <Section
+            icon={<Share2 className="size-5" />}
+            eyebrow="Shown to customers"
+            title="Social & website"
+            description="Shown across every kit you use, unless a kit lets you override it locally."
+          >
+            <SocialLinksFields
+              value={links}
+              onChange={setLinks}
+              idPrefix="profile"
             />
-            {displayError && (
-              <p id="display-name-error" className={FORM_ERROR_CLASS}>
-                {displayError}
-              </p>
-            )}
-          </div>
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              onClick={saveDisplayName}
-              disabled={savingDisplay || display === displayName}
-              className="h-10 rounded-xl font-semibold"
-            >
-              {savingDisplay ? "Saving…" : "Save display name"}
-            </Button>
-          </div>
-        </Section>
-
-        <Section
-          icon={<Share2 className="size-5" />}
-          eyebrow="Shown to customers"
-          title="Social & website"
-          description="Shown across every kit you use, unless a kit lets you override it locally."
-        >
-          <SocialLinksFields
-            value={links}
-            onChange={setLinks}
-            idPrefix="profile"
-          />
-          {linksError && <p className={FORM_ERROR_CLASS}>{linksError}</p>}
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              onClick={saveLinks}
-              disabled={savingLinks}
-              className="h-10 rounded-xl font-semibold"
-            >
-              {savingLinks ? "Saving…" : "Save links"}
-            </Button>
-          </div>
-        </Section>
-      </div>
-    </div>
+            {linksError && <p className={FORM_ERROR_CLASS}>{linksError}</p>}
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                onClick={saveLinks}
+                disabled={savingLinks}
+                className="h-10 rounded-xl font-semibold"
+              >
+                {savingLinks ? "Saving…" : "Save links"}
+              </Button>
+            </div>
+          </Section>
+        </>
+      }
+    />
   );
 }
