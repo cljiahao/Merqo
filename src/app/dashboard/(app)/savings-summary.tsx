@@ -1,6 +1,6 @@
+import { InfoTooltip } from "@merqo/ui";
 import { money } from "@/lib/format";
 import type { VendorSavings } from "@/lib/savings";
-import { InfoTooltip } from "@/components/info-tooltip";
 
 /** Page-level total of the per-card savings estimates — see
  *  VendorKitCard for the per-kit line and savings.ts for the numbers. */
@@ -16,12 +16,17 @@ export function SavingsSummary({ totals }: { totals: VendorSavings }) {
         </span>{" "}
         saved this month · ~{totals.totalHoursPerWeek} hrs/week back across your
         kits
-        <InfoTooltip ariaLabel="How this estimate is calculated">
-          A flat per-kit, per-plan estimate — not tracked from your actual
-          usage. Based on ~S$18/hr (Singapore hawker-stall staff wage), ×
-          hours/week the kit saves you on that plan × 4.33 weeks/month. Free vs.
-          Pro estimates differ per kit.
-        </InfoTooltip>
+        <InfoTooltip
+          ariaLabel="How this estimate is calculated"
+          content={
+            <>
+              A flat per-kit, per-plan estimate — not tracked from your actual
+              usage. Based on ~S$18/hr (Singapore hawker-stall staff wage), ×
+              hours/week the kit saves you on that plan × 4.33 weeks/month. Free
+              vs. Pro estimates differ per kit.
+            </>
+          }
+        />
       </p>
       {totals.totalUpsideCostCentsPerMonth > 0 && (
         <p className="mt-1 text-muted-foreground">
