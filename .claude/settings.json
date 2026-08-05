@@ -37,6 +37,10 @@
           {
             "type": "command",
             "command": "bash .claude/hooks/post-edit-typecheck.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/post-edit-comment-check.sh"
           }
         ]
       },
@@ -94,7 +98,8 @@
       "Edit(AGENTS.md)",
       "Edit(CLAUDE.md)",
       "Edit(.claude/settings.json)",
-      "Edit(.claude/settings.local.json)"
+      "Edit(.claude/settings.local.json)",
+      "Edit(.claude/harness.json)"
     ],
     "deny": [
       "Bash(rm -rf:*)",
@@ -115,7 +120,6 @@
       "Read(.env.test)",
       "Read(./secrets/**)",
       "Read(./.secrets/**)",
-      "Read(**/.env.*)",
       "Edit(.env)",
       "Edit(.env.local)",
       "Edit(.env.development)",

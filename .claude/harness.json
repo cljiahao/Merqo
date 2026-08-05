@@ -1,13 +1,13 @@
 {
-  "templatecentral_version": "5.11.0",
+  "templatecentral_version": "5.14.0",
   "stack": "nextjs",
   "adapted": "Next 16 + Supabase (auth/db) — shared project, schema per kit; not better-auth/Drizzle",
   "seeded_at": "2026-07-06",
-  "reviewed_at": "2026-07-24",
-  "review_note": "Adopted 5.7→5.8 delta + lefthook: comment hygiene (no-inline-comments:warn + AGENTS.md doctrine), packageManager pnpm@11.10.0. 5.8→5.11 delta adopted: added the missing .claude/hooks/* Claude-Code-hook script layer (previously inline `node -e` one-liners embedded in settings.json — block-no-verify.sh, protect-files.sh, user-prompt-guard.cjs, post-edit-typecheck.sh, post-tool-failure.sh, session-context.sh, skill-usage-log.sh, stop-checks.sh, subagent-stop.sh), rewired settings.json's hooks section to reference these scripts, added SubagentStop (net-new) and PostToolUseFailure, and fixed lefthook.yml's format-lint command missing an `exclude` list (was letting prettier/eslint reformat staged files — including these new hook scripts — and drift them off their harness.json baseline on first commit); version marker bumped 5.8.0 → 5.11.0. NOT adopted (same divergence as qkit, and still standing after this change): full tc harness-kit (bespoke CI here), pino route-logging enforcement, verify-harness/.harness-base re-sync (none seeded), better-auth/Drizzle add-skills. settings.json omits broad permissions.allow (auto-mode self-grant guard). This migration closes the Claude-Code-hook-script gap only, not a full harness-kit re-sync.",
+  "reviewed_at": "2026-08-05",
+  "review_note": "Adopted 5.7→5.8 delta + lefthook: comment hygiene (no-inline-comments:warn + AGENTS.md doctrine), packageManager pnpm@11.10.0. 5.8→5.11 delta adopted: added the missing .claude/hooks/* Claude-Code-hook script layer (previously inline `node -e` one-liners embedded in settings.json — block-no-verify.sh, protect-files.sh, user-prompt-guard.cjs, post-edit-typecheck.sh, post-tool-failure.sh, session-context.sh, skill-usage-log.sh, stop-checks.sh, subagent-stop.sh), rewired settings.json's hooks section to reference these scripts, added SubagentStop (net-new) and PostToolUseFailure, and fixed lefthook.yml's format-lint command missing an `exclude` list (was letting prettier/eslint reformat staged files — including these new hook scripts — and drift them off their harness.json baseline on first commit); version marker bumped 5.8.0 → 5.11.0. 5.11→5.14 sweep (2026-08-05): fixed the .env.example Read-block bug (permissions.deny's `Read(**/.env.*)` wildcard shadowed the explicit non-.example/.default variants already listed beside it), added harness.json to permissions.ask for hook-layer redundancy, SHA-pinned every floating GitHub Actions tag in ci.yml/security.yml, brought eslint.config.mjs's comment-hygiene rules to parity with the sibling kits (sonarjs/no-commented-code + no-inline-comments:error) and layered on the 5.13 mechanical comment-hygiene surfaces (PostToolUse hook, husky pre-commit warn step, CI hard-gate job) adapted to husky (this repo is not on lefthook). NOT adopted (same divergence as qkit, and still standing after this change): full tc harness-kit (bespoke CI here), pino route-logging enforcement, verify-harness/.harness-base re-sync (none seeded), better-auth/Drizzle add-skills. settings.json omits broad permissions.allow (auto-mode self-grant guard). This migration closes the Claude-Code-hook-script gap only, not a full harness-kit re-sync.",
   "seeded_files": {
     "AGENTS.md": {
-      "origin_hash": "3ef825aad043ef065ddda59fc1790e6e19b77e089991f8775f9bf57e004047cd",
+      "origin_hash": "ff841bd922b226ad55e0cb96918e17527f9ab84942c0e0e128366ae3d01f1b9b",
       "path": "AGENTS.md"
     },
     "CLAUDE.md": {
@@ -15,7 +15,7 @@
       "path": "CLAUDE.md"
     },
     ".claude/settings.json": {
-      "origin_hash": "3c8a9ca817455c0ed8544e1d894285fb2190b5ac45cf51117305025af94fa98b",
+      "origin_hash": "79cfd60b366e8db6afd83ab03f87b05ef277fe84509c50d592881f4e027824fe",
       "path": ".claude/settings.json"
     },
     ".claude/hooks/verify.sh": {
@@ -33,6 +33,18 @@
     ".claude/hooks/user-prompt-guard.cjs": {
       "origin_hash": "d1c376ffcbaba440838b52da3114b4671038042958126c4a316b4ef7de4056f6",
       "path": ".claude/hooks/user-prompt-guard.cjs"
+    },
+    ".claude/hooks/post-edit-comment-check.sh": {
+      "origin_hash": "3da3f519d08b40a006017f4dc450dd88fe13c21ebfcc5411ac658f2f390d4cc3",
+      "path": ".claude/hooks/post-edit-comment-check.sh"
+    },
+    ".claude/comment-hygiene-patterns.txt": {
+      "origin_hash": "61e448dd1b798c211ec37f4efc9667275a0eaea0ba3be2217d4d187d15cbf078",
+      "path": ".claude/comment-hygiene-patterns.txt"
+    },
+    ".husky/lib/comment-hygiene.sh": {
+      "origin_hash": "007c76af0f309ad9e6c2f874fed3b4c3ace44ee680ff6dfe159278e672892c8c",
+      "path": ".husky/lib/comment-hygiene.sh"
     },
     ".claude/hooks/post-edit-typecheck.sh": {
       "origin_hash": "f17a4f6cb67b023f1058acb542b43ccf294de612e5d15352776ffbb50366b509",
@@ -87,7 +99,7 @@
       "path": ".husky/lib/commit-msg-check.sh"
     },
     ".husky/lib/pre-commit.sh": {
-      "origin_hash": "634dd183e4725f5e62f2504ddf920cf6e9f3960f76081b8edff0d5e05d8ac875",
+      "origin_hash": "5f76b3061adf482c71501b7944e4620cd47962ca5f27e69d78b358659026f5b2",
       "path": ".husky/lib/pre-commit.sh"
     },
     ".husky/lib/pre-push.sh": {
@@ -107,7 +119,7 @@
       "path": ".claude/regen-harness.sh"
     },
     ".github/workflows/ci.yml": {
-      "origin_hash": "1a1e5b7b53a6c0ca008571f7513a9fc80a3ca360d07dde17025540533dc3f6a9",
+      "origin_hash": "533a9e54eff3864afb42a749ad6f573aee693099fe00d8e773dadc1536af5a28",
       "path": ".github/workflows/ci.yml"
     }
   }

@@ -10,6 +10,8 @@ This app is the public brand landing plus a role-gated operator console:
 - `/dashboard` — cross-product metrics overview (post-login home)
 - `/admin/vendors` — grant/revoke kit access per vendor
 - `/admin/team` — manage Merqo-team members
+- `/admin/products` — per-kit health from the metrics API
+- `/admin/feedback` — vendor NPS + comments per kit
 
 Each kit runs its own app on its own schema in a shared Supabase project.
 Merqo pulls per-kit metrics over an HTTP API (bearer secret) — it never

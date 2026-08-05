@@ -7,6 +7,7 @@ import {
 // (next/headers) dependency and remains trivially unit-testable. We only need
 // the metrics-endpoint fields, so take a Pick — a full RegistryRow still fits.
 import type { RegistryRow } from "@/lib/products";
+import { fetchKitJson } from "@/lib/kit-action-request";
 
 type MetricsSource = Pick<
   RegistryRow,
@@ -38,60 +39,32 @@ export async function fetchProductMetrics(
     };
   }
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? 5000);
-  try {
-    const res = await fetch(p.metrics_url, {
-      headers: { Authorization: `Bearer ${p.metrics_secret}` },
-      cache: "no-store",
-      signal: controller.signal,
-    });
-    if (res.status === 401)
-      return { ok: false, product: p.slug, durationMs: took(), reason: "auth" };
-    if (!res.ok)
-      return {
-        ok: false,
-        product: p.slug,
-        durationMs: took(),
-        reason: "unreachable",
-      };
+  const result = await fetchKitJson(
+    p.metrics_url,
+    metricsPayloadSchema,
+    { headers: { Authorization: `Bearer ${p.metrics_secret}` } },
+    opts.timeoutMs ?? 5000,
+  );
 
+  if (!result.ok) {
+    if (result.status === 401)
+      return { ok: false, product: p.slug, durationMs: took(), reason: "auth" };
     // Past a 200, a body we can't read/validate is a product-side problem
     // (bad_shape), not a network outage (unreachable) — keep them distinct so
     // on-call debugging points at the right layer.
-    let json: unknown;
-    try {
-      json = await res.json();
-    } catch {
+    if (result.kind === "parse" || result.kind === "schema")
       return {
         ok: false,
         product: p.slug,
         durationMs: took(),
         reason: "bad_shape",
       };
-    }
-    const parsed = metricsPayloadSchema.safeParse(json);
-    if (!parsed.success)
-      return {
-        ok: false,
-        product: p.slug,
-        durationMs: took(),
-        reason: "bad_shape",
-      };
-    return {
-      ok: true,
-      product: p.slug,
-      durationMs: took(),
-      data: parsed.data,
-    };
-  } catch {
     return {
       ok: false,
       product: p.slug,
       durationMs: took(),
       reason: "unreachable",
     };
-  } finally {
-    clearTimeout(timer);
   }
+  return { ok: true, product: p.slug, durationMs: took(), data: result.data };
 }
