@@ -118,3 +118,114 @@ describe("addTeamMemberByEmail", () => {
     expect(upsertMock).not.toHaveBeenCalled();
   });
 });
+
+describe("grantKit", () => {
+  it("succeeds via upsert when the vendor already holds this grant (duplicate grant)", async () => {
+    // upsert's onConflict makes this idempotent — granting an already-active
+    // link must not throw or create a second row.
+    upsertMock.mockResolvedValue({ error: null });
+
+    const { grantKit } = await import("@/lib/admin");
+    await expect(
+      grantKit("Vendor@Example.com", "qkit"),
+    ).resolves.toBeUndefined();
+
+    expect(upsertMock).toHaveBeenCalledWith(
+      { email: "vendor@example.com", product_slug: "qkit", status: "active" },
+      { onConflict: "email,product_slug" },
+    );
+  });
+
+  it("throws a wrapped error when the upsert fails", async () => {
+    upsertMock.mockResolvedValue({
+      error: { message: "constraint violation" },
+    });
+
+    const { grantKit } = await import("@/lib/admin");
+    await expect(grantKit("vendor@example.com", "qkit")).rejects.toThrow(
+      /grant: constraint violation/,
+    );
+  });
+});
+
+describe("revokeKit", () => {
+  function fakeDeleteClient(result: { error: { message: string } | null }) {
+    const eq2 = vi.fn().mockResolvedValue(result);
+    const eq1 = vi.fn(() => ({ eq: eq2 }));
+    const deleteFn = vi.fn(() => ({ eq: eq1 }));
+    return {
+      client: { from: () => ({ delete: deleteFn }) },
+      deleteFn,
+      eq1,
+      eq2,
+    };
+  }
+
+  it("resolves cleanly when the grant doesn't exist (delete matches zero rows)", async () => {
+    // Postgres/PostgREST report success with no error for a delete that
+    // matches nothing — revoking a non-existent grant is not an error case.
+    const { client, eq1, eq2 } = fakeDeleteClient({ error: null });
+    createServiceClientMock.mockResolvedValue(client);
+
+    const { revokeKit } = await import("@/lib/admin");
+    await expect(
+      revokeKit("nobody@example.com", "qkit"),
+    ).resolves.toBeUndefined();
+
+    expect(eq1).toHaveBeenCalledWith("email", "nobody@example.com");
+    expect(eq2).toHaveBeenCalledWith("product_slug", "qkit");
+  });
+
+  it("throws a wrapped error when the delete fails", async () => {
+    const { client } = fakeDeleteClient({
+      error: { message: "permission denied" },
+    });
+    createServiceClientMock.mockResolvedValue(client);
+
+    const { revokeKit } = await import("@/lib/admin");
+    await expect(revokeKit("vendor@example.com", "qkit")).rejects.toThrow(
+      /revoke: permission denied/,
+    );
+  });
+});
+
+describe("removeTeamMember", () => {
+  function fakeDeleteClient(result: { error: { message: string } | null }) {
+    const eqMock = vi.fn().mockResolvedValue(result);
+    const deleteFn = vi.fn(() => ({ eq: eqMock }));
+    return { client: { from: () => ({ delete: deleteFn }) }, deleteFn, eqMock };
+  }
+
+  it("succeeds for an existing member", async () => {
+    const { client, eqMock } = fakeDeleteClient({ error: null });
+    createServiceClientMock.mockResolvedValue(client);
+
+    const { removeTeamMember } = await import("@/lib/admin");
+    await expect(removeTeamMember("u1")).resolves.toBeUndefined();
+
+    expect(eqMock).toHaveBeenCalledWith("user_id", "u1");
+  });
+
+  it("resolves cleanly for a user id with no matching membership row (not-found)", async () => {
+    // Same as the success case from the DB's point of view — a delete that
+    // matches zero rows is not an error — but exercised with an id that was
+    // never a member, to cover the caller's not-found path explicitly.
+    const { client } = fakeDeleteClient({ error: null });
+    createServiceClientMock.mockResolvedValue(client);
+
+    const { removeTeamMember } = await import("@/lib/admin");
+    await expect(removeTeamMember("never-a-member")).resolves.toBeUndefined();
+  });
+
+  it("throws a wrapped error when the delete fails", async () => {
+    const { client } = fakeDeleteClient({
+      error: { message: "service unavailable" },
+    });
+    createServiceClientMock.mockResolvedValue(client);
+
+    const { removeTeamMember } = await import("@/lib/admin");
+    await expect(removeTeamMember("u1")).rejects.toThrow(
+      /remove team: service unavailable/,
+    );
+  });
+});
