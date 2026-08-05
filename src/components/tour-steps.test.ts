@@ -21,11 +21,11 @@ describe("tourSteps", () => {
     expect(steps[steps.length - 1].element).toBe('[data-tour="tour-replay"]');
   });
 
-  it("spotlights the account menu in between", () => {
+  it("spotlights the account menu in between, anchored to @merqo/ui's AccountMenu trigger", () => {
     const elements = tourSteps().map((s) => s.element);
     expect(elements).toEqual([
       '[data-tour="dashboard-welcome"]',
-      '[data-tour="account-menu"]',
+      '[data-tour="nav-account"]',
       '[data-tour="tour-replay"]',
     ]);
   });

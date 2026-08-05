@@ -1,28 +1,26 @@
 // @vitest-environment jsdom
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import { render } from "@testing-library/react";
 import { DashboardTour } from "./dashboard-tour";
 
+// The tour mechanism itself (driver.js lifecycle, auto-run/replay timing,
+// mark-seen-once semantics, popover styling) is owned and tested by
+// @merqo/ui's own DashboardTour. This file's job is narrower: confirm
+// Merqo wires the right props through to it.
 const mocks = vi.hoisted(() => {
-  const state = { pathname: "/dashboard", lastConfig: null as unknown };
-  const drive = vi.fn();
-  const destroy = vi.fn();
+  const state = { pathname: "/dashboard", lastProps: null as unknown };
   return {
     state,
-    drive,
-    destroy,
     push: vi.fn(),
     markTourSeen: vi.fn(),
-    driver: vi.fn((config: unknown) => {
-      state.lastConfig = config;
-      return { drive, destroy };
+    SharedDashboardTour: vi.fn((props: unknown) => {
+      state.lastProps = props;
+      return null;
     }),
   };
 });
 
-vi.mock("driver.js", () => ({ driver: mocks.driver }));
+vi.mock("@merqo/ui", () => ({ DashboardTour: mocks.SharedDashboardTour }));
 vi.mock("@/app/dashboard/tour-actions", () => ({
   markTourSeen: mocks.markTourSeen,
 }));
@@ -31,82 +29,63 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mocks.push }),
 }));
 
-type DriverConfig = { onDestroyed?: () => void; steps: unknown[] };
-const config = () => mocks.state.lastConfig as DriverConfig;
+type DashboardTourProps = {
+  steps: unknown;
+  seen: boolean;
+  onFirstSeen: () => Promise<void>;
+  isHomeRoute: boolean;
+  navigateHome: () => void;
+  scopeClassName: string;
+};
+const props = () => mocks.state.lastProps as DashboardTourProps;
 
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.state.pathname = "/dashboard";
-  mocks.state.lastConfig = null;
+  mocks.state.lastProps = null;
 });
 
 describe("DashboardTour", () => {
-  it("renders the floating replay button", () => {
-    render(<DashboardTour seen={true} />);
-    expect(
-      screen.getByRole("button", { name: /replay onboarding tour/i }),
-    ).toHaveAttribute("data-tour", "tour-replay");
-  });
-
-  it("auto-runs on /dashboard for a user who has not seen it", async () => {
+  it("passes tourSteps straight through as the lazy steps resolver", () => {
     render(<DashboardTour seen={false} />);
-    await waitFor(() => expect(mocks.drive).toHaveBeenCalledTimes(1));
-    expect(config().steps).toHaveLength(3);
+    expect(typeof props().steps).toBe("function");
+
+    const resolver = props().steps as () => { element: string }[];
+    expect(resolver()).toHaveLength(3);
   });
 
-  it("does not auto-run when already seen", async () => {
+  it("passes seen through unchanged", () => {
     render(<DashboardTour seen={true} />);
-    await new Promise((r) => requestAnimationFrame(() => r(null)));
-    expect(mocks.drive).not.toHaveBeenCalled();
-  });
+    expect(props().seen).toBe(true);
 
-  it("does not auto-run off the overview page, even if unseen", async () => {
-    mocks.state.pathname = "/dashboard/pending";
     render(<DashboardTour seen={false} />);
-    await new Promise((r) => requestAnimationFrame(() => r(null)));
-    expect(mocks.drive).not.toHaveBeenCalled();
+    expect(props().seen).toBe(false);
   });
 
-  it("replays on button click even for a seen user", async () => {
+  it("navigateHome pushes to /dashboard", () => {
     render(<DashboardTour seen={true} />);
-    await userEvent.click(
-      screen.getByRole("button", { name: /replay onboarding tour/i }),
-    );
-    await waitFor(() => expect(mocks.drive).toHaveBeenCalledTimes(1));
-  });
-
-  it("stamps tour-seen as soon as the auto-run tour starts, so a mid-tour refresh does not re-trigger it", async () => {
-    render(<DashboardTour seen={false} />);
-    await waitFor(() => expect(mocks.drive).toHaveBeenCalledTimes(1));
-    expect(mocks.markTourSeen).toHaveBeenCalledTimes(1);
-
-    // Finishing later, or a subsequent replay, must not re-stamp.
-    config().onDestroyed?.();
-    expect(mocks.markTourSeen).toHaveBeenCalledTimes(1);
-    await userEvent.click(
-      screen.getByRole("button", { name: /replay onboarding tour/i }),
-    );
-    await waitFor(() => expect(mocks.drive).toHaveBeenCalledTimes(2));
-    config().onDestroyed?.();
-    expect(mocks.markTourSeen).toHaveBeenCalledTimes(1);
-  });
-
-  it("never stamps tour-seen when a seen user replays", async () => {
-    render(<DashboardTour seen={true} />);
-    await userEvent.click(
-      screen.getByRole("button", { name: /replay onboarding tour/i }),
-    );
-    await waitFor(() => expect(mocks.drive).toHaveBeenCalled());
-    config().onDestroyed?.();
-    expect(mocks.markTourSeen).not.toHaveBeenCalled();
-  });
-
-  it("routes to /dashboard first when replayed from another page", async () => {
-    mocks.state.pathname = "/dashboard/pending";
-    render(<DashboardTour seen={true} />);
-    await userEvent.click(
-      screen.getByRole("button", { name: /replay onboarding tour/i }),
-    );
+    props().navigateHome();
     expect(mocks.push).toHaveBeenCalledWith("/dashboard");
+  });
+
+  it("isHomeRoute is false off /dashboard", () => {
+    mocks.state.pathname = "/dashboard/pending";
+    render(<DashboardTour seen={true} />);
+    expect(props().isHomeRoute).toBe(false);
+  });
+
+  it("isHomeRoute is true on /dashboard", () => {
+    render(<DashboardTour seen={true} />);
+    expect(props().isHomeRoute).toBe(true);
+  });
+
+  it("onFirstSeen is wired to markTourSeen", () => {
+    render(<DashboardTour seen={true} />);
+    expect(props().onFirstSeen).toBe(mocks.markTourSeen);
+  });
+
+  it("scopeClassName is merqo-tour", () => {
+    render(<DashboardTour seen={true} />);
+    expect(props().scopeClassName).toBe("merqo-tour");
   });
 });
