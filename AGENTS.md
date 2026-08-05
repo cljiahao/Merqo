@@ -1,4 +1,4 @@
-<!-- templateCentral: nextjs@5.8.0 (Supabase variant — shared project, schema per kit) -->
+<!-- templateCentral: nextjs@5.14.0 (Supabase variant — shared project, schema per kit) -->
 
 # AGENTS.md — Merqo
 
@@ -15,7 +15,9 @@ for Singapore micro/small sellers. `qkit` (queue/orders), `loopkit` (stamp-card
 loyalty), and `paykit` (payments) are live (see `src/lib/kits.ts`).
 This app is the public brand landing + a role-gated operator console:
 `/dashboard` (cross-product metrics overview, post-login home), `/admin/vendors`
-(grant/revoke kit access per vendor), and `/admin/team` (manage Merqo-team members).
+(grant/revoke kit access per vendor), `/admin/team` (manage Merqo-team members),
+`/admin/products` (per-kit health from the metrics API), and `/admin/feedback`
+(vendor NPS + comments per kit).
 It pulls each kit's metrics over an **HTTP API** (bearer secret) — never a direct
 cross-schema query.
 
@@ -148,7 +150,7 @@ requires GitHub Advanced Security, unavailable on this private repo's free
 tier; this line previously and incorrectly claimed CodeQL was configured).
 `.github/dependabot.yml` (security-only).
 Project skills (directory form, `<name>/SKILL.md`): `.claude/skills/` |
-Manifest: `.claude/harness.json` (`templatecentral_version: 5.11.0`) — all 26
+Manifest: `.claude/harness.json` (`templatecentral_version: 5.14.0`) — all 26
 `seeded_files` entries carry real `origin_hash` values (no `<pending>`
 markers); `verify-harness.sh` checks the subset under its guard regex
 (`.claude/hooks/`, `.claude/settings.json`, `.claude/(verify|regen)-harness.sh`,
