@@ -1,41 +1,54 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import Link from "next/link";
-import { User, LifeBuoy, MessageSquarePlus, LogOut } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { FeedbackForm } from "@/components/feedback-form";
-import { SupportForm } from "@/components/support-form";
+import { toast } from "sonner";
+import { AccountMenu as SharedAccountMenu } from "@merqo/ui";
 import { signOutAction } from "@/app/actions/auth";
+import { submitFeedbackAction } from "@/app/actions/feedback";
+import { submitSupportMessageAction } from "@/app/actions/support";
+import {
+  SUPPORT_CATEGORY_LABELS,
+  type SupportMessageInput,
+} from "@/lib/feedback-support-schemas";
 
-/** Single-letter avatar fallback derived from an email's first character —
- *  Merqo has no stored display name (vendors and team members are identified
- *  by email/user_id only) to draw real initials from. */
-export function initials(email: string | null | undefined): string {
-  const first = email?.trim().charAt(0);
-  return first ? first.toUpperCase() : "•";
+const HELP_CATEGORIES = (
+  Object.keys(SUPPORT_CATEGORY_LABELS) as SupportMessageInput["category"][]
+).map((value) => ({ value, label: SUPPORT_CATEGORY_LABELS[value] }));
+
+// @merqo/ui's getHelp.onSubmit types `category` as a bare `string | undefined`
+// (it has no knowledge of Merqo's own category literals), so narrow it back
+// to SupportMessageInput["category"] by checking membership in the values
+// HELP_CATEGORIES itself offered, instead of asserting the type.
+const HELP_CATEGORY_VALUES: readonly string[] = HELP_CATEGORIES.map(
+  (c) => c.value,
+);
+function isSupportCategory(
+  value: string | undefined,
+): value is SupportMessageInput["category"] {
+  return value !== undefined && HELP_CATEGORY_VALUES.includes(value);
 }
 
-/** Shared account-menu trigger for /dashboard and /admin headers — an image
- *  avatar (or initials fallback) that opens a dropdown with the signed-in
- *  email, a Profile link, Get help and Feedback (each opening a Sheet form),
- *  an optional switch link for dual-role accounts, and Sign out. Matches the
- *  qkit/loopkit/paykit avatar-menu pattern: a single "Get help" item opens
- *  the support form rather than deep-linking to another kit's dashboard. */
+function onError(error: unknown) {
+  toast.error(error instanceof Error ? error.message : "Something went wrong");
+}
+
+/**
+ * Shared account-menu trigger for /dashboard and /admin headers, composed
+ * from @merqo/ui's `AccountMenu` — an image avatar (or initials fallback)
+ * that opens a dropdown with the signed-in email, a Profile link, Get help
+ * and Feedback (each opening a Sheet form), an optional switch link for
+ * dual-role accounts, and Sign out.
+ *
+ * Merqo has no per-user display name distinct from email at the account-menu
+ * level (unlike qkit's vendor "stall name"), so `email` fills both the
+ * shared component's `vendor.name` (used only for the initials fallback) and
+ * `vendor.subtitle` (the one line actually rendered next to the trigger and
+ * in the dropdown header) — matching this component's pre-migration behavior
+ * exactly. Merqo has no `/dashboard/plan` or kit-local settings route, so
+ * `showPlanItem` is off and `kitLocalSettingsHref` is omitted; the shared
+ * component's Profile link is hardcoded to `/dashboard/profile`, which
+ * `src/app/dashboard/profile/page.tsx` now redirects to Merqo's real,
+ * persona-shared `/profile` route.
+ */
 export function AccountMenu({
   email,
   avatarUrl,
@@ -45,115 +58,37 @@ export function AccountMenu({
   avatarUrl?: string | null;
   switchTo?: { href: string; label: string };
 }) {
-  const [, startTransition] = useTransition();
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
-  const [supportOpen, setSupportOpen] = useState(false);
-
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            data-tour="account-menu"
-            aria-label="Account menu"
-            className="flex items-center gap-2 rounded-lg py-1 pr-2 pl-1 text-left outline-none transition-colors hover:bg-secondary focus-visible:ring-[3px] focus-visible:ring-ring/50"
-          >
-            {avatarUrl ? (
-              // size-8 avatar; next/image's optimization overhead isn't worth
-              // it here, and Merqo has no next.config.ts remote-pattern setup
-              // for external avatar hosts (Google) today.
-              // eslint-disable-next-line @next/next/no-img-element -- fixed
-              <img
-                src={avatarUrl}
-                alt="Profile picture"
-                className="size-8 shrink-0 rounded-md object-cover ring-1 ring-primary/25 ring-inset"
-              />
-            ) : (
-              <span
-                aria-hidden
-                className="grid size-8 shrink-0 place-items-center rounded-md bg-primary/12 font-mono text-xs font-semibold text-primary ring-1 ring-primary/25 ring-inset"
-              >
-                {initials(email)}
-              </span>
-            )}
-            {email && (
-              <span className="hidden max-w-[12rem] truncate text-sm font-medium sm:inline">
-                {email}
-              </span>
-            )}
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-56 rounded-xl">
-          <DropdownMenuLabel className="truncate text-xs font-normal text-muted-foreground">
-            {email ?? "Account"}
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem asChild className="cursor-pointer">
-            <Link href="/profile">
-              <User /> Profile
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onSelect={() => setSupportOpen(true)}
-          >
-            <LifeBuoy /> Get help
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="cursor-pointer"
-            onSelect={() => setFeedbackOpen(true)}
-          >
-            <MessageSquarePlus /> Feedback
-          </DropdownMenuItem>
-          {switchTo && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild className="cursor-pointer">
-                <Link href={switchTo.href}>{switchTo.label}</Link>
-              </DropdownMenuItem>
-            </>
-          )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            variant="destructive"
-            className="cursor-pointer"
-            onSelect={() => startTransition(() => signOutAction())}
-          >
-            <LogOut /> Sign out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <Sheet open={feedbackOpen} onOpenChange={setFeedbackOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle className="font-display text-2xl">Feedback</SheetTitle>
-            <SheetDescription>
-              How&apos;s Merqo working for you? Tell us what&apos;s working,
-              what&apos;s missing, or what&apos;s broken.
-            </SheetDescription>
-          </SheetHeader>
-          <div className="px-4 pb-6">
-            <FeedbackForm />
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      <Sheet open={supportOpen} onOpenChange={setSupportOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle className="font-display text-2xl">Get help</SheetTitle>
-            <SheetDescription>
-              Something not working, or need help with your Merqo account? Tell
-              us and we&apos;ll follow up.
-            </SheetDescription>
-          </SheetHeader>
-          <div className="px-4 pb-6">
-            <SupportForm />
-          </div>
-        </SheetContent>
-      </Sheet>
-    </>
+    <SharedAccountMenu
+      vendor={{
+        name: email ?? "",
+        avatarUrl: avatarUrl ?? undefined,
+        subtitle: email ?? undefined,
+      }}
+      signOutAction={signOutAction}
+      showPlanItem={false}
+      getHelp={{
+        type: "form",
+        onSubmit: async ({ message, category }) => {
+          const res = await submitSupportMessageAction({
+            category: isSupportCategory(category) ? category : "other",
+            body: message,
+          });
+          if (!res.success) throw new Error(res.error);
+        },
+        categories: HELP_CATEGORIES,
+      }}
+      onFeedbackSubmit={async ({ message, nps }) => {
+        const res = await submitFeedbackAction({
+          nps: nps ?? 0,
+          message: message.trim() || undefined,
+        });
+        if (!res.success) throw new Error(res.error);
+      }}
+      feedbackMetric="nps"
+      showNps
+      extraLink={switchTo}
+      onError={onError}
+    />
   );
 }
