@@ -1,15 +1,34 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import sonarjs from "eslint-plugin-sonarjs";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   {
+    // Comment hygiene (templateCentral standard, hard gate as of 5.8, parity
+    // with every sibling kit as of 5.13): own-line comments only, no
+    // commented-out code. See templatecentral:standards code-standards/comments.md.
+    plugins: { sonarjs },
     rules: {
-      // templateCentral 5.8 comment hygiene — non-blocking nudge for tenet 2
-      // (prefer own-line comments; trailing comments sparingly).
-      "no-inline-comments": "warn",
+      "no-inline-comments": [
+        "error",
+        {
+          ignorePattern:
+            "eslint-|@ts-|prettier-|c8 |istanbul |webpackChunkName",
+        },
+      ],
+      "sonarjs/no-commented-code": "error",
+    },
+  },
+  {
+    // Tests routinely label table-driven cases and fixtures with short
+    // trailing notes; that reads better inline, so the gate would be pure
+    // noise there.
+    files: ["**/*.test.{ts,tsx}", "**/test/**", "e2e/**"],
+    rules: {
+      "no-inline-comments": "off",
     },
   },
   globalIgnores([
