@@ -23,6 +23,10 @@ behavioral description of each hook and the events they're wired to.
   exit 2 blocks.
 - `post-edit-typecheck.sh` — PostToolUse(Edit|Write): runs
   `tsc --noEmit --incremental` on TS edits, feedback-only.
+- `post-edit-comment-check.sh` — PostToolUse(Edit|Write): flags
+  change-narration comments and oversized (>5-line) comment blocks on TS
+  edits, feedback-only. Patterns come from
+  `.claude/comment-hygiene-patterns.txt`.
 - `post-tool-failure.sh` — PostToolUseFailure: surfaces tool-error context,
   always exits 0.
 - `skill-usage-log.sh` — PostToolUse(Skill\_\_.\*): appends to
