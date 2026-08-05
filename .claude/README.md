@@ -11,8 +11,12 @@ map of what lives where.
   SessionStart) and `permissions.allow/ask/deny`.
 - `hooks/` — the scripts `settings.json` wires up: `protect-files.sh`,
   `block-no-verify.sh`, `user-prompt-guard.cjs`, `post-edit-typecheck.sh`,
-  `post-tool-failure.sh`, `stop-checks.sh`, `subagent-stop.sh`,
-  `session-context.sh`, `skill-usage-log.sh`.
+  `post-edit-comment-check.sh`, `post-tool-failure.sh`, `stop-checks.sh`,
+  `subagent-stop.sh`, `session-context.sh`, `skill-usage-log.sh`.
+- `comment-hygiene-patterns.txt` — the change-narration/ticket-reference
+  regex list shared by `post-edit-comment-check.sh`,
+  `.husky/lib/comment-hygiene.sh`, and CI's `comment-hygiene` job (each
+  reads it at runtime rather than hardcoding its own copy).
 - `skills/` — project-local skills (`next-verify`, `supabase-migrate`) that
   templateCentral's own skill set doesn't cover (this repo's data layer is
   Supabase, not Drizzle).

@@ -117,8 +117,12 @@ on source directories. App code, skills, specs unrestricted.
 UserPromptSubmit → `user-prompt-guard.cjs` pattern-checks prompts for
 injection phrases (OWASP LLM01) and embedded credentials (OWASP LLM02); exit
 2 blocks. PostToolUse(Edit|Write) → `post-edit-typecheck.sh` runs `tsc
---noEmit --incremental` on TS edits, feedback-only. PostToolUse(Skill__.*) →
-`skill-usage-log.sh` appends to `.claude/skill-usage.log`.
+--noEmit --incremental` on TS edits, feedback-only, and
+`post-edit-comment-check.sh` flags change-narration comments/oversized
+comment blocks on TS edits (patterns from
+`.claude/comment-hygiene-patterns.txt`), also feedback-only.
+PostToolUse(Skill__.*) → `skill-usage-log.sh` appends to
+`.claude/skill-usage.log`.
 PostToolUseFailure → `post-tool-failure.sh` surfaces tool-error context,
 always exits 0. Stop → `stop-checks.sh` exits 0 when `stop_hook_active`; else
 runs `pnpm test --run`, exit 2 feeds failures back. SubagentStop →
@@ -127,24 +131,28 @@ hands back control. SessionStart (startup|resume|clear|compact) →
 `session-context.sh` re-injects the first 30 lines of this file plus
 always-on invariants.
 `permissions`: `deny` covers secret reads/edits (`.env.local` and other
-`.env.<env>` variants, `./secrets/**` — `.env.example` whitelisted) and
-irreversible ops (`rm -rf`, `git push --force`/`-f`, `git reset --hard`,
-`git clean -fd/-fx`, `git filter-branch`, ref-delete). `ask` gates edits to
-AGENTS.md / CLAUDE.md / settings.json.
+`.env.<env>` variants, `./secrets/**` — `.env.example`/`.env.default`
+whitelisted) and irreversible ops (`rm -rf`, `git push --force`/`-f`,
+`git reset --hard`, `git clean -fd/-fx`, `git filter-branch`, ref-delete).
+`ask` gates edits to AGENTS.md / CLAUDE.md / settings.json / harness.json
+(redundant with protect-files.sh's own ask-gate on the same files).
 Git hooks (husky): pre-commit runs format/lint/typecheck + lockfile-sync
 (`--frozen-lockfile`) + gitleaks secret-scan on staged files, plus a
-readme-coupling staleness warning (excludes `.claude/hooks/*` and
-`.claude/.harness-base/**` so it can't reformat scripts off their
-harness.json baseline); commit-msg enforces Conventional Commits; pre-push
-runs the harness integrity check + quality gate. Migrated 2026-08-01 off
-lefthook, whose unsigned `lefthook.exe` Windows Smart App Control blocks
-unconditionally — see
+readme-coupling staleness warning and a comment-hygiene warning (both
+excluding `.claude/hooks/*` and `.claude/.harness-base/**` so they can't
+flag/reformat scripts off their harness.json baseline); commit-msg enforces
+Conventional Commits; pre-push runs the harness integrity check + quality
+gate. Migrated 2026-08-01 off lefthook, whose unsigned `lefthook.exe`
+Windows Smart App Control blocks unconditionally — see
 `docs/superpowers/specs/2026-08-01-lefthook-to-husky-migration-design.md`.
-CI (GitHub Actions, `ci.yml`, 6 jobs): `test` (harness integrity, changed-line
+CI (GitHub Actions, `ci.yml`, 8 jobs): `test` (harness integrity, changed-line
 coverage via `diff-cover` ≥80%, lockfile-in-sync via `--frozen-lockfile`),
-`build` (`next build`), `e2e` (Playwright public smoke), `changelog`
-(changelog-touched check), `readme-freshness` (README-coupling check), and `db`
-(pgTAP RLS suite).
+`build` (`next build`), `e2e` (Playwright public smoke), `e2e-admin`
+(Playwright admin-interaction flows against a real local Supabase instance),
+`changelog` (changelog-touched check), `readme-freshness` (README-coupling
+check), `comment-hygiene` (hard-gates change-narration comments introduced by
+a PR's added lines — `skip-comment-check` label bypasses), and `db` (pgTAP
+RLS suite). Actions are pinned to commit SHAs, not floating version tags.
 `security.yml` runs gitleaks + `pnpm audit` — **no CodeQL** (code scanning
 requires GitHub Advanced Security, unavailable on this private repo's free
 tier; this line previously and incorrectly claimed CodeQL was configured).
