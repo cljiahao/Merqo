@@ -1,4 +1,5 @@
 allowBuilds:
+  "@merqo/ui": true
   esbuild: true
   sharp: true
   unrs-resolver: true

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@source "../../node_modules/@merqo/ui/dist";
 
 /* ── Merqo — "Control Room" ────────────────────────────────────────────────
    The house brand + control portal over the kit family. A restrained, premium
