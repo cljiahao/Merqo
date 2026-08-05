@@ -3,6 +3,7 @@ import {
   type VendorMetricsPayload,
 } from "@/lib/vendor-metrics-schema";
 import type { RegistryRow } from "@/lib/products";
+import { fetchKitJson } from "@/lib/kit-action-request";
 
 type VendorMetricsSource = Pick<
   RegistryRow,
@@ -35,28 +36,12 @@ export async function fetchVendorMetrics(
     return { ok: false, slug: kit.slug };
   }
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? 2000);
-  try {
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${kit.metrics_secret}` },
-      cache: "no-store",
-      signal: controller.signal,
-    });
-    if (!res.ok) return { ok: false, slug: kit.slug };
-
-    let json: unknown;
-    try {
-      json = await res.json();
-    } catch {
-      return { ok: false, slug: kit.slug };
-    }
-    const parsed = vendorMetricsPayloadSchema.safeParse(json);
-    if (!parsed.success) return { ok: false, slug: kit.slug };
-    return { ok: true, slug: kit.slug, data: parsed.data };
-  } catch {
-    return { ok: false, slug: kit.slug };
-  } finally {
-    clearTimeout(timer);
-  }
+  const result = await fetchKitJson(
+    url,
+    vendorMetricsPayloadSchema,
+    { headers: { Authorization: `Bearer ${kit.metrics_secret}` } },
+    opts.timeoutMs ?? 2000,
+  );
+  if (!result.ok) return { ok: false, slug: kit.slug };
+  return { ok: true, slug: kit.slug, data: result.data };
 }

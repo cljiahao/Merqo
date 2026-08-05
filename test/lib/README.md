@@ -9,7 +9,7 @@ names one-to-one.
 ## Contents
 
 - `account.test.ts` — `src/lib/account.ts` metadata field reads.
-- `admin.test.ts` — the admin gate + vendor-grant status helpers in `src/lib/admin.ts`.
+- `admin.test.ts` — `src/lib/admin.ts`'s read helpers (team/grant listing) and write paths (`grantKit`/`revokeKit`/`removeTeamMember`, incl. duplicate-grant and not-found edge cases), all against a mocked Supabase service client.
 - `downgrade-request.test.ts` — `src/lib/downgrade-request.ts`'s metrics-API call.
 - `ecosystem.test.ts` — the kit-stacker graph data/edge logic in `src/lib/ecosystem.ts`.
 - `feedback-action.test.ts` — the vendor feedback Server Action.
@@ -18,6 +18,7 @@ names one-to-one.
 - `funnel.test.ts` — the onboarding funnel counts in `src/lib/funnel.ts`.
 - `health.test.ts` — the `reporting`/`lagging`/`down` classifier in `src/lib/health.ts`.
 - `join-waitlist.test.ts` — the dashboard "Join waitlist" Server Action.
+- `kit-action-request.test.ts` — `src/lib/kit-action-request.ts`'s shared `fetchKitJson`/`postKitAction` helpers (network/HTTP/parse/schema failure modes).
 - `kits.test.ts` — the kit family config in `src/lib/kits.ts` (slugs, live/coming/planned status, hrefs).
 - `merqo-vendor-profile.test.ts` — the vendor-profile RPC wrapper.
 - `metrics-client.test.ts` — the platform metrics fetch + schema validation.

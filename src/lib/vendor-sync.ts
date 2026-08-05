@@ -3,6 +3,7 @@ import type { RegistryRow } from "@/lib/products";
 import { createServiceClient } from "@/lib/supabase/server";
 import { listLiveProducts } from "@/lib/products";
 import type { VendorLink } from "@/lib/vendor";
+import { fetchKitJson } from "@/lib/kit-action-request";
 
 type VendorStatusSource = Pick<
   RegistryRow,
@@ -38,35 +39,19 @@ export async function checkVendorStatus(
     return { ok: false, slug: kit.slug };
   }
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? 5000);
-  try {
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${kit.metrics_secret}` },
-      cache: "no-store",
-      signal: controller.signal,
-    });
-    if (!res.ok) return { ok: false, slug: kit.slug };
-
-    let json: unknown;
-    try {
-      json = await res.json();
-    } catch {
-      return { ok: false, slug: kit.slug };
-    }
-    const parsed = vendorStatusSchema.safeParse(json);
-    if (!parsed.success) return { ok: false, slug: kit.slug };
-    return {
-      ok: true,
-      slug: kit.slug,
-      active: parsed.data.active,
-      plan: parsed.data.plan,
-    };
-  } catch {
-    return { ok: false, slug: kit.slug };
-  } finally {
-    clearTimeout(timer);
-  }
+  const result = await fetchKitJson(
+    url,
+    vendorStatusSchema,
+    { headers: { Authorization: `Bearer ${kit.metrics_secret}` } },
+    opts.timeoutMs ?? 5000,
+  );
+  if (!result.ok) return { ok: false, slug: kit.slug };
+  return {
+    ok: true,
+    slug: kit.slug,
+    active: result.data.active,
+    plan: result.data.plan,
+  };
 }
 
 /** Which check results should become active vendor_links rows. Pure. */
@@ -173,41 +158,27 @@ async function provisionOnce(
     return { ok: false, slug: kit.slug };
   }
 
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, {
+  const result = await fetchKitJson(
+    url,
+    provisionResponseSchema,
+    {
       method: "POST",
       headers: {
         Authorization: `Bearer ${kit.provision_secret}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ user_id: userId }),
-      cache: "no-store",
-      signal: controller.signal,
-    });
-    if (!res.ok) return { ok: false, slug: kit.slug };
-
-    let json: unknown;
-    try {
-      json = await res.json();
-    } catch {
-      return { ok: false, slug: kit.slug };
-    }
-    const parsed = provisionResponseSchema.safeParse(json);
-    if (!parsed.success) return { ok: false, slug: kit.slug };
-    return {
-      ok: true,
-      slug: kit.slug,
-      alreadyExisted: parsed.data.already_existed,
-      plan: parsed.data.plan,
-      needsSetup: parsed.data.needs_setup,
-    };
-  } catch {
-    return { ok: false, slug: kit.slug };
-  } finally {
-    clearTimeout(timer);
-  }
+    },
+    timeoutMs,
+  );
+  if (!result.ok) return { ok: false, slug: kit.slug };
+  return {
+    ok: true,
+    slug: kit.slug,
+    alreadyExisted: result.data.already_existed,
+    plan: result.data.plan,
+    needsSetup: result.data.needs_setup,
+  };
 }
 
 /** Push-creates a vendor's tenant row on one kit. Never throws. One
