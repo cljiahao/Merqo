@@ -8,6 +8,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- `.env.example` was unreadable via Read/Bash tools — a `Read(**/.env.*)`
+  wildcard in `.claude/settings.json`'s `permissions.deny` shadowed the
+  explicit non-secret variant sitting right beside it. Replaced with the
+  actual set of secret-env variants.
+- Admin console description (`/admin` route list) in this README was
+  missing `/admin/products` and `/admin/feedback` — both have existed for
+  a while, the doc just hadn't caught up.
+
+### Added
+
+- templateCentral 5.13.0's comment-hygiene enforcement layer (PostToolUse
+  hook, husky pre-commit warn, CI gate scoped to added lines).
+
 - `merqo/src/lib/kits.ts` and the landing ecosystem graph now mark
   stockkit `live` (with a new env-overridable `STOCKKIT_URL`) instead of
   `planned` — the config had never caught up to stockkit's actual shipped
