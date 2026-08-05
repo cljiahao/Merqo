@@ -19,6 +19,7 @@ that isn't a route or a component.
 - `funnel.ts` — onboarding funnel counts (waitlisted/needs-setup/granted) for the admin overview.
 - `health.ts` — classifies a kit's metrics-call latency into `reporting`/`lagging`/`down`.
 - `image-resize.ts` — client-side (Canvas) image downscale + WebP encode before an avatar upload.
+- `image-upload-adapter.ts` — `uploadVendorAvatar`, the `onUpload` backend @merqo/ui's `ImageUploader` is injected with: writes the already-resized blob to Supabase Storage and resolves its public URL. Keeps `ImageUploader` itself storage-backend-agnostic.
 - `kit-action-request.ts` — shared HTTP helpers for calling a kit's merqo-integration API: `fetchKitJson()` (timeout + JSON parse + Zod-validate, used by `metrics-client.ts`/`vendor-metrics-client.ts`/`vendor-sync.ts`) and `postKitAction()` (POST an email-keyed action, used by `upgrade-request.ts`/`downgrade-request.ts`).
 - `kits.ts` — the kit family config (status/tagline/description/href per kit) — the landing roadmap and dashboard discovery cards' source of truth.
 - `merqo-vendor-profile.ts` — typed wrapper over `merqo.get_or_create_vendor_profile`/`upsert_vendor_profile`.

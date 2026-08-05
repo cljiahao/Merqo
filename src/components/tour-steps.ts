@@ -23,7 +23,11 @@ const STEPS: TourStep[] = [
       "This is your home base — every kit you run shows up here as a card, with live metrics pulled straight from each one.",
   },
   {
-    element: sel("account-menu"),
+    // "nav-account", not "account-menu": @merqo/ui's AccountMenu hardcodes
+    // data-tour="nav-account" on its trigger button, and merqo's own
+    // AccountMenu now composes that shared component instead of rendering
+    // its own trigger markup.
+    element: sel("nav-account"),
     title: "Your account",
     description:
       "Update your profile, get help, or send feedback from here — shared across every Merqo kit you use.",
