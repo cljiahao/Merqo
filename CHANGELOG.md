@@ -8,6 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Bumped `@merqo/ui` to `github:cljiahao/merqo-ui#v0.9.0` and adopted its new
+  `LandingNav` shell component (`wordmark`/`end` slots) in
+  `src/components/landing/nav.tsx`, replacing the hand-rolled sticky header
+  markup — same classes, same wordmark/links/CTA, now sourced from the
+  shared package. v0.9.0 also fixes `DashboardNav`'s header to use an inner
+  `max-w-7xl` container instead of full-bleed; this repo doesn't consume
+  `DashboardNav` (see below), so that fix doesn't apply here.
 - Migrated onto `@merqo/ui` (`github:cljiahao/merqo-ui#v0.8.1`), the shared
   component package for the kit family. `useAsyncAction`, `InfoTooltip`,
   `Section`, `TwoColumnSections`, and `ImageUploader` are now delegated

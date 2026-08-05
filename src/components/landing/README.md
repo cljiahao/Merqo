@@ -8,10 +8,11 @@ per file. Presentational only — no data fetching, no client state beyond the
 
 ## Contents
 
-- `nav.tsx` — sticky top nav: `Wordmark` + a `#faq` anchor link + a
-  sign-in/dashboard link (`Sign in` when signed out, `Go to dashboard` when
-  signed in). Header padding/logo size (`px-5 py-4`, `text-3xl`) matches
-  qkit's landing nav exactly.
+- `nav.tsx` — sticky top nav built on `@merqo/ui`'s shared `LandingNav` shell
+  (`wordmark`/`end` slots): `Wordmark` as the wordmark slot, a `#faq` anchor
+  link + a sign-in/dashboard link (`Sign in` when signed out, `Go to
+dashboard` when signed in) as the end slot. Header padding/logo size
+  (`px-5 py-4`, `text-3xl`) matches qkit's landing nav exactly.
 - `hero.tsx` — headline, stat row, CTA.
 - `benefits.tsx` — the "why Merqo" feature grid.
 - `kit-stacker/` — the interactive kit-stacking demo.
