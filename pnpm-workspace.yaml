@@ -1,6 +1,6 @@
 allowBuilds:
   "@merqo/ui": true
-  "@merqo/ui@https://codeload.github.com/cljiahao/merqo-ui/tar.gz/4aa48fdb482be3b8d519154eb0679f3d49bfcd42": true
+  "@merqo/ui@https://codeload.github.com/cljiahao/merqo-ui/tar.gz/2c835301d957ed78a29cb1e774bb82e26f1724c6": true
   esbuild: true
   sharp: true
   unrs-resolver: true
