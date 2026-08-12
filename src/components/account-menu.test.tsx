@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { AccountMenu } from "./account-menu";
 import type { ActionResult } from "@/lib/action-result";
@@ -13,7 +13,9 @@ const mocks = vi.hoisted(() => ({
   submitSupportMessageAction: vi.fn<() => Promise<ActionResult>>(async () => ({
     success: true,
   })),
+  toastError: vi.fn(),
 }));
+const toastErrorMock = mocks.toastError;
 
 vi.mock("@/app/actions/auth", () => ({
   signOutAction: mocks.signOutAction,
@@ -24,6 +26,7 @@ vi.mock("@/app/actions/feedback", () => ({
 vi.mock("@/app/actions/support", () => ({
   submitSupportMessageAction: mocks.submitSupportMessageAction,
 }));
+vi.mock("sonner", () => ({ toast: { error: mocks.toastError } }));
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -169,5 +172,31 @@ describe("AccountMenu", () => {
     await user.click(screen.getByRole("menuitem", { name: "Sign out" }));
 
     expect(mocks.signOutAction).toHaveBeenCalled();
+  });
+
+  it("signing out swallows the redirect() control-flow error instead of toasting it", async () => {
+    const redirectError = Object.assign(new Error("NEXT_REDIRECT"), {
+      digest: "NEXT_REDIRECT;push;/login;307;",
+    });
+    mocks.signOutAction.mockRejectedValue(redirectError);
+    const user = userEvent.setup();
+    render(<AccountMenu email="team@merqo.io" avatarUrl={null} />);
+    await user.click(screen.getByRole("button", { name: /account menu/i }));
+    await user.click(screen.getByRole("menuitem", { name: "Sign out" }));
+
+    await waitFor(() => expect(mocks.signOutAction).toHaveBeenCalled());
+    expect(toastErrorMock).not.toHaveBeenCalled();
+  });
+
+  it("a genuine sign-out failure still surfaces an error toast", async () => {
+    mocks.signOutAction.mockRejectedValue(new Error("Network error"));
+    const user = userEvent.setup();
+    render(<AccountMenu email="team@merqo.io" avatarUrl={null} />);
+    await user.click(screen.getByRole("button", { name: /account menu/i }));
+    await user.click(screen.getByRole("menuitem", { name: "Sign out" }));
+
+    await waitFor(() =>
+      expect(toastErrorMock).toHaveBeenCalledWith("Network error"),
+    );
   });
 });

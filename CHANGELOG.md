@@ -8,6 +8,32 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Second frontend-design/impeccable critique pass. Found and fixed:
+  - Global CSS defect: `globals.css`'s `* { border-color: var(--border); }`
+    reset was unlayered while Tailwind v4's generated utilities live in
+    `@layer utilities` — an unlayered rule always wins the cascade over a
+    layered one regardless of selector specificity, so it silently
+    overrode every `border-<color>` utility in the app (every
+    `border-primary/*`, `hover:border-primary/*`, `border-destructive/*`,
+    `border-gold/*`) to the plain neutral border, no matter which color or
+    opacity was requested. Wrapped it in `@layer base` so utilities can
+    override it as intended. Restores the color signal on the vendor
+    dashboard/admin "needs attention" bands, the admin status banner, and
+    every hover-highlighted card.
+  - Sign-out surfaced a raw `NEXT_REDIRECT` error toast on every use: the
+    shared `AccountMenu`'s `useAsyncAction` hook forwards any throw from
+    the action it's given to `onError`, and `signOutAction`'s
+    `redirect("/login")` throws Next's internal redirect signal to do so —
+    the redirect itself still worked, but every sign-out also flashed a
+    confusing "NEXT_REDIRECT" toast. `src/components/account-menu.tsx` now
+    wraps the call and swallows that specific control-flow error.
+  - Admin overview's onboarding funnel could show a stage's step-conversion
+    as e.g. "200%": `waitlisted`/`granted`/`using` are documented as
+    distinct, non-narrowing populations (`using` can exceed `granted` by
+    design), so a "% of previous stage" figure was mathematically invalid
+    for this data and routinely printed nonsensical values. Removed the
+    misleading percentage; the funnel now shows only the raw counts and
+    relative-magnitude bars.
 - Four `loading.tsx` skeletons (admin overview, admin/vendors, admin/team,
   dashboard) narrower than the real page they precede, causing a visible
   layout shift the instant real data replaced the skeleton on every

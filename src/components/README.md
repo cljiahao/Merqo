@@ -10,7 +10,11 @@ or scoped to `dashboard/`/`landing/`.
 
 - `account-menu.tsx` — `AccountMenu`: thin adapter composing `@merqo/ui`'s
   shared `AccountMenu` for the dashboard/admin header avatar dropdown —
-  wires Merqo's `signOutAction`, `submitFeedbackAction`/
+  wires Merqo's `signOutAction` (through a `handleSignOut` wrapper that
+  swallows the `NEXT_REDIRECT` control-flow error `signOutAction`'s
+  `redirect()` throws on success, since `@merqo/ui`'s `useAsyncAction`
+  otherwise forwards that throw to `onError` and toasts it even though the
+  redirect itself succeeded), `submitFeedbackAction`/
   `submitSupportMessageAction` (throw-adapting, since both return
   `{success, error}` rather than throwing), the support-category list, and
   the optional cross-persona switch link (`extraLink`). No `/dashboard/plan`

@@ -41,7 +41,7 @@ export function StatusBanner({
   }
 
   return (
-    <div className="mt-4 flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/[0.04] p-4">
+    <div className="mt-4 flex items-center gap-3 rounded-xl border border-primary/50 bg-card p-4">
       <CheckCircle2 className="size-5 shrink-0 text-primary" />
       <p className="text-sm font-medium text-primary">
         All {reporting} products reporting

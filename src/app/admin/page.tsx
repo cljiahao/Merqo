@@ -70,7 +70,7 @@ export default async function AdminOverviewPage() {
           {waitlist.map((w) => (
             <div
               key={`${w.email}-${w.kit.slug}`}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/[0.04] px-4 py-3 text-sm"
+              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/50 bg-card px-4 py-3 text-sm"
             >
               <div className="min-w-0">
                 <Link

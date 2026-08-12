@@ -39,8 +39,13 @@ support/feedback inbox. Every route under this folder is gated by
   a hub-level `support_messages` row resolved (team-gated, writes via the
   service client, revalidates `/admin`).
 - `onboarding-funnel.tsx` — `OnboardingFunnelView({ counts })`. Renders the
-  3-stage vendor onboarding funnel (Waitlisted → Granted → Using) as drop-off
-  bars with step-over-step conversion percentages.
+  3-stage vendor onboarding funnel (Waitlisted → Granted → Using) as
+  relative-magnitude bars against each stage's raw count. Deliberately shows
+  no stage-to-stage conversion percentage — the three counts are distinct,
+  non-narrowing populations (`using` can exceed `granted` by design, per
+  `OnboardingCounts`' own contract in `src/lib/funnel.ts`), so a "% of
+  previous stage" figure would misrepresent the data rather than just round
+  it oddly.
 - `product-tile.tsx` — `ProductTile({ name, result, now })`. One kit's card on
   the overview grid: health badge (reporting/lagging/down), revenue/active-
   vendor figures, and GMV/signups/pro-vendor/orders chips with a 7d trend
