@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 vi.mock("next/font/google", () => ({
   Geist: () => ({ variable: "--font-geist-sans" }),
   Geist_Mono: () => ({ variable: "--font-geist-mono" }),
-  Big_Shoulders: () => ({ variable: "--font-big-shoulders" }),
+  Fraunces: () => ({ variable: "--font-fraunces" }),
 }));
 
 const { metadata } = await import("./layout");

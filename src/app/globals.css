@@ -89,7 +89,7 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-big-shoulders);
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
 }
 
 /* Tailwind v4's `@import "tailwindcss"` declares the theme/base/components/
@@ -110,6 +110,13 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Display headings tuned for Fraunces optical sizing (shared family face). */
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.015em;
 }
 
 /* kit-stacker graph: edges self-draw, then labels fade in just after.

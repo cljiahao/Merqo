@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Big_Shoulders } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -15,11 +15,12 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-const bigShoulders = Big_Shoulders({
-  variable: "--font-big-shoulders",
+// Display: family-wide shared face (see docs/business/2026-08-13-typography-family-standard.md).
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
   subsets: ["latin"],
   display: "swap",
-  weight: ["600", "700", "800"],
+  axes: ["SOFT", "WONK", "opsz"],
 });
 
 export const metadata: Metadata = {
@@ -39,7 +40,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${bigShoulders.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
