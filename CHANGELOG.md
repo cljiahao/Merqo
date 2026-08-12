@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- Four `loading.tsx` skeletons (admin overview, admin/vendors, admin/team,
+  dashboard) narrower than the real page they precede, causing a visible
+  layout shift the instant real data replaced the skeleton on every
+  navigation into those routes. Widened each to `max-w-7xl` to match.
+
 ### Changed
 
 - Bumped `@merqo/ui` to `github:cljiahao/merqo-ui#v0.10.0` for its new
