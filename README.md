@@ -21,9 +21,14 @@ cookie is scoped to `.merqo.io` (`NEXT_PUBLIC_AUTH_COOKIE_DOMAIN`,
 unset in dev/preview, where each kit still runs on its own `*.vercel.app`
 host. The dashboard's onboarding tour (`src/components/dashboard-tour.tsx`)
 stamps its "seen" state as soon as it auto-runs rather than when it
-finishes, so a refresh mid-tour can't make it re-trigger on the next load.
-The landing footer matches qkit's exactly (single-row wordmark/tagline/
-credit-line/sign-in link, no CTA band above it).
+finishes, so a refresh mid-tour can't make it re-trigger on the next load —
+and since that client-fired stamp is fire-and-forget and can be aborted by
+a hard navigation (the tour's own steps spotlight `@merqo/ui`'s
+`AccountMenu` trigger, whose dropdown renders links as plain `<a>` tags),
+`/dashboard`'s own server render (`src/app/dashboard/(app)/layout.tsx`)
+also stamps it synchronously, durably, as part of the request. The landing
+footer matches qkit's exactly (single-row wordmark/tagline/credit-line/
+sign-in link, no CTA band above it).
 
 Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.10.0`), the shared
 component package for the kit family (see qkit/loopkit/paykit/stockkit for

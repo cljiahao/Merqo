@@ -15,9 +15,16 @@ without this group's own segment showing in the path). Gated one level up by
   brand-new user to `/onboarding` before this group's header shell paints,
   renders the sticky header (`Wordmark` + `@/components/account-menu.tsx`'s
   `AccountMenu`), and mounts `DashboardTour` with the vendor's
-  `dashboard_prefs.tour_seen_at` threaded through as `seen`.
+  `dashboard_prefs.tour_seen_at` threaded through as `seen`. Also, if
+  `tour_seen_at` is unset, calls `@/lib/tour-prefs`'s `stampTourSeen`
+  directly, synchronously, as part of this request, before returning JSX —
+  the durable half of the onboarding-tour "stamp on start" fix; see
+  `src/lib/README.md` and `tour-actions.ts` below for why the client-fired
+  path alone isn't reliable.
 - `layout.test.tsx` — RTL coverage: logo link, account menu rendering, the
-  admin switch link for a team member, and the tour's replay button.
+  admin switch link for a team member, the tour's replay button, and that
+  `stampTourSeen` fires when `tour_seen_at` is null/missing and never fires
+  once it's already set.
 - `page.tsx` — `DashboardPage` (`revalidate = 0`). Re-syncs the vendor's kit
   grants (`syncVendorKits`) so a kit added elsewhere shows up without a
   fresh login, computes savings (`computeVendorSavings`) and per-kit live
