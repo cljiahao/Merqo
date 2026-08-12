@@ -2,7 +2,7 @@ export default function DashboardLoading() {
   return (
     <>
       <div className="sticky top-0 z-40 h-14 border-b bg-background/85 backdrop-blur" />
-      <main className="mx-auto max-w-6xl px-5 py-8">
+      <main className="mx-auto max-w-7xl px-5 py-8">
         <div className="h-8 w-40 animate-pulse rounded-md bg-muted" />
         <div className="mt-2 h-4 w-56 animate-pulse rounded-md bg-muted" />
 

@@ -2,7 +2,7 @@ export default function VendorsLoading() {
   return (
     <>
       <div className="sticky top-0 z-40 h-14 border-b bg-background/85 backdrop-blur" />
-      <main className="mx-auto max-w-4xl space-y-10 px-5 py-8">
+      <main className="mx-auto max-w-7xl space-y-10 px-5 py-8">
         <div>
           <div className="h-8 w-32 animate-pulse rounded-md bg-muted" />
           <div className="mt-2 h-4 w-64 animate-pulse rounded-md bg-muted" />
