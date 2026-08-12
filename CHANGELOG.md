@@ -42,6 +42,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Admin console description (`/admin` route list) in this README was
   missing `/admin/products` and `/admin/feedback` — both have existed for
   a while, the doc just hadn't caught up.
+- Dashboard onboarding tour re-triggered on every visit to `/dashboard`
+  despite #29's "stamp on start, not finish" fix. Root cause: that fix's
+  mark-seen write is fire-and-forget from the client
+  (`dashboard-tour.tsx`'s `onFirstSeen`), and the tour's own second step
+  spotlights `@merqo/ui`'s `AccountMenu` trigger, whose dropdown renders
+  links as plain `<a>` tags, not `next/link` — so clicking one (as the
+  tour invites) triggers a hard page navigation that can abort the write
+  before it lands, leaving `tour_seen_at` unset.
+  `src/app/dashboard/(app)/layout.tsx` now also stamps `tour_seen_at`
+  synchronously during its own server render whenever it's unset — a
+  write that lands before the response is even sent, immune to any
+  client-side navigation race. `tour-actions.ts`'s `markTourSeen` is
+  refactored to share the upsert (`stampTourSeen`) with `layout.tsx`
+  instead of duplicating it.
 
 ### Added
 

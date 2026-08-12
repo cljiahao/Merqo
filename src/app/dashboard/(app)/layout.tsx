@@ -5,6 +5,7 @@ import { AccountMenu } from "@/components/account-menu";
 import { DashboardTour } from "@/components/dashboard-tour";
 import { Wordmark } from "@/components/landing/wordmark";
 import { createServerClient } from "@/lib/supabase/server";
+import { stampTourSeen } from "@/lib/tour-prefs";
 
 export default async function DashboardLayout({
   children,
@@ -23,6 +24,16 @@ export default async function DashboardLayout({
     .select("tour_seen_at")
     .eq("user_id", user.id)
     .maybeSingle();
+
+  // Durable "start" stamp, in addition to dashboard-tour.tsx's client-fired
+  // one: this layout wraps every /dashboard/* route, so stamping here —
+  // synchronously, as part of this request — lands before the response is
+  // even sent, no matter what happens client-side afterwards. See
+  // tour-actions.ts's stampTourSeen/markTourSeen comments for the hard-
+  // navigation race this closes.
+  if (!prefs?.tour_seen_at) {
+    await stampTourSeen(supabase, user.id);
+  }
 
   return (
     <div className="min-h-screen">

@@ -2,15 +2,21 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 
-const { requireActiveVendorMock, maybeSingleMock } = vi.hoisted(() => ({
-  requireActiveVendorMock: vi.fn(),
-  maybeSingleMock: vi.fn(),
-}));
+const { requireActiveVendorMock, maybeSingleMock, stampTourSeenMock } =
+  vi.hoisted(() => ({
+    requireActiveVendorMock: vi.fn(),
+    maybeSingleMock: vi.fn(),
+    stampTourSeenMock: vi.fn(async () => {}),
+  }));
 
 vi.mock("@/lib/vendor", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/vendor")>();
   return { ...actual, requireActiveVendor: requireActiveVendorMock };
 });
+
+vi.mock("@/lib/tour-prefs", () => ({
+  stampTourSeen: stampTourSeenMock,
+}));
 
 // DashboardTour reads dashboard_prefs directly off the RLS-scoped client, and
 // (since it now stamps tour-seen on mount rather than on tour completion)
@@ -36,6 +42,7 @@ vi.mock("next/navigation", () => ({
 describe("DashboardLayout", () => {
   beforeEach(() => {
     maybeSingleMock.mockReset().mockResolvedValue({ data: null });
+    stampTourSeenMock.mockClear();
   });
 
   it("links the logo to /dashboard and renders the account menu", async () => {
@@ -89,5 +96,49 @@ describe("DashboardLayout", () => {
     expect(
       screen.getByRole("button", { name: /replay onboarding tour/i }),
     ).toBeInTheDocument();
+  });
+
+  it("durably stamps tour_seen_at during its own render when unset", async () => {
+    requireActiveVendorMock.mockResolvedValue({
+      user: { id: "v1", email: "vendor@business.sg" },
+      isTeam: false,
+      links: [],
+    });
+    maybeSingleMock.mockResolvedValue({ data: { tour_seen_at: null } });
+
+    const { default: DashboardLayout } = await import("./layout");
+    render(await DashboardLayout({ children: <p>content</p> }));
+
+    expect(stampTourSeenMock).toHaveBeenCalledWith(expect.anything(), "v1");
+  });
+
+  it("durably stamps tour_seen_at when no dashboard_prefs row exists yet", async () => {
+    requireActiveVendorMock.mockResolvedValue({
+      user: { id: "v1", email: "vendor@business.sg" },
+      isTeam: false,
+      links: [],
+    });
+    maybeSingleMock.mockResolvedValue({ data: null });
+
+    const { default: DashboardLayout } = await import("./layout");
+    render(await DashboardLayout({ children: <p>content</p> }));
+
+    expect(stampTourSeenMock).toHaveBeenCalledWith(expect.anything(), "v1");
+  });
+
+  it("does not re-stamp once the tour has already been seen", async () => {
+    requireActiveVendorMock.mockResolvedValue({
+      user: { id: "v1", email: "vendor@business.sg" },
+      isTeam: false,
+      links: [],
+    });
+    maybeSingleMock.mockResolvedValue({
+      data: { tour_seen_at: "2026-08-01T00:00:00.000Z" },
+    });
+
+    const { default: DashboardLayout } = await import("./layout");
+    render(await DashboardLayout({ children: <p>content</p> }));
+
+    expect(stampTourSeenMock).not.toHaveBeenCalled();
   });
 });

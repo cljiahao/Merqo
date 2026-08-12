@@ -30,6 +30,7 @@ that isn't a route or a component.
 - `schemas.ts` — Zod schemas for the shared `merqo.vendor_profile` social/website links.
 - `support.ts` — reads open cross-kit support messages for the admin console.
 - `team.ts` — gates an operator page on Merqo-team membership, redirecting a non-member.
+- `tour-prefs.ts` — `stampTourSeen(supabase, userId)`: upserts `dashboard_prefs.tour_seen_at = now()`. A plain (non-`"use server"`) module so `src/app/dashboard/(app)/layout.tsx` can call it directly during its own server render — the durable half of the onboarding-tour "stamp on start" fix, since the client-fired path (`src/app/dashboard/tour-actions.ts`'s `markTourSeen`, which also delegates here) is fire-and-forget and can be aborted by a hard navigation before it lands.
 - `types.ts` — hand-maintained DB types mirroring `supabase/migrations` (`SocialLinks`, etc.).
 - `upgrade-request.ts` — posts a vendor's Free→Pro upgrade request to a kit's metrics API.
 - `utils.ts` — `cn()` (clsx + tailwind-merge), shared across every component.
