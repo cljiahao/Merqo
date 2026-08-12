@@ -6,7 +6,7 @@ export default function DashboardLoading() {
         <div className="h-8 w-40 animate-pulse rounded-md bg-muted" />
         <div className="mt-2 h-4 w-56 animate-pulse rounded-md bg-muted" />
 
-        <section className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <section className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}

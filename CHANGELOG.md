@@ -15,6 +15,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Design pass from a completed frontend-design/impeccable critique:
+  swapped the display font from Bricolage Grotesque to Big Shoulders
+  (a more distinctive, less-default choice for the app's few
+  brand-personality spots); added a primary/secondary card-treatment
+  distinction so a vendor's own active-kit cards read differently
+  from kit-discovery pitches and admin list rows; merged the vendor
+  dashboard's "Requested"/"Finish setup" sections into one
+  urgency-first "Needs your attention" band, matching the admin
+  overview's existing pattern; gave the admin nav's active tab its
+  own visual signal instead of colliding with its hover state; and
+  aligned the admin stat grid's spacing with the rest of the app.
 - Bumped `@merqo/ui` to `github:cljiahao/merqo-ui#v0.10.0` for its new
   optional `LinkComponent` prop on `AccountMenu` (and `DashboardNav`, which
   forwards it to the `AccountMenu` it composes) — previously both hardcoded

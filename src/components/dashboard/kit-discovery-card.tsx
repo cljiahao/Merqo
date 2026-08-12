@@ -18,7 +18,9 @@ export function KitDiscoveryCard({
   const Preview = KIT_PREVIEWS[kit.slug];
 
   return (
-    <div className="group rounded-xl border bg-card p-5 shadow-[0_0_0_1px_rgba(0,0,0,0.04)] transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md">
+    // secondary treatment — a pitch for a kit the vendor doesn't have yet,
+    // not their own live kit, so it stays flat rather than competing for attention
+    <div className="group rounded-xl border bg-secondary/30 p-5">
       {Preview && (
         <div className="mb-4">
           <Preview />

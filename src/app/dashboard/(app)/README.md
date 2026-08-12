@@ -28,9 +28,11 @@ without this group's own segment showing in the path). Gated one level up by
 - `page.tsx` — `DashboardPage` (`revalidate = 0`). Re-syncs the vendor's kit
   grants (`syncVendorKits`) so a kit added elsewhere shows up without a
   fresh login, computes savings (`computeVendorSavings`) and per-kit live
-  metrics (`fetchVendorMetrics`), and renders the active-kit grid
-  (`VendorKitCard`), "Requested"/"Finish setup" lists, and the "Complete
-  your toolkit" discovery sections (`KitDiscoveryCard` +
+  metrics (`fetchVendorMetrics`), and renders — urgency-first, directly under
+  the `h1` — a merged "Needs your attention" band (requested + needs-setup
+  kits, admin overview's colored-row treatment), then the active-kit grid
+  (`VendorKitCard`), then a `border-t`-divided "Explore more kits" /
+  "Complete your toolkit" discovery section (`KitDiscoveryCard` +
   `ActivateKitsButton`/`JoinWaitlistButton`).
 - `page.test.tsx` — RTL coverage of the page's kit-grouping and re-sync
   behavior.

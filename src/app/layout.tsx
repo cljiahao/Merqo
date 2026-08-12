@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Bricolage_Grotesque } from "next/font/google";
+import { Geist, Geist_Mono, Big_Shoulders } from "next/font/google";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -15,11 +15,11 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
+const bigShoulders = Big_Shoulders({
+  variable: "--font-big-shoulders",
   subsets: ["latin"],
   display: "swap",
-  weight: ["500", "600", "700", "800"],
+  weight: ["600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -39,7 +39,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${bigShoulders.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>

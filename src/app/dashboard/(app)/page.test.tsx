@@ -110,7 +110,7 @@ describe("DashboardPage", () => {
     expect(screen.getByText("qkit")).toBeInTheDocument();
   });
 
-  it("shows a Finish setup section for a needs_setup kit", async () => {
+  it("shows a Needs your attention section for a needs_setup kit", async () => {
     requireActiveVendorMock.mockResolvedValue({
       user: { email: "vendor@business.sg" },
       isTeam: false,
@@ -127,14 +127,11 @@ describe("DashboardPage", () => {
     const { default: DashboardPage } = await import("./page");
     render(<TooltipProvider>{await DashboardPage()}</TooltipProvider>);
 
-    // NOTE: deviates from the brief's verbatim `getByText("Finish setup")`
-    // assertion here — the section heading and the CTA link both render the
-    // literal text "Finish setup" (per the brief's own JSX), so a plain
-    // getByText match is ambiguous (throws "Found multiple elements").
-    // Asserting the heading by role disambiguates while preserving intent;
-    // see task-9-report.md for detail.
+    // The old standalone "Finish setup" section heading was merged into a
+    // single urgency-ordered "Needs your attention" band; the CTA link inside
+    // it still reads "Finish setup".
     expect(
-      screen.getByRole("heading", { name: "Finish setup" }),
+      screen.getByRole("heading", { name: "Needs your attention · 1" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Finish setup" })).toHaveAttribute(
       "href",

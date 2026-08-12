@@ -96,6 +96,50 @@ export default async function DashboardPage() {
         </p>
       </div>
 
+      {(pending.length > 0 || needsSetup.length > 0) && (
+        <section className="mt-6 space-y-3">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Needs your attention · {pending.length + needsSetup.length}
+          </h2>
+          {pending.map((t) => (
+            <div
+              key={t.slug}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/[0.04] px-4 py-3 text-sm"
+            >
+              <div className="min-w-0">
+                <span className="font-medium">{t.name}</span>
+                <p className="text-xs text-muted-foreground">
+                  Requested — we&apos;ll email you when it opens.
+                </p>
+              </div>
+            </div>
+          ))}
+          {needsSetup.map((t) => (
+            <div
+              key={t.slug}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/[0.04] px-4 py-3 text-sm"
+            >
+              <div className="min-w-0">
+                <span className="font-medium">{t.name}</span>
+                <p className="text-xs text-muted-foreground">
+                  One step left to activate.
+                </p>
+              </div>
+              {t.href && (
+                <a
+                  href={`${t.href}/dashboard/config`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-foreground hover:underline"
+                >
+                  Finish setup
+                </a>
+              )}
+            </div>
+          ))}
+        </section>
+      )}
+
       <SavingsSummary totals={savings} />
 
       <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -110,60 +154,11 @@ export default async function DashboardPage() {
         ))}
       </section>
 
-      {pending.length > 0 && (
-        <section className="mt-8">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Requested
-          </h2>
-          <ul className="mt-3 space-y-2">
-            {pending.map((t) => (
-              <li
-                key={t.slug}
-                className="rounded-xl border border-dashed bg-card px-4 py-3 text-sm"
-              >
-                <span className="font-medium">{t.name}</span>
-                <span className="ml-2 text-muted-foreground">
-                  — we&apos;ll email you when it opens.
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {needsSetup.length > 0 && (
-        <section className="mt-8">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Finish setup
-          </h2>
-          <ul className="mt-3 space-y-2">
-            {needsSetup.map((t) => (
-              <li
-                key={t.slug}
-                className="rounded-xl border border-dashed bg-card px-4 py-3 text-sm"
-              >
-                <span className="font-medium">{t.name}</span>
-                <span className="ml-2 text-muted-foreground">
-                  — one step left to activate.
-                </span>
-                {t.href && (
-                  <a
-                    href={`${t.href}/dashboard/config`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="ml-2 font-medium text-foreground hover:underline"
-                  >
-                    Finish setup
-                  </a>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <section className="mt-10">
-        <h2 className="font-display text-lg font-bold tracking-tight">
+      <section className="mt-10 border-t pt-8">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Explore more kits
+        </p>
+        <h2 className="mt-1 font-display text-lg font-bold tracking-tight">
           Complete your toolkit
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">

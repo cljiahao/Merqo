@@ -93,12 +93,12 @@ describe("AdminNav", () => {
     pathnameMock.mockReturnValue("/admin");
     render(<AdminNav canSwitch={false} />);
 
-    // Active tabs get the `bg-secondary text-foreground` pair; inactive tabs
-    // get `text-muted-foreground hover:bg-secondary` — `bg-secondary` alone
-    // is ambiguous (it's a substring of `hover:bg-secondary`), so assert on
-    // `text-foreground` vs `text-muted-foreground` instead.
+    // Active tabs get the `border-primary bg-primary/10 text-primary` set;
+    // inactive tabs get `border-transparent text-muted-foreground
+    // hover:bg-secondary` — assert on `text-primary` vs `text-muted-foreground`
+    // to distinguish them.
     expect(screen.getByRole("link", { name: "Overview" }).className).toMatch(
-      /\btext-foreground\b/,
+      /\btext-primary\b/,
     );
     expect(screen.getByRole("link", { name: "Vendors" }).className).toMatch(
       /\btext-muted-foreground\b/,
@@ -110,7 +110,7 @@ describe("AdminNav", () => {
     render(<AdminNav canSwitch={false} />);
 
     expect(screen.getByRole("link", { name: "Vendors" }).className).toMatch(
-      /\btext-foreground\b/,
+      /\btext-primary\b/,
     );
     expect(screen.getByRole("link", { name: "Overview" }).className).toMatch(
       /\btext-muted-foreground\b/,

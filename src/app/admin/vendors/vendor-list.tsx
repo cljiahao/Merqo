@@ -86,7 +86,8 @@ export function VendorList({
           {filtered.map((v) => (
             <li
               key={v.email}
-              className="rounded-xl border bg-card p-4 shadow-sm"
+              // secondary treatment — a list row, not the vendor's own active kit
+              className="rounded-xl border bg-secondary/30 p-4"
             >
               <Link
                 href={`/admin/vendors/${encodeURIComponent(v.email)}`}
