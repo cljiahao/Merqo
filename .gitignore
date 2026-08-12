@@ -56,3 +56,9 @@ PRODUCT.md
 # not repo-root .worktrees/ (kept below for any other tooling that uses it)
 .claude/worktrees/
 .worktrees/
+
+# Supabase CLI local state, written by `supabase start`/`db reset`/`test db`
+# (the running stack's branch pointer, cached CLI version, generated local
+# secrets). Machine-local — never the same across two developers or CI.
+supabase/.branches
+supabase/.temp
