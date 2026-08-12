@@ -1,6 +1,7 @@
 "use client";
 
 import { toast } from "sonner";
+import Link from "next/link";
 import { AccountMenu as SharedAccountMenu } from "@merqo/ui";
 import { signOutAction } from "@/app/actions/auth";
 import { submitFeedbackAction } from "@/app/actions/feedback";
@@ -89,6 +90,7 @@ export function AccountMenu({
       showNps
       extraLink={switchTo}
       onError={onError}
+      LinkComponent={Link}
     />
   );
 }

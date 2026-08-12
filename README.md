@@ -30,7 +30,7 @@ also stamps it synchronously, durably, as part of the request. The landing
 footer matches qkit's exactly (single-row wordmark/tagline/credit-line/
 sign-in link, no CTA band above it).
 
-Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.9.0`), the shared
+Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.10.0`), the shared
 component package for the kit family (see qkit/loopkit/paykit/stockkit for
 the same dependency). `useAsyncAction`, `InfoTooltip`, `Section`,
 `TwoColumnSections`, `ImageUploader`, and `DashboardTour` are used directly
@@ -50,7 +50,10 @@ section the shared component doesn't have, so it composes `Section`/
 `/dashboard/profile`; `src/app/dashboard/profile/page.tsx` redirects that
 to Merqo's real, persona-shared `/profile` route. The landing nav
 (`src/components/landing/nav.tsx`) is built on `@merqo/ui`'s `LandingNav`
-shell (`wordmark`/`end` slots), added in v0.9.0.
+shell (`wordmark`/`end` slots), added in v0.9.0. v0.10.0 added an optional
+`LinkComponent` prop to `AccountMenu`/`DashboardNav` so Next.js consumers can
+opt their internal nav links out of a plain `<a>`'s full page reload;
+`account-menu.tsx` passes `LinkComponent={Link}` (`next/link`).
 
 ## Stack
 

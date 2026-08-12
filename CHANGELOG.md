@@ -8,6 +8,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Bumped `@merqo/ui` to `github:cljiahao/merqo-ui#v0.10.0` for its new
+  optional `LinkComponent` prop on `AccountMenu` (and `DashboardNav`, which
+  forwards it to the `AccountMenu` it composes) — previously both hardcoded
+  a plain `<a>` for internal navigation, forcing a full page reload on every
+  click in Next.js consumers. `src/components/account-menu.tsx`, the sole
+  wrapper around the shared `AccountMenu` (used standalone by both the
+  vendor-dashboard and admin-console headers — this repo doesn't consume
+  `DashboardNav`, see below), now passes `LinkComponent={Link}` (`next/link`)
+  so its Profile/switch-persona links use client-side navigation.
 - Bumped `@merqo/ui` to `github:cljiahao/merqo-ui#v0.9.0` and adopted its new
   `LandingNav` shell component (`wordmark`/`end` slots) in
   `src/components/landing/nav.tsx`, replacing the hand-rolled sticky header

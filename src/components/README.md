@@ -18,7 +18,9 @@ or scoped to `dashboard/`/`landing/`.
   `kitLocalSettingsHref` is omitted. Merqo has no per-user display name
   distinct from email at this level, so `email` fills both the shared
   component's `vendor.name` (initials fallback only) and `vendor.subtitle`
-  (the one line actually shown).
+  (the one line actually shown). Passes `LinkComponent={Link}` (`next/link`)
+  so the shared component's internal links use client-side navigation
+  instead of a full page reload.
 - `account-menu.test.tsx` — RTL tests: trigger subtitle/initials, menu-item
   order (no Plan item), the switch link, Feedback/Get-help submit wiring
   (including the category-fallback and inline-error paths), and sign-out.
