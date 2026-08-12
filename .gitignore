@@ -48,6 +48,10 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 
+# impeccable skill local scratch
+PRODUCT.md
+.impeccable/
+
 # git worktrees (local scratch) — Claude Code creates these under .claude/,
 # not repo-root .worktrees/ (kept below for any other tooling that uses it)
 .claude/worktrees/
