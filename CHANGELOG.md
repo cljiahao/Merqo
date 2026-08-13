@@ -6,8 +6,47 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Display font switched from Big Shoulders to Fraunces (the shared family
+  display face — see
+  `docs/business/2026-08-13-typography-family-standard.md`). qkit
+  already used Fraunces; this brings Merqo in line with the rest of the
+  family now that cross-kit SSO means vendors move between kits under
+  one identity, so a per-kit display face reads as a seam rather than a
+  feature. Body (Geist) and mono (Geist Mono) fonts are unchanged. The
+  brand-icon mark's font fallback also switched from the system
+  sans-serif stack to the Georgia serif stand-in, matching Fraunces
+  being a serif.
+
 ### Fixed
 
+- Second frontend-design/impeccable critique pass. Found and fixed:
+  - Global CSS defect: `globals.css`'s `* { border-color: var(--border); }`
+    reset was unlayered while Tailwind v4's generated utilities live in
+    `@layer utilities` — an unlayered rule always wins the cascade over a
+    layered one regardless of selector specificity, so it silently
+    overrode every `border-<color>` utility in the app (every
+    `border-primary/*`, `hover:border-primary/*`, `border-destructive/*`,
+    `border-gold/*`) to the plain neutral border, no matter which color or
+    opacity was requested. Wrapped it in `@layer base` so utilities can
+    override it as intended. Restores the color signal on the vendor
+    dashboard/admin "needs attention" bands, the admin status banner, and
+    every hover-highlighted card.
+  - Sign-out surfaced a raw `NEXT_REDIRECT` error toast on every use: the
+    shared `AccountMenu`'s `useAsyncAction` hook forwards any throw from
+    the action it's given to `onError`, and `signOutAction`'s
+    `redirect("/login")` throws Next's internal redirect signal to do so —
+    the redirect itself still worked, but every sign-out also flashed a
+    confusing "NEXT_REDIRECT" toast. `src/components/account-menu.tsx` now
+    wraps the call and swallows that specific control-flow error.
+  - Admin overview's onboarding funnel could show a stage's step-conversion
+    as e.g. "200%": `waitlisted`/`granted`/`using` are documented as
+    distinct, non-narrowing populations (`using` can exceed `granted` by
+    design), so a "% of previous stage" figure was mathematically invalid
+    for this data and routinely printed nonsensical values. Removed the
+    misleading percentage; the funnel now shows only the raw counts and
+    relative-magnitude bars.
 - Four `loading.tsx` skeletons (admin overview, admin/vendors, admin/team,
   dashboard) narrower than the real page they precede, causing a visible
   layout shift the instant real data replaced the skeleton on every
@@ -15,6 +54,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Design pass from a completed frontend-design/impeccable critique:
+  swapped the display font from Bricolage Grotesque to Big Shoulders
+  (a more distinctive, less-default choice for the app's few
+  brand-personality spots); added a primary/secondary card-treatment
+  distinction so a vendor's own active-kit cards read differently
+  from kit-discovery pitches and admin list rows; merged the vendor
+  dashboard's "Requested"/"Finish setup" sections into one
+  urgency-first "Needs your attention" band, matching the admin
+  overview's existing pattern; gave the admin nav's active tab its
+  own visual signal instead of colliding with its hover state; and
+  aligned the admin stat grid's spacing with the rest of the app.
 - Bumped `@merqo/ui` to `github:cljiahao/merqo-ui#v0.10.0` for its new
   optional `LinkComponent` prop on `AccountMenu` (and `DashboardNav`, which
   forwards it to the `AccountMenu` it composes) — previously both hardcoded

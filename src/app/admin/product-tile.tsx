@@ -31,7 +31,8 @@ export function ProductTile({
           ? "Bad response"
           : "Unavailable";
     return (
-      <div className="rounded-xl border border-dashed bg-card p-5">
+      // secondary treatment — a listing tile, not the vendor's own active kit
+      <div className="rounded-xl border border-dashed bg-secondary/30 p-5">
         <div className="flex items-center justify-between gap-3">
           <h3 className="font-display text-lg font-bold">{name}</h3>
           <Badge variant="destructive">{label}</Badge>
@@ -53,7 +54,8 @@ export function ProductTile({
   ];
 
   return (
-    <div className="rounded-xl border bg-card p-5 shadow-sm">
+    // secondary treatment — a listing tile, not the vendor's own active kit
+    <div className="rounded-xl border bg-secondary/30 p-5">
       <div className="flex items-center justify-between gap-3">
         <h3 className="font-display text-lg font-bold">{name}</h3>
         <Badge variant={badge.variant}>{badge.label}</Badge>

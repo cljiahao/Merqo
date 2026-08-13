@@ -96,10 +96,10 @@ export function AdminNav({
                       href={t.href}
                       onClick={() => setOpen(false)}
                       className={cn(
-                        "rounded-lg px-3 py-2.5 text-sm font-semibold",
+                        "rounded-lg border-l-2 px-3 py-2.5 text-sm font-semibold",
                         isActive(path, t.href)
-                          ? "bg-secondary text-foreground"
-                          : "text-muted-foreground hover:bg-secondary",
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-transparent text-muted-foreground hover:bg-secondary",
                       )}
                     >
                       {t.label}
@@ -119,10 +119,10 @@ export function AdminNav({
             key={t.href}
             href={t.href}
             className={cn(
-              "rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors",
+              "rounded-lg border-b-2 px-3 py-1.5 text-sm font-semibold transition-colors",
               isActive(path, t.href)
-                ? "bg-secondary text-foreground"
-                : "text-muted-foreground hover:bg-secondary",
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-transparent text-muted-foreground hover:bg-secondary",
             )}
           >
             {t.label}

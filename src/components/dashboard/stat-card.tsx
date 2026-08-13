@@ -17,7 +17,9 @@ export function StatCard({
   trend?: Trend;
 }) {
   return (
-    <div className="rounded-xl border bg-card p-4 shadow-sm">
+    // primary treatment — these are the admin overview's headline totals, so
+    // they carry the same shadow+lift weight as a vendor's own live-kit card
+    <div className="rounded-xl border bg-card p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md">
       <div className="flex items-center justify-between gap-2">
         <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {label}

@@ -32,6 +32,31 @@ function onError(error: unknown) {
   toast.error(error instanceof Error ? error.message : "Something went wrong");
 }
 
+/** True for the internal control-flow error Next.js throws from `redirect()`
+ *  inside a Server Action. `signOutAction` redirects to `/login` on success;
+ *  @merqo/ui's `useAsyncAction` catches ANY throw from the action it's given
+ *  and forwards it to `onError`, so without this guard every sign-out would
+ *  surface a raw "NEXT_REDIRECT" toast even though the redirect itself
+ *  already succeeded. */
+function isNextRedirectError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    typeof (error as { digest?: unknown }).digest === "string" &&
+    (error as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+  );
+}
+
+async function handleSignOut() {
+  try {
+    await signOutAction();
+  } catch (error) {
+    if (isNextRedirectError(error)) return;
+    throw error;
+  }
+}
+
 /**
  * Shared account-menu trigger for /dashboard and /admin headers, composed
  * from @merqo/ui's `AccountMenu` — an image avatar (or initials fallback)
@@ -66,7 +91,7 @@ export function AccountMenu({
         avatarUrl: avatarUrl ?? undefined,
         subtitle: email ?? undefined,
       }}
-      signOutAction={signOutAction}
+      signOutAction={handleSignOut}
       showPlanItem={false}
       getHelp={{
         type: "form",

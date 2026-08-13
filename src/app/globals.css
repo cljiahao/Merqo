@@ -89,17 +89,34 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-display: var(--font-bricolage);
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
 }
 
-* {
-  border-color: var(--border);
+/* Tailwind v4's `@import "tailwindcss"` declares the theme/base/components/
+   utilities layer order and puts every generated utility class inside
+   `@layer utilities`. This reset MUST live in `@layer base` too — an
+   unlayered rule beats every layered rule regardless of selector
+   specificity or source order, so an unlayered `* { border-color: ... }`
+   would silently win over EVERY `border-<color>` utility in the app
+   (e.g. `border-primary/50`, `border-destructive/30`), always painting the
+   plain neutral border instead. */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Display headings tuned for Fraunces optical sizing (shared family face). */
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.015em;
 }
 
 /* kit-stacker graph: edges self-draw, then labels fade in just after.

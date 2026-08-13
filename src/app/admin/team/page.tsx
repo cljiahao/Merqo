@@ -34,7 +34,8 @@ export default async function TeamPage() {
           {team.map((m) => (
             <li
               key={m.user_id}
-              className="flex items-center justify-between rounded-xl border bg-card p-3.5 shadow-sm"
+              // secondary treatment — a list row, not the vendor's own active kit
+              className="flex items-center justify-between rounded-xl border bg-secondary/30 p-3.5"
             >
               <span className="text-sm">
                 {m.email ?? m.user_id}

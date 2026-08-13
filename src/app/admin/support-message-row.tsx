@@ -14,7 +14,7 @@ export function SupportMessageRow({
   message: OpenSupportMessage;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/30 bg-primary/[0.04] px-4 py-3 text-sm">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/50 bg-card px-4 py-3 text-sm">
       <div className="min-w-0">
         <p className="truncate font-medium">{message.email ?? "Unknown"}</p>
         <p className="truncate text-xs text-muted-foreground">

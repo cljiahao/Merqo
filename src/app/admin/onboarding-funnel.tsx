@@ -7,7 +7,13 @@ const STAGES = [
   { key: "using", label: "Using" },
 ] as const;
 
-/** Onboarding funnel with drop-off bars + step-conversion %. */
+/** Onboarding funnel — relative-magnitude bars across three counts.
+ *  Deliberately shows no stage-to-stage conversion %: per OnboardingCounts'
+ *  own contract, waitlisted/granted/using are distinct populations (not a
+ *  single cohort narrowing stage to stage), so e.g. `using` routinely
+ *  exceeds `granted` — a "% of previous stage" figure would read as a
+ *  conversion rate but could print values like 200%, misrepresenting the
+ *  data rather than merely rounding it oddly. */
 export function OnboardingFunnelView({ counts }: { counts: OnboardingCounts }) {
   const top = Math.max(counts.waitlisted, counts.granted, counts.using, 1);
   return (
@@ -17,22 +23,13 @@ export function OnboardingFunnelView({ counts }: { counts: OnboardingCounts }) {
         Onboarding
       </h2>
       <div className="space-y-3">
-        {STAGES.map((stage, i) => {
+        {STAGES.map((stage) => {
           const n = counts[stage.key];
-          const prev = i === 0 ? n : counts[STAGES[i - 1].key];
-          const stepPct = prev ? Math.round((n / prev) * 100) : 0;
           return (
             <div key={stage.key}>
               <div className="mb-1 flex items-baseline justify-between gap-2 text-sm">
                 <span className="font-medium">{stage.label}</span>
-                <span className="font-mono tabular-nums">
-                  {n}
-                  {i > 0 && (
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      {stepPct}%
-                    </span>
-                  )}
-                </span>
+                <span className="font-mono tabular-nums">{n}</span>
               </div>
               <div className="h-2.5 overflow-hidden rounded-full bg-secondary">
                 <div
