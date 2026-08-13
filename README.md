@@ -30,7 +30,7 @@ also stamps it synchronously, durably, as part of the request. The landing
 footer matches qkit's exactly (single-row wordmark/tagline/credit-line/
 sign-in link, no CTA band above it).
 
-Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.10.0`), the shared
+Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.11.1`), the shared
 component package for the kit family (see qkit/loopkit/paykit/stockkit for
 the same dependency). `useAsyncAction`, `InfoTooltip`, `Section`,
 `TwoColumnSections`, `ImageUploader`, and `DashboardTour` are used directly
