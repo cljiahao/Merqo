@@ -23,7 +23,7 @@ describe("0010_cross_kit_support_messages migration", () => {
   it("drops the old fixed-enum category check and replaces it with a shape-only check", () => {
     expect(sql).toContain("drop constraint support_messages_category_check");
     expect(sql).toMatch(
-      /add constraint support_messages_category_shape\s*\n?\s*check \(char_length\(category\) between 1 and 40\)/,
+      /add constraint support_messages_category_shape\s+check \(char_length\(category\) between 1 and 40\)/,
     );
     // the old fixed vocabulary must not survive anywhere in this migration
     expect(sql).not.toMatch(/vendor_access[\s\S]*billing[\s\S]*team/);

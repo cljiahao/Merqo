@@ -108,6 +108,7 @@ describe("ProfileForm — change password", () => {
     );
     await user.click(screen.getByRole("button", { name: /update password/i }));
 
+    // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- test fixture literal, not a real credential.
     expect(updateUser).toHaveBeenCalledWith({ password: "password123" });
   });
 });
