@@ -3,10 +3,12 @@
  * integrations between them. Positions are fixed (art-directed, not physics) in a
  * stable viewBox; edges render only when BOTH their endpoints are stacked. No kit
  * is a required flagship — the graph shows connections, not dependencies.
- * Display-only; the waitlist source of truth stays in kits.ts. Keep slugs in sync.
+ * Display-only; the waitlist source of truth stays in kits.ts. `status` is
+ * derived from there (not hand-duplicated here) so the graph can't drift out
+ * of sync with the real launch state the way a second copy would.
  */
 
-export type KitStatus = "live" | "coming" | "planned";
+import { KITS, type KitStatus } from "@/lib/kits";
 
 export type KitNode = {
   slug: string;
@@ -28,14 +30,23 @@ export type KitEdge = {
 
 export const GRAPH_VIEWBOX = { w: 520, h: 440 };
 
-export const KIT_NODES: KitNode[] = [
-  { slug: "qkit", short: "Queue", status: "live", x: 260, y: 80 },
-  { slug: "shopkit", short: "Store", status: "planned", x: 120, y: 160 },
-  { slug: "loopkit", short: "Loyalty", status: "coming", x: 400, y: 160 },
-  { slug: "stockkit", short: "Stock", status: "live", x: 120, y: 320 },
-  { slug: "paykit", short: "Payments", status: "planned", x: 260, y: 380 },
-  { slug: "reachkit", short: "Reach", status: "planned", x: 400, y: 320 },
+type NodeLayout = Omit<KitNode, "status">;
+
+const NODE_LAYOUT: NodeLayout[] = [
+  { slug: "qkit", short: "Queue", x: 260, y: 80 },
+  { slug: "shopkit", short: "Store", x: 120, y: 160 },
+  { slug: "loopkit", short: "Loyalty", x: 400, y: 160 },
+  { slug: "stockkit", short: "Stock", x: 120, y: 320 },
+  { slug: "paykit", short: "Payments", x: 260, y: 380 },
+  { slug: "reachkit", short: "Reach", x: 400, y: 320 },
 ];
+
+const STATUS_BY_SLUG = new Map(KITS.map((k) => [k.slug, k.status]));
+
+export const KIT_NODES: KitNode[] = NODE_LAYOUT.map((n) => ({
+  ...n,
+  status: STATUS_BY_SLUG.get(n.slug) ?? "planned",
+}));
 
 export const KIT_EDGES: KitEdge[] = [
   {

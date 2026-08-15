@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- Landing page's "kit stacker" graph showed loopkit and paykit as
+  coming-soon/planned instead of live — `src/lib/ecosystem.ts` hand-copied
+  each kit's launch status separately from `src/lib/kits.ts`'s source of
+  truth, and the copy had drifted. `status` is now derived from `KITS`
+  directly, with a regression test asserting the two never diverge again.
+
 ### Changed
 
 - ESLint now runs `sonarjs.configs.recommended` (the plugin's full rule
