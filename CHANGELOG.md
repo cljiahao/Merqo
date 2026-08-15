@@ -8,6 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Shared `merqo.customers` table + `upsert_customer()` RPC, mirroring
+  loopkit's own proven phone-keyed customer shape — closes the biggest
+  gap flagged by the 2026-07-28 cross-kit retention research (only
+  vendor identity was shared across kits before this, not customer
+  identity). Substrate only — no new UI yet, qkit and loopkit adopt this
+  as separate PRs.
 - Cross-kit bundle-discount toggle on the admin overview page
   (`BundleDiscountToggle`) — the 15/25/30% bundle discount ships off by
   default; this is the admin-facing lever to flip it on later, once
