@@ -13,7 +13,7 @@ that isn't a route or a component.
 - `admin.ts` — Merqo-team admin gate (`requireTeamMember`-style helpers) and vendor-grant status queries used by `/admin`.
 - `brand-icon.tsx` — Merqo's mark as concrete hex constants, for `ImageResponse`-based icon routes (`icon.tsx`/`apple-icon.tsx`).
 - `downgrade-request.ts` — posts a vendor's Pro→Free downgrade request to a kit's metrics API.
-- `ecosystem.ts` — data for the landing "kit stacker" graph (node positions, edges, status) — display-only; `kits.ts` stays the status source of truth, keep both in sync.
+- `ecosystem.ts` — data for the landing "kit stacker" graph (node positions, edges); `status` per node is derived from `kits.ts` (the source of truth) at module load, not hand-duplicated, so the two can't drift out of sync.
 - `feedback-support-schemas.ts` — Zod schemas for the vendor feedback (NPS) and support-message forms.
 - `format.ts` — `money()`, relative-time, and other small display formatters shared across dashboard/team pages.
 - `funnel.ts` — onboarding funnel counts (waitlisted/needs-setup/granted) for the admin overview.

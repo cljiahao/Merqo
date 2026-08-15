@@ -6,6 +6,7 @@ import {
   activeEdges,
   nodeBySlug,
 } from "@/lib/ecosystem";
+import { KITS } from "@/lib/kits";
 
 const slugs = new Set(KIT_NODES.map((n) => n.slug));
 
@@ -53,5 +54,12 @@ describe("ecosystem graph config", () => {
   it("has unique node positions", () => {
     const coords = KIT_NODES.map((n) => `${n.x},${n.y}`);
     expect(new Set(coords).size).toBe(coords.length);
+  });
+
+  it("mirrors kits.ts's launch status for every node (no hand-maintained second copy to drift)", () => {
+    const statusBySlug = new Map(KITS.map((k) => [k.slug, k.status]));
+    for (const n of KIT_NODES) {
+      expect(n.status).toBe(statusBySlug.get(n.slug));
+    }
   });
 });
