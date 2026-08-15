@@ -115,7 +115,10 @@ One shared Supabase project, schema per kit. Merqo owns `merqo.*`:
 `merqo_team` (team membership), `products` (kit registry + per-product
 `metrics_secret`), `vendor_links` (vendor↔kit access, email-keyed),
 `billing_settings` (cross-kit pricing levers — currently just the
-bundle-discount toggle, public-read, service-role-only write).
+bundle-discount toggle, public-read, service-role-only write),
+`customers` (cross-kit customer identity, phone-keyed per vendor — the
+shared counterpart to `vendor_profile`, reachable only through the
+`upsert_customer` SECURITY DEFINER function, called by qkit/loopkit).
 RLS default-deny; `products`/`vendor_links` are read/written via the
 service-role client only, so `metrics_secret` never reaches a browser.
 
