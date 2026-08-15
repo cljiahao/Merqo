@@ -1,6 +1,6 @@
 -- merqo/supabase/tests/rls.test.sql
 -- RLS isolation — pgTAP, run with `supabase test db`.
--- Covers merqo's seven RLS-bearing tables: merqo_team (team-membership gates
+-- Covers merqo's eight RLS-bearing tables: merqo_team (team-membership gates
 -- visibility of the WHOLE table, not just the caller's own row — see the
 -- comment below), products (RLS is a backstop only; `authenticated` has no
 -- table-level grant at all, so metrics_secret never reaches a browser-reachable
@@ -9,11 +9,13 @@
 -- no table-level grant to anyone — reachable only through their SECURITY
 -- DEFINER functions), vendor_feedback (0011: team-select policy + grant,
 -- writes only via submit_vendor_feedback), billing_settings (0017:
--- public-read singleton, no UPDATE grant to any client role).
+-- public-read singleton, no UPDATE grant to any client role), customers
+-- (0018: RLS enabled with zero policies and no table-level grant to
+-- anyone — reachable only through upsert_customer()).
 -- Runs in ONE rolled-back transaction with inline fixed-UUID fixtures.
 
 begin;
-select plan(42);
+select plan(51);
 
 -- ── Fixtures (created under the default/superuser test role → RLS + grants
 -- are bypassed here) ─────────────────────────────────────────────────────────
@@ -65,6 +67,31 @@ select ok((select relrowsecurity from pg_class where oid = 'merqo.kit_events'::r
 select ok((select relrowsecurity from pg_class where oid = 'merqo.vendor_profile'::regclass), 'RLS on vendor_profile');
 select ok((select relrowsecurity from pg_class where oid = 'merqo.vendor_feedback'::regclass), 'RLS on vendor_feedback');
 select ok((select relrowsecurity from pg_class where oid = 'merqo.dashboard_prefs'::regclass), 'RLS on dashboard_prefs');
+select ok((select relrowsecurity from pg_class where oid = 'merqo.customers'::regclass), 'RLS on customers');
+
+-- merqo.upsert_customer (0018): first call inserts, a repeat call for the
+-- same (vendor_id, phone) updates name/last_seen_at but leaves
+-- first_seen_at untouched. Exercised directly under the default/superuser
+-- test role (bypasses RLS) since this table grants no client role direct
+-- SELECT - only through the SECURITY DEFINER function itself.
+select lives_ok(
+  $$ select merqo.upsert_customer('00000000-0000-0000-0000-00000000000a', '+6591234567', 'First Name') $$,
+  'upsert_customer inserts a new customer row');
+select results_eq(
+  $$ select count(*)::int, name from merqo.customers
+     where vendor_id = '00000000-0000-0000-0000-00000000000a' and phone = '+6591234567'
+     group by name $$,
+  $$ values (1, 'First Name'::text) $$,
+  'new customer row has the given name, exactly one row for this (vendor_id, phone)');
+select lives_ok(
+  $$ select merqo.upsert_customer('00000000-0000-0000-0000-00000000000a', '+6591234567', 'Updated Name') $$,
+  'upsert_customer on the same (vendor_id, phone) updates instead of duplicating');
+select results_eq(
+  $$ select count(*)::int, name from merqo.customers
+     where vendor_id = '00000000-0000-0000-0000-00000000000a' and phone = '+6591234567'
+     group by name $$,
+  $$ values (1, 'Updated Name'::text) $$,
+  'repeat upsert updates the name and still exactly one row (no duplicate insert)');
 
 -- ── Act as a team member ─────────────────────────────────────────────────────
 set local role authenticated;
@@ -115,6 +142,10 @@ select throws_ok(
   $$ select 1 from merqo.vendor_profile $$,
   '42501', null,
   'team member cannot SELECT vendor_profile directly (no grant; only the SECURITY DEFINER functions)');
+select throws_ok(
+  $$ select 1 from merqo.customers $$,
+  '42501', null,
+  'team member cannot SELECT customers directly (no grant; only upsert_customer())');
 
 -- vendor_feedback_team_select's USING clause is `is_merqo_team(auth.uid())`
 -- — same row-independent predicate as merqo_team — and `authenticated` DOES
@@ -184,6 +215,13 @@ select throws_ok(
   $$ select 1 from merqo.vendor_profile $$,
   '42501', null,
   'vendor cannot SELECT vendor_profile directly either (no grant)');
+select throws_ok(
+  $$ select 1 from merqo.customers $$,
+  '42501', null,
+  'vendor cannot SELECT customers directly either (no grant)');
+select lives_ok(
+  $$ select merqo.upsert_customer('00000000-0000-0000-0000-00000000000b', '+6598765432', 'A Customer') $$,
+  'vendor (authenticated, any vendor_id) can call upsert_customer - no ownership check, mirrors how a kit backend already resolves the real vendor_id server-side before calling this');
 
 -- vendor_feedback has no self-scoped select policy — only the team-select
 -- policy exists — so a non-team vendor's own feedback row is filtered out
@@ -255,6 +293,10 @@ select throws_ok(
   $$ select 1 from merqo.vendor_links $$,
   '42501', null,
   'anon cannot read vendor_links (no SELECT grant)');
+select throws_ok(
+  $$ select 1 from merqo.customers $$,
+  '42501', null,
+  'anon cannot read customers (no SELECT grant)');
 select throws_ok(
   $$ select 1 from merqo.kit_events $$,
   '42501', null,
