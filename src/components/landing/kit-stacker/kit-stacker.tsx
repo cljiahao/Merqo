@@ -1,5 +1,11 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { Play } from "lucide-react";
 import { KIT_NODES, DEFAULT_STACKED } from "@/lib/ecosystem";
 import { Button } from "@/components/ui/button";
@@ -19,6 +25,35 @@ const JOURNEY_STEPS = [
   { slug: "loopkit", caption: "They earn points — and come back." },
 ];
 const STEP_MS = 780;
+
+type JourneyStep = { slug: string; caption: string };
+
+/** Recursively schedules each journey hop `STEP_MS` apart, lighting the next
+ *  node and advancing the caption/overlay as it goes. Declared at module
+ *  scope (not nested inside the component) to keep the setTimeout-driven
+ *  recursion within a sane function-nesting depth. */
+function scheduleJourneyStep(
+  route: JourneyStep[],
+  i: number,
+  timers: React.RefObject<number[]>,
+  setLit: Dispatch<SetStateAction<Set<string>>>,
+  setCaption: Dispatch<SetStateAction<string | null>>,
+  setJourney: Dispatch<SetStateAction<Journey | null>>,
+) {
+  if (i >= route.length - 1) {
+    setJourney(null);
+    return;
+  }
+  const from = route[i].slug;
+  const to = route[i + 1].slug;
+  setJourney({ from, to, step: i });
+  const t = window.setTimeout(() => {
+    setLit((prev) => new Set(prev).add(to));
+    setCaption(route[i + 1].caption);
+    scheduleJourneyStep(route, i + 1, timers, setLit, setCaption, setJourney);
+  }, STEP_MS);
+  timers.current.push(t);
+}
 
 export function KitStacker() {
   const [stacked, setStacked] = useState<Set<string>>(
@@ -79,24 +114,7 @@ export function KitStacker() {
     setCaption(route[0].caption);
     setJourney(null);
 
-    let i = 0;
-    const step = () => {
-      if (i >= route.length - 1) {
-        setJourney(null);
-        return;
-      }
-      const from = route[i].slug;
-      const to = route[i + 1].slug;
-      setJourney({ from, to, step: i });
-      const t = window.setTimeout(() => {
-        setLit((prev) => new Set(prev).add(to));
-        setCaption(route[i + 1].caption);
-        i += 1;
-        step();
-      }, STEP_MS);
-      timers.current.push(t);
-    };
-    step();
+    scheduleJourneyStep(route, 0, timers, setLit, setCaption, setJourney);
   }
 
   const allStacked = ALL_SLUGS.every((s) => stacked.has(s));

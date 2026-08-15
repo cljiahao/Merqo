@@ -31,7 +31,7 @@ describe("0011_vendor_feedback migration", () => {
       "alter table merqo.vendor_feedback enable row level security",
     );
     expect(sql).toMatch(
-      /create policy vendor_feedback_team_select on merqo\.vendor_feedback\s*\n\s*for select using \(merqo\.is_merqo_team\(auth\.uid\(\)\)\)/,
+      /create policy vendor_feedback_team_select on merqo\.vendor_feedback\s+for select using \(merqo\.is_merqo_team\(auth\.uid\(\)\)\)/,
     );
     expect(sql).not.toMatch(/for insert/);
   });

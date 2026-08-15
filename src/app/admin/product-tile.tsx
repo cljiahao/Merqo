@@ -14,6 +14,15 @@ const HEALTH: Record<
   down: { label: "Down", variant: "destructive" },
 };
 
+const UNREACHABLE_LABEL: Record<
+  Extract<MetricsResult, { ok: false }>["reason"],
+  string
+> = {
+  auth: "Auth error",
+  bad_shape: "Bad response",
+  unreachable: "Unavailable",
+};
+
 export function ProductTile({
   name,
   result,
@@ -24,12 +33,7 @@ export function ProductTile({
   now: number;
 }) {
   if (!result.ok) {
-    const label =
-      result.reason === "auth"
-        ? "Auth error"
-        : result.reason === "bad_shape"
-          ? "Bad response"
-          : "Unavailable";
+    const label = UNREACHABLE_LABEL[result.reason];
     return (
       // secondary treatment — a listing tile, not the vendor's own active kit
       <div className="rounded-xl border border-dashed bg-secondary/30 p-5">

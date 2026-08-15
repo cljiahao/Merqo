@@ -115,6 +115,15 @@ export function GraphCanvas({
           highlight && highlight !== n.slug && !hotNeighbors?.has(n.slug);
         const live = n.status === "live";
         const lit = litNodes?.has(n.slug);
+        let nodeStrokeClass =
+          "fill-transparent stroke-border [stroke-dasharray:4_4]";
+        let nodeTextClass = "fill-muted-foreground";
+        if (on) {
+          nodeStrokeClass = live
+            ? "fill-primary stroke-gold"
+            : "fill-card stroke-primary/40";
+          nodeTextClass = live ? "fill-primary-foreground" : "fill-foreground";
+        }
         return (
           <g
             key={n.slug}
@@ -143,13 +152,7 @@ export function GraphCanvas({
               height={NODE_H}
               rx={13}
               strokeWidth={live && on ? 2.5 : 1.5}
-              className={cn(
-                on
-                  ? live
-                    ? "fill-primary stroke-gold"
-                    : "fill-card stroke-primary/40"
-                  : "fill-transparent stroke-border [stroke-dasharray:4_4]",
-              )}
+              className={cn(nodeStrokeClass)}
             />
             <text
               x={NODE_W / 2}
@@ -157,11 +160,7 @@ export function GraphCanvas({
               textAnchor="middle"
               className={cn(
                 "font-display text-[13px] font-bold",
-                on
-                  ? live
-                    ? "fill-primary-foreground"
-                    : "fill-foreground"
-                  : "fill-muted-foreground",
+                nodeTextClass,
               )}
             >
               {n.short}
