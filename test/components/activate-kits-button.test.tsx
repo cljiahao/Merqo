@@ -20,7 +20,13 @@ import { toast } from "sonner";
 import { ActivateKitsButton } from "@/components/dashboard/activate-kits-button";
 
 describe("ActivateKitsButton", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // clearAllMocks() doesn't drain a leftover mockResolvedValueOnce()
+    // queue from a prior test; mockReset() does. Scoped to this one mock
+    // so the module-level useRouter/toast mocks aren't wiped too.
+    vi.mocked(activateKitsAction).mockReset();
+  });
 
   it("disables while pending and re-enables after resolving", async () => {
     let resolveAction: (v: unknown) => void = () => {};
@@ -142,9 +148,15 @@ describe("ActivateKitsButton", () => {
     });
     expect(toast.success).not.toHaveBeenCalled();
     fireEvent.click(retryButton);
-    await waitFor(() => {
-      expect(toast.success).toHaveBeenCalled();
-      expect(mockRefresh).toHaveBeenCalled();
-    });
+    // Longer timeout: the retry goes through startTransition's async
+    // callback, adding extra microtask hops that can outrun waitFor's
+    // 1000ms default under CI's full-suite CPU contention.
+    await waitFor(
+      () => {
+        expect(toast.success).toHaveBeenCalled();
+        expect(mockRefresh).toHaveBeenCalled();
+      },
+      { timeout: 3000 },
+    );
   });
 });
