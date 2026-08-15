@@ -61,7 +61,7 @@ describe("AdminNav", () => {
     expect(
       screen.getByRole("button", { name: "Open menu" }),
     ).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: "Vendors" }).length).toBe(1);
+    expect(screen.getAllByRole("link", { name: "Vendors" })).toHaveLength(1);
   });
 
   it("closes the mobile panel when the backdrop behind it is clicked", () => {
@@ -84,7 +84,7 @@ describe("AdminNav", () => {
 
     for (const tab of TABS) {
       const links = screen.getAllByRole("link", { name: tab.label });
-      expect(links.length).toBe(2);
+      expect(links).toHaveLength(2);
       links.forEach((link) => expect(link).toHaveAttribute("href", tab.href));
     }
   });
