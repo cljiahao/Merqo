@@ -113,7 +113,9 @@ supabase/migrations/        — SQL schema (merqo.* tables) + RLS + grants
 
 One shared Supabase project, schema per kit. Merqo owns `merqo.*`:
 `merqo_team` (team membership), `products` (kit registry + per-product
-`metrics_secret`), `vendor_links` (vendor↔kit access, email-keyed).
+`metrics_secret`), `vendor_links` (vendor↔kit access, email-keyed),
+`billing_settings` (cross-kit pricing levers — currently just the
+bundle-discount toggle, public-read, service-role-only write).
 RLS default-deny; `products`/`vendor_links` are read/written via the
 service-role client only, so `metrics_secret` never reaches a browser.
 
