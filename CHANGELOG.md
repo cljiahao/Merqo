@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- ESLint now runs `sonarjs.configs.recommended` (the plugin's full rule
+  catalog) instead of just `no-commented-code` — bug-pattern, code-smell,
+  and React/JSX rules across the app. Fixed all 18 real findings this
+  surfaced rather than suppressing them (nested-ternary/nested-function
+  extractions, a global-shadowing rename, super-linear regex fixes in DB
+  migration tests, test-assertion tightening); two scoped disables remain
+  for genuine test-fixture cases.
+
 - Display font switched from Big Shoulders to Fraunces (the shared family
   display face — see
   `docs/business/2026-08-13-typography-family-standard.md`). qkit
