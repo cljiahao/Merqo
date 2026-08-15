@@ -6,6 +6,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Cross-kit bundle-discount toggle on the admin overview page
+  (`BundleDiscountToggle`) — the 15/25/30% bundle discount ships off by
+  default; this is the admin-facing lever to flip it on later, once
+  there's real cross-kit adoption data justifying it. Backed by a new
+  singleton `merqo.billing_settings` table (public-read, service-role-only
+  write). No kit reads this flag yet — the discount computation itself
+  stays Phase 3-gated.
+
 ### Fixed
 
 - Landing page's "kit stacker" graph showed loopkit and paykit as
