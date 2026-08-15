@@ -9,20 +9,23 @@ import { summarizeOverview } from "@/lib/overview";
 import { classifyHealth } from "@/lib/health";
 import { onboardingFunnel } from "@/lib/funnel";
 import { money, computeTrend } from "@/lib/format";
+import { getBillingSettings } from "@/lib/billing-settings";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { OnboardingFunnelView } from "./onboarding-funnel";
 import { ProductTile } from "./product-tile";
 import { StatusBanner } from "./status-banner";
 import { SupportMessageRow } from "./support-message-row";
+import { BundleDiscountToggle } from "./bundle-discount-toggle";
 
 export const revalidate = 0;
 
 export default async function AdminOverviewPage() {
   await requireMerqoTeam();
-  const [products, grants, openSupport] = await Promise.all([
+  const [products, grants, openSupport, billingSettings] = await Promise.all([
     listLiveProducts(),
     listVendorGrants(),
     listOpenSupportMessages(),
+    getBillingSettings(),
   ]);
   const results = await Promise.all(
     products.map((p) => fetchProductMetrics(p)),
@@ -133,6 +136,15 @@ export default async function AdminOverviewPage() {
 
       <div className="mt-8 grid gap-5 lg:grid-cols-2">
         <OnboardingFunnelView counts={funnel} />
+      </div>
+
+      <h2 className="mt-10 font-display text-lg font-bold tracking-tight">
+        Settings
+      </h2>
+      <div className="mt-4">
+        <BundleDiscountToggle
+          enabled={billingSettings.bundle_discount_enabled}
+        />
       </div>
 
       <h2 className="mt-10 font-display text-lg font-bold tracking-tight">

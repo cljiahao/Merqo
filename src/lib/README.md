@@ -10,6 +10,8 @@ that isn't a route or a component.
 
 - `account.ts` — reads `display_name`/`avatar_url` defensively off the auth user's untyped `user_metadata`.
 - `action-result.ts` — `ActionResult<T>`, the discriminated success/error return type every Server Action uses.
+- `billing-settings.ts` — `getBillingSettings()`: reads the singleton `merqo.billing_settings` row (currently just `bundle_discount_enabled`), falling back to `DEFAULT_BILLING_SETTINGS` (`false`) if the row can't be read. Backs the admin overview page's bundle-discount toggle; no kit consumes this flag yet.
+- `billing-settings.test.ts` — mocked `createServiceClient` coverage: returns the live row's value, falls back to the default on a read error, and falls back when no row exists.
 - `admin.ts` — Merqo-team admin gate (`requireTeamMember`-style helpers) and vendor-grant status queries used by `/admin`.
 - `brand-icon.tsx` — Merqo's mark as concrete hex constants, for `ImageResponse`-based icon routes (`icon.tsx`/`apple-icon.tsx`).
 - `downgrade-request.ts` — posts a vendor's Pro→Free downgrade request to a kit's metrics API.

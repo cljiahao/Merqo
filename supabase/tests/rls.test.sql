@@ -1,6 +1,6 @@
 -- merqo/supabase/tests/rls.test.sql
 -- RLS isolation — pgTAP, run with `supabase test db`.
--- Covers merqo's six RLS-bearing tables: merqo_team (team-membership gates
+-- Covers merqo's seven RLS-bearing tables: merqo_team (team-membership gates
 -- visibility of the WHOLE table, not just the caller's own row — see the
 -- comment below), products (RLS is a backstop only; `authenticated` has no
 -- table-level grant at all, so metrics_secret never reaches a browser-reachable
@@ -8,11 +8,12 @@
 -- kit_events and vendor_profile (0008/0009: RLS enabled with zero policies and
 -- no table-level grant to anyone — reachable only through their SECURITY
 -- DEFINER functions), vendor_feedback (0011: team-select policy + grant,
--- writes only via submit_vendor_feedback).
+-- writes only via submit_vendor_feedback), billing_settings (0017:
+-- public-read singleton, no UPDATE grant to any client role).
 -- Runs in ONE rolled-back transaction with inline fixed-UUID fixtures.
 
 begin;
-select plan(38);
+select plan(42);
 
 -- ── Fixtures (created under the default/superuser test role → RLS + grants
 -- are bypassed here) ─────────────────────────────────────────────────────────
@@ -216,6 +217,17 @@ select throws_ok(
   '42501', null,
   'vendor cannot insert a dashboard_prefs row for a different user either (insert-policy check)');
 
+-- merqo.billing_settings (0017): public-read singleton, no UPDATE policy
+-- for any client role — writes go through the service-role admin action
+-- only.
+select isnt_empty(
+  $$ select 1 from merqo.billing_settings where id = 1 $$,
+  'authenticated reads billing_settings');
+select throws_ok(
+  $$ update merqo.billing_settings set bundle_discount_enabled = true where id = 1 $$,
+  '42501', null,
+  'authenticated cannot update billing_settings (no UPDATE policy/grant)');
+
 -- ── Act as anon ───────────────────────────────────────────────────────────
 -- `anon` only ever received `grant usage on schema merqo` (0001) — schema
 -- USAGE lets it resolve object names but grants no table-level privilege.
@@ -268,6 +280,14 @@ select throws_like(
   $$ select merqo.submit_vendor_feedback('qkit-rlstest', 5, 'hi') $$,
   'not authorized',
   'anon cannot call submit_vendor_feedback (auth.uid() is null check)');
+
+select isnt_empty(
+  $$ select 1 from merqo.billing_settings where id = 1 $$,
+  'anon reads billing_settings (not secret - a future kit plan page may read it directly)');
+select throws_ok(
+  $$ update merqo.billing_settings set bundle_discount_enabled = true where id = 1 $$,
+  '42501', null,
+  'anon cannot update billing_settings (no UPDATE policy/grant)');
 
 reset role;
 

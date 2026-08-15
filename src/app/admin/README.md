@@ -27,17 +27,37 @@ support/feedback inbox. Every route under this folder is gated by
   mobile panel lists the same tabs (and hrefs) as the desktop nav, and
   active-tab highlighting via a mocked `usePathname()`.
 - `page.tsx` — `AdminOverviewPage` (`revalidate = 0`). Fetches live products,
-  vendor grants, and open support messages in parallel, pulls each product's
+  vendor grants, open support messages, and cross-kit billing settings
+  (`getBillingSettings`) in parallel, pulls each product's
   metrics via `fetchProductMetrics`, and derives ecosystem totals
   (`summarizeOverview`), per-product health (`classifyHealth`), and the
   onboarding funnel (`onboardingFunnel`). Renders `StatusBanner`, a
   "Needs attention" section (waitlisted vendors, open support messages,
-  pending upgrade requests), summary `StatCard`s, `OnboardingFunnelView`, and
-  a `ProductTile` grid.
+  pending upgrade requests), summary `StatCard`s, `OnboardingFunnelView`, a
+  "Settings" section (`BundleDiscountToggle`), and a `ProductTile` grid.
 - `loading.tsx` — skeleton for `page.tsx` (stat-card and product-tile shapes).
 - `actions.ts` — `"use server"` module; `resolveSupportMessageAction(id)` marks
   a hub-level `support_messages` row resolved (team-gated, writes via the
-  service client, revalidates `/admin`).
+  service client, revalidates `/admin`); `setBundleDiscountEnabledAction(enabled)`
+  flips the `merqo.billing_settings` singleton's `bundle_discount_enabled`
+  flag (team-gated, same write pattern). No kit reads this flag yet — see
+  `bundle-discount-toggle.tsx` below.
+- `actions.test.ts` — mocked `requireMerqoTeam`/`createServiceClient`/
+  `revalidatePath` coverage for both actions above: happy path, a DB-error
+  path, and (for the bundle-discount action) confirms the team gate is
+  checked before any database call.
+- `bundle-discount-toggle.tsx` — `BundleDiscountToggle({ enabled })` client
+  component. A single shadcn `Switch` + label describing the current
+  state (off: "vendors pay full price per kit"; on: "15/25/30% off at
+  2/3/4 active kits") — flips `setBundleDiscountEnabledAction` in a
+  transition and toasts success/failure. The cross-kit bundle discount
+  ships off by default (see
+  `docs/business/2026-07-30-cross-kit-pricing-and-billing-plan.md`); this
+  is the lever, not the discount math itself, which stays Phase 3-gated.
+- `bundle-discount-toggle.test.tsx` — RTL/jsdom coverage: on/off state
+  text and switch-checked state, calling the action with the flipped
+  value on click, toast success/error, and the switch disabling while
+  the action is pending.
 - `onboarding-funnel.tsx` — `OnboardingFunnelView({ counts })`. Renders the
   3-stage vendor onboarding funnel (Waitlisted → Granted → Using) as
   relative-magnitude bars against each stage's raw count. Deliberately shows
