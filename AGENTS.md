@@ -1,4 +1,4 @@
-<!-- templateCentral: nextjs@5.14.0 (Supabase variant — shared project, schema per kit) -->
+<!-- templateCentral: nextjs@5.15.0 (Supabase variant — shared project, schema per kit) -->
 
 # AGENTS.md — Merqo
 
@@ -194,5 +194,20 @@ the git blob at HEAD on every pre-push and in CI.
   `docs/superpowers/specs/2026-08-01-lefthook-to-husky-migration-design.md`.
 - Landing design spec: `docs/superpowers/specs/2026-07-06-merqo-home-landing-design.md`.
 - Deploy runbook: `docs/DEPLOY.md`.
+- **5.14→5.15 delta reviewed (2026-08-15):** adopted `eslint.config.mjs`'s
+  switch from one hand-picked sonarjs rule to `sonarjs.configs.recommended`
+  (real findings fixed, see PR history) and the `next`/`eslint-config-next`
+  `^16.2.12` version floor. Also added `next.config.ts`'s `headers()` (a
+  genuine pre-existing gap, not a documented divergence — see the
+  headers()-gap PR), built with 5.15's dev-mode CSP/`X-Frame-Options` fix
+  already applied (`frame-ancestors`/`X-Frame-Options` only in
+  non-development, learned from the bug report rather than reproduced fresh).
+  **Not adopted:** `harness-kit.md`'s hook-`command` string→`args[]` array
+  form — real and low-risk, but changing `.claude/settings.json` requires
+  updating its `origin_hash` in `harness.json`, and `regen-harness.sh` is
+  explicitly human-run-only (an agent re-blessing its own baseline defeats
+  the drift check) — left for a human to pick up manually. Same standing
+  divergences as 5.11→5.14 (full tc harness-kit, pino route-logging,
+  better-auth/Drizzle) still apply.
 
 <!-- [[post-harness]] — reserved for trace capture and meta-harness integration -->
