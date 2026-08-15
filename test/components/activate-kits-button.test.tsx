@@ -117,8 +117,10 @@ describe("ActivateKitsButton", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Activate all my kits" }),
     );
-    await waitFor(() => expect(toast.success).toHaveBeenCalled());
-    expect(mockRefresh).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalled();
+      expect(mockRefresh).toHaveBeenCalled();
+    });
   });
 
   it("shows a success toast and refreshes the router after a successful single-kit retry", async () => {
@@ -140,7 +142,9 @@ describe("ActivateKitsButton", () => {
     });
     expect(toast.success).not.toHaveBeenCalled();
     fireEvent.click(retryButton);
-    await waitFor(() => expect(toast.success).toHaveBeenCalled());
-    expect(mockRefresh).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(toast.success).toHaveBeenCalled();
+      expect(mockRefresh).toHaveBeenCalled();
+    });
   });
 });
