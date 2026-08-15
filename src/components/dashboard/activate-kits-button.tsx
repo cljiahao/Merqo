@@ -11,6 +11,17 @@ import type { ProvisionResult } from "@/lib/vendor-sync";
 type ButtonVariant = React.ComponentProps<typeof Button>["variant"];
 type ButtonSize = React.ComponentProps<typeof Button>["size"];
 
+/** Merges a new activation batch into the running per-kit results, keyed by
+ *  slug so a retry replaces its kit's prior entry instead of duplicating it. */
+function mergeResults(
+  prev: ProvisionResult[] | null,
+  incoming: ProvisionResult[],
+): ProvisionResult[] {
+  const bySlug = new Map((prev ?? []).map((r) => [r.slug, r]));
+  for (const r of incoming) bySlug.set(r.slug, r);
+  return Array.from(bySlug.values());
+}
+
 /** Bulk ("Activate all my kits", multiple slugs) or single-kit ("Add
  *  {kit}", one slug) activation button — same component, driven entirely
  *  by `slugs`, never a hardcoded count. Renders per-kit failure/retry and
@@ -42,11 +53,7 @@ export function ActivateKitsButton({
       const res = await activateKitsAction(targetSlugs);
       if (res.success) {
         setError(null);
-        setResults((prev) => {
-          const bySlug = new Map((prev ?? []).map((r) => [r.slug, r]));
-          for (const r of res.results) bySlug.set(r.slug, r);
-          return Array.from(bySlug.values());
-        });
+        setResults((prev) => mergeResults(prev, res.results));
         const byTargetSlug = new Map(res.results.map((r) => [r.slug, r]));
         const allSucceeded = targetSlugs.every(
           (slug) => byTargetSlug.get(slug)?.ok === true,

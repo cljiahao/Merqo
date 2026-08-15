@@ -29,13 +29,13 @@ describe("0016_merqo_dashboard_prefs migration", () => {
 
   it("defines owner-only select/insert/update policies, no team-sees-all override", () => {
     expect(sql).toMatch(
-      /create policy dashboard_prefs_owner_select on merqo\.dashboard_prefs\s*\n\s*for select using \(user_id = \(select auth\.uid\(\)\)\)/,
+      /create policy dashboard_prefs_owner_select on merqo\.dashboard_prefs\s+for select using \(user_id = \(select auth\.uid\(\)\)\)/,
     );
     expect(sql).toMatch(
-      /create policy dashboard_prefs_owner_insert on merqo\.dashboard_prefs\s*\n\s*for insert with check \(user_id = \(select auth\.uid\(\)\)\)/,
+      /create policy dashboard_prefs_owner_insert on merqo\.dashboard_prefs\s+for insert with check \(user_id = \(select auth\.uid\(\)\)\)/,
     );
     expect(sql).toMatch(
-      /create policy dashboard_prefs_owner_update on merqo\.dashboard_prefs\s*\n\s*for update using \(user_id = \(select auth\.uid\(\)\)\)\s*\n\s*with check \(user_id = \(select auth\.uid\(\)\)\)/,
+      /create policy dashboard_prefs_owner_update on merqo\.dashboard_prefs\s+for update using \(user_id = \(select auth\.uid\(\)\)\)\s+with check \(user_id = \(select auth\.uid\(\)\)\)/,
     );
     expect(sql).not.toContain("is_merqo_team");
   });

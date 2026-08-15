@@ -27,6 +27,8 @@ export default function LoginPage() {
   } | null>(null);
 
   const isSignin = mode === "signin";
+  let submitLabel = isSignin ? "Sign in" : "Create account";
+  if (busy) submitLabel = "Please wait…";
 
   async function signInWithGoogle() {
     setBusy(true);
@@ -262,11 +264,7 @@ export default function LoginPage() {
                 className="h-12 w-full rounded-xl text-base font-semibold"
                 disabled={busy}
               >
-                {busy
-                  ? "Please wait…"
-                  : isSignin
-                    ? "Sign in"
-                    : "Create account"}
+                {submitLabel}
               </Button>
             </form>
           </div>

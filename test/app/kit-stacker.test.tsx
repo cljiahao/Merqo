@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 
 vi.mock("@/app/actions/waitlist", () => ({
   joinKitWaitlist: vi.fn(),
@@ -57,5 +57,42 @@ describe("KitStacker", () => {
       screen.getByRole("button", { name: /Remove shopkit from the stack/i }),
     );
     expect(screen.getByText(/Your stack has 1 kit:/)).toBeInTheDocument();
+  });
+
+  it("plays the journey animation, stepping through each stacked kit's caption", () => {
+    vi.useFakeTimers();
+    render(<KitStacker />);
+    fireEvent.click(screen.getByRole("button", { name: "Stack all" }));
+
+    fireEvent.click(screen.getByRole("button", { name: /Play journey/i }));
+    expect(
+      screen.getByText(/A customer orders from your store\./i),
+    ).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(780);
+    });
+    expect(
+      screen.getByText(/The order drops into your queue\./i),
+    ).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(780 * 3);
+    });
+    expect(
+      screen.queryByText(/A customer orders from your store\./i),
+    ).not.toBeInTheDocument();
+
+    vi.useRealTimers();
+  });
+
+  it("disables Play journey when fewer than two kits are stacked", () => {
+    render(<KitStacker />);
+    fireEvent.click(
+      screen.getByRole("button", { name: /Remove qkit from the stack/i }),
+    );
+    expect(
+      screen.getByRole("button", { name: /Play journey/i }),
+    ).toBeDisabled();
   });
 });

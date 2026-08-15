@@ -1,7 +1,13 @@
-import { KITS } from "@/lib/kits";
+import { KITS, type KitStatus } from "@/lib/kits";
 import { cn } from "@/lib/utils";
 
 const ORDER = KITS.map((k) => ({ slug: k.slug, status: k.status }));
+
+const DOT_CLASS: Record<KitStatus, string> = {
+  live: "bg-gold",
+  coming: "bg-primary",
+  planned: "bg-border",
+};
 
 export function Timeline() {
   return (
@@ -16,11 +22,7 @@ export function Timeline() {
             <span
               className={cn(
                 "size-2.5 rounded-full ring-4 ring-card",
-                k.status === "live"
-                  ? "bg-gold"
-                  : k.status === "coming"
-                    ? "bg-primary"
-                    : "bg-border",
+                DOT_CLASS[k.status],
               )}
             />
             <span

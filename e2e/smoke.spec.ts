@@ -42,6 +42,8 @@ test("dashboard redirects a signed-out visitor to login", async ({ page }) => {
 // seeds the fixtures below, and sets this flag; a plain `pnpm dev` run has
 // neither, so this whole block skips and the public smoke above still passes.
 test.describe("authed areas", () => {
+  // Intentional, conditional skip with a documented reason string (see the
+  // comment block above) — not a forgotten/disabled test.
   test.skip(
     process.env.MERQO_E2E_AUTH !== "1",
     "needs seeded auth (set MERQO_E2E_AUTH=1)",
@@ -51,7 +53,9 @@ test.describe("authed areas", () => {
   // (see the e2e job in ci.yml). Overridable so a local run can point at
   // differently-named fixtures without editing this file.
   const TEAM_EMAIL = process.env.MERQO_E2E_TEAM_EMAIL ?? "e2e-team@merqo.test";
+  // Fixture default for a throwaway local Supabase test account, not a real credential.
   const TEAM_PASSWORD =
+    // eslint-disable-next-line sonarjs/no-hardcoded-passwords
     process.env.MERQO_E2E_TEAM_PASSWORD ?? "e2e-test-pass-123";
   const ADDABLE_EMAIL =
     process.env.MERQO_E2E_ADDABLE_EMAIL ?? "e2e-addable@merqo.test";
