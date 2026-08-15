@@ -208,6 +208,8 @@ the git blob at HEAD on every pre-push and in CI.
   explicitly human-run-only (an agent re-blessing its own baseline defeats
   the drift check) — left for a human to pick up manually. Same standing
   divergences as 5.11→5.14 (full tc harness-kit, pino route-logging,
-  better-auth/Drizzle) still apply.
+  better-auth/Drizzle) still apply. This PR itself only touches `.claude/`
+  and this file — `skip-readme-check` applied, no per-folder README content
+  actually changed.
 
 <!-- [[post-harness]] — reserved for trace capture and meta-harness integration -->
