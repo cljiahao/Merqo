@@ -67,12 +67,12 @@ even when the pattern repeats), just the identical small implementation.
 `customerNotifySecretOk(request: Request): boolean` — checks the
 `Authorization: Bearer <MERQO_CUSTOMER_SECRET>` header via a constant-time
 compare (`node:crypto`'s `timingSafeEqual`). **This is a genuinely new
-pattern for this repo** — merqo has never been the *receiving* side of a
+pattern for this repo** — merqo has never been the _receiving_ side of a
 bearer-authenticated call before (every existing cross-kit call flows
 merqo → kit: metrics pull, vendor-provision). The shape to copy is
 `provisionBearerOk` in **qkit's own** `src/lib/merqo-auth.ts` (the
 receiving-side pattern each kit already implements for inbound calls
-*from* merqo) — same constant-time-compare logic, mirrored here for the
+_from_ merqo) — same constant-time-compare logic, mirrored here for the
 first time in the opposite direction.
 
 ### `src/app/api/telegram/webhook/route.ts` (new)
