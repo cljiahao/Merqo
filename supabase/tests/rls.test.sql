@@ -1,6 +1,6 @@
 -- merqo/supabase/tests/rls.test.sql
 -- RLS isolation — pgTAP, run with `supabase test db`.
--- Covers merqo's eight RLS-bearing tables: merqo_team (team-membership gates
+-- Covers merqo's nine RLS-bearing tables: merqo_team (team-membership gates
 -- visibility of the WHOLE table, not just the caller's own row — see the
 -- comment below), products (RLS is a backstop only; `authenticated` has no
 -- table-level grant at all, so metrics_secret never reaches a browser-reachable
@@ -10,12 +10,18 @@
 -- DEFINER functions), vendor_feedback (0011: team-select policy + grant,
 -- writes only via submit_vendor_feedback), billing_settings (0017:
 -- public-read singleton, no UPDATE grant to any client role), customers
--- (0018: RLS enabled with zero policies and no table-level grant to
--- anyone — reachable only through upsert_customer()).
+-- (0018, widened by 0019: RLS enabled with zero policies and no
+-- table-level grant to anyone — reachable only through upsert_customer()
+-- and 0019's three Telegram-identity RPCs — see the "Telegram identity"
+-- block below for the PK/constraint-change verification 0019's own plan
+-- called for), telegram_link_tokens (0019: RLS enabled, zero client
+-- policies, service-role only — same shape as customers' own zero-grant
+-- convention, restated via an explicit `grant ... to service_role` since
+-- 0012's blanket grant predates this table).
 -- Runs in ONE rolled-back transaction with inline fixed-UUID fixtures.
 
 begin;
-select plan(51);
+select plan(73);
 
 -- ── Fixtures (created under the default/superuser test role → RLS + grants
 -- are bypassed here) ─────────────────────────────────────────────────────────
@@ -68,6 +74,7 @@ select ok((select relrowsecurity from pg_class where oid = 'merqo.vendor_profile
 select ok((select relrowsecurity from pg_class where oid = 'merqo.vendor_feedback'::regclass), 'RLS on vendor_feedback');
 select ok((select relrowsecurity from pg_class where oid = 'merqo.dashboard_prefs'::regclass), 'RLS on dashboard_prefs');
 select ok((select relrowsecurity from pg_class where oid = 'merqo.customers'::regclass), 'RLS on customers');
+select ok((select relrowsecurity from pg_class where oid = 'merqo.telegram_link_tokens'::regclass), 'RLS on telegram_link_tokens');
 
 -- merqo.upsert_customer (0018): first call inserts, a repeat call for the
 -- same (vendor_id, phone) updates name/last_seen_at but leaves
@@ -92,6 +99,101 @@ select results_eq(
      group by name $$,
   $$ values (1, 'Updated Name'::text) $$,
   'repeat upsert updates the name and still exactly one row (no duplicate insert)');
+
+-- ── Telegram identity (0019) — customers widening + the three new RPCs ───────
+-- Exercised under the default/superuser test role, same as upsert_customer
+-- above (this table grants no client role direct access at all).
+
+-- customers_identity_check: neither phone nor telegram_chat_id is rejected.
+select throws_ok(
+  $$ insert into merqo.customers (vendor_id) values ('00000000-0000-0000-0000-00000000000a') $$,
+  '23514', null,
+  'customers_identity_check rejects a row with neither phone nor telegram_chat_id');
+
+-- A phone-less, Telegram-only customer is exactly the case 0019 widened the
+-- table for — allowed post-widening (would have been impossible under the
+-- old (vendor_id, phone) PK, which required a non-null phone).
+select lives_ok(
+  $$ insert into merqo.customers (vendor_id, telegram_chat_id, consent_given_at)
+     values ('00000000-0000-0000-0000-00000000000a', 111222, now()) $$,
+  'a phone-less, Telegram-only customer row is allowed post-widening');
+
+-- merqo.upsert_customer_telegram: first call inserts, keyed purely on
+-- (vendor_id, telegram_chat_id) — distinct from upsert_customer's
+-- phone-keyed path exercised above.
+select lives_ok(
+  $$ select merqo.upsert_customer_telegram('00000000-0000-0000-0000-00000000000a', 333444, 'qkit:order-1') $$,
+  'upsert_customer_telegram inserts a new phone-less customer row');
+select results_eq(
+  $$ select count(*)::int, pending_notify_ref from merqo.customers
+     where vendor_id = '00000000-0000-0000-0000-00000000000a' and telegram_chat_id = 333444
+     group by pending_notify_ref $$,
+  $$ values (1, 'qkit:order-1'::text) $$,
+  'new row has the given pending_notify_ref, exactly one row for this (vendor_id, telegram_chat_id)');
+
+-- A repeat /start for the same chat (connecting again for a later order)
+-- refreshes pending_notify_ref instead of duplicating the row.
+select lives_ok(
+  $$ select merqo.upsert_customer_telegram('00000000-0000-0000-0000-00000000000a', 333444, 'qkit:order-2') $$,
+  'upsert_customer_telegram on the same (vendor_id, telegram_chat_id) updates instead of duplicating');
+select results_eq(
+  $$ select count(*)::int, pending_notify_ref from merqo.customers
+     where vendor_id = '00000000-0000-0000-0000-00000000000a' and telegram_chat_id = 333444
+     group by pending_notify_ref $$,
+  $$ values (1, 'qkit:order-2'::text) $$,
+  'repeat upsert updates pending_notify_ref and still exactly one row (no duplicate insert)');
+
+-- merqo.claim_customer_by_notify_ref (notify_ref mode): matches, returns
+-- the linked chat_id, and clears pending_notify_ref atomically — single-use.
+select results_eq(
+  $$ select merqo.claim_customer_by_notify_ref('00000000-0000-0000-0000-00000000000a', 'qkit:order-2') $$,
+  $$ values (333444::bigint) $$,
+  'claim_customer_by_notify_ref returns the linked chat_id on a match');
+select results_eq(
+  $$ select pending_notify_ref from merqo.customers
+     where vendor_id = '00000000-0000-0000-0000-00000000000a' and telegram_chat_id = 333444 $$,
+  $$ values (null::text) $$,
+  'claim_customer_by_notify_ref clears pending_notify_ref (single-use)');
+-- A second claim with the SAME (now-cleared) ref finds nothing — proves
+-- single-use, not just "clears eventually."
+select results_eq(
+  $$ select merqo.claim_customer_by_notify_ref('00000000-0000-0000-0000-00000000000a', 'qkit:order-2') $$,
+  $$ values (null::bigint) $$,
+  'claim_customer_by_notify_ref is a no-op on a repeat call with the same (already-cleared) ref');
+select results_eq(
+  $$ select merqo.claim_customer_by_notify_ref('00000000-0000-0000-0000-00000000000a', 'no-such-ref') $$,
+  $$ values (null::bigint) $$,
+  'claim_customer_by_notify_ref returns null for an unknown ref, never an error');
+
+-- merqo.find_customer_telegram_by_phone (phone mode): the real
+-- cross-kit-reuse case the design doc names — a customer with BOTH a
+-- phone and a linked chat_id.
+select lives_ok(
+  $$ insert into merqo.customers (vendor_id, phone, telegram_chat_id, consent_given_at, pending_notify_ref)
+     values ('00000000-0000-0000-0000-00000000000a', '+6590000001', 555666, now(), 'qkit:order-3') $$,
+  'a customer with both phone and telegram_chat_id (the cross-kit-reuse case) is allowed');
+select results_eq(
+  $$ select merqo.find_customer_telegram_by_phone('00000000-0000-0000-0000-00000000000a', '+6590000001') $$,
+  $$ values (555666::bigint) $$,
+  'find_customer_telegram_by_phone returns the linked chat_id on a match');
+select results_eq(
+  $$ select pending_notify_ref from merqo.customers
+     where vendor_id = '00000000-0000-0000-0000-00000000000a' and phone = '+6590000001' $$,
+  $$ values ('qkit:order-3'::text) $$,
+  'find_customer_telegram_by_phone (phone mode) does NOT clear pending_notify_ref — not single-use');
+select results_eq(
+  $$ select merqo.find_customer_telegram_by_phone('00000000-0000-0000-0000-00000000000a', '+6591234567') $$,
+  $$ values (null::bigint) $$,
+  'find_customer_telegram_by_phone returns null when the phone matches but no Telegram chat is linked');
+
+-- customers_vendor_telegram_idx (partial unique index) enforcement: a bare
+-- INSERT (not the upsert RPC's ON CONFLICT path) with an already-used
+-- (vendor_id, telegram_chat_id) is rejected.
+select throws_ok(
+  $$ insert into merqo.customers (vendor_id, telegram_chat_id, consent_given_at)
+     values ('00000000-0000-0000-0000-00000000000a', 333444, now()) $$,
+  '23505', null,
+  'customers_vendor_telegram_idx rejects a duplicate (vendor_id, telegram_chat_id)');
 
 -- ── Act as a team member ─────────────────────────────────────────────────────
 set local role authenticated;
@@ -146,6 +248,10 @@ select throws_ok(
   $$ select 1 from merqo.customers $$,
   '42501', null,
   'team member cannot SELECT customers directly (no grant; only upsert_customer())');
+select throws_ok(
+  $$ select 1 from merqo.telegram_link_tokens $$,
+  '42501', null,
+  'team member cannot SELECT telegram_link_tokens directly (service-role only)');
 
 -- vendor_feedback_team_select's USING clause is `is_merqo_team(auth.uid())`
 -- — same row-independent predicate as merqo_team — and `authenticated` DOES
@@ -219,6 +325,10 @@ select throws_ok(
   $$ select 1 from merqo.customers $$,
   '42501', null,
   'vendor cannot SELECT customers directly either (no grant)');
+select throws_ok(
+  $$ select 1 from merqo.telegram_link_tokens $$,
+  '42501', null,
+  'vendor cannot SELECT telegram_link_tokens directly either (service-role only)');
 select lives_ok(
   $$ select merqo.upsert_customer('00000000-0000-0000-0000-00000000000b', '+6598765432', 'A Customer') $$,
   'vendor (authenticated, any vendor_id) can call upsert_customer - no ownership check, mirrors how a kit backend already resolves the real vendor_id server-side before calling this');
@@ -297,6 +407,29 @@ select throws_ok(
   $$ select 1 from merqo.customers $$,
   '42501', null,
   'anon cannot read customers (no SELECT grant)');
+select throws_ok(
+  $$ select 1 from merqo.telegram_link_tokens $$,
+  '42501', null,
+  'anon cannot read telegram_link_tokens (service-role only)');
+
+-- The three 0019 Telegram-identity RPCs have no in-body caller check at
+-- all (unlike upsert_vendor_profile/submit_vendor_feedback) —
+-- customerNotifySecretOk is the only gate, enforced at the HTTP layer.
+-- REVOKE EXECUTE FROM PUBLIC in 0019 is therefore load-bearing: without
+-- it, Postgres' default PUBLIC execute grant would let anon call these
+-- directly over PostgREST's RPC endpoint and bypass that gate entirely.
+select throws_ok(
+  $$ select merqo.upsert_customer_telegram('00000000-0000-0000-0000-00000000000a', 777888, 'anon-attempt') $$,
+  '42501', null,
+  'anon cannot call upsert_customer_telegram (PUBLIC execute revoked)');
+select throws_ok(
+  $$ select merqo.claim_customer_by_notify_ref('00000000-0000-0000-0000-00000000000a', 'qkit:order-3') $$,
+  '42501', null,
+  'anon cannot call claim_customer_by_notify_ref (PUBLIC execute revoked)');
+select throws_ok(
+  $$ select merqo.find_customer_telegram_by_phone('00000000-0000-0000-0000-00000000000a', '+6590000001') $$,
+  '42501', null,
+  'anon cannot call find_customer_telegram_by_phone (PUBLIC execute revoked — closes a customer phone/chat-id enumeration leak)');
 select throws_ok(
   $$ select 1 from merqo.kit_events $$,
   '42501', null,

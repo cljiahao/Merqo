@@ -158,3 +158,18 @@ $$;
 grant execute on function merqo.upsert_customer_telegram(uuid, bigint, text) to service_role;
 grant execute on function merqo.claim_customer_by_notify_ref(uuid, text) to service_role;
 grant execute on function merqo.find_customer_telegram_by_phone(uuid, text) to service_role;
+
+-- Unlike upsert_vendor_profile (which checks auth.uid() = p_vendor_id
+-- internally) or upsert_customer (an accepted no-ownership-check pattern
+-- already documented in supabase/tests/rls.test.sql), none of these three
+-- functions has an in-body caller check at all — customerNotifySecretOk
+-- is the only gate, enforced at the HTTP layer, not in SQL. Postgres
+-- grants EXECUTE to PUBLIC by default on every new function, so without
+-- an explicit revoke, `anon`/`authenticated` could call these directly
+-- over PostgREST's RPC endpoint and bypass that gate entirely (e.g.
+-- enumerate a vendor's customer phone → chat_id mappings via
+-- find_customer_telegram_by_phone). Same gap class qkit's own
+-- 0041_data_api_grants.sql closed for next_order_number.
+revoke execute on function merqo.upsert_customer_telegram(uuid, bigint, text) from public;
+revoke execute on function merqo.claim_customer_by_notify_ref(uuid, text) from public;
+revoke execute on function merqo.find_customer_telegram_by_phone(uuid, text) from public;

@@ -71,7 +71,7 @@ describe("0019_customer_telegram migration", () => {
     expect(sql).toContain("expires_at    timestamptz not null");
   });
 
-  it("adds the three service-role-only customers RPCs", () => {
+  it("adds the three service-role-only customers RPCs, PUBLIC execute revoked", () => {
     for (const fn of [
       "merqo.upsert_customer_telegram",
       "merqo.claim_customer_by_notify_ref",
@@ -79,6 +79,7 @@ describe("0019_customer_telegram migration", () => {
     ]) {
       expect(sql).toContain(`create or replace function ${fn}`);
       expect(sql).toContain(`grant execute on function ${fn}`);
+      expect(sql).toContain(`revoke execute on function ${fn}`);
     }
   });
 
