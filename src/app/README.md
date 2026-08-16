@@ -9,6 +9,10 @@ console, auth, and shared account pages.
 
 - `actions/` — server actions shared across routes.
 - `admin/` — Merqo-team console: overview + vendors/, team/, products/, feedback/ (all auth-gated).
+- `api/` — route-handler API endpoints: merqo's own third Telegram bot's
+  webhook, and the bearer-secret endpoints qkit/loopkit call INTO merqo
+  for the customer Telegram-connect flow — the first kit → merqo HTTP
+  direction in this codebase; see its own README.
 - `apple-icon.tsx` — `AppleIcon` route handler; renders a 180×180 PNG for iOS home-screen touch icons.
 - `auth/` — Supabase auth callback route (OAuth code exchange).
 - `dashboard/` — vendor dashboard: `(app)/` (active-kit overview + kit discovery), `pending/` (no-active-kit state), and `profile/` (a redirect shim to `/profile` — `@merqo/ui`'s `AccountMenu` hardcodes its Profile link to `/dashboard/profile`, the convention every other kit follows, but Merqo's real shared account page lives at the top-level `/profile`).
@@ -28,9 +32,11 @@ console, auth, and shared account pages.
 
 `login/` is the sign-in entry point; `post-login/` routes a freshly
 authenticated user onward. `dashboard/` is the vendor-facing area,
-`admin/` the Merqo-team console; `profile/` is shared by both. `layout.tsx`
-is the ancestor of every route below; `page.tsx` (the landing page) is the
-only route directly under `app/` besides the special Next.js files.
+`admin/` the Merqo-team console; `profile/` is shared by both. `api/` is
+an internal/ops surface, reached by Telegram's own servers and by sibling
+kits, never by a browser inside this app. `layout.tsx` is the ancestor of
+every route below; `page.tsx` (the landing page) is the only route
+directly under `app/` besides the special Next.js files.
 
 ## Parent
 

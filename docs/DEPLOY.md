@@ -92,3 +92,34 @@ of git — it lives only in Vercel env + the DB row.
   (`pnpm dlx supabase db push`) BEFORE qkit's `0051_emit_order_completed.sql`
   is applied — qkit's trigger calls `merqo.emit_metric`, which must already
   exist. No merqo code deploy needed; this is DB-only.
+- **Customer Telegram connect (Phase B+D) — real manual setup, not automated
+  by this repo:**
+  1. Apply `supabase/migrations/0019_customer_telegram.sql`
+     (`pnpm dlx supabase db push`) — widens `merqo.customers` and adds
+     `merqo.telegram_link_tokens` plus the three Telegram-identity RPCs.
+  2. Register a **new, separate** bot with [@BotFather](https://t.me/BotFather)
+     — this is merqo's OWN third Telegram bot, distinct from qkit's and
+     loopkit's own Phase A vendor-alert bots (different registration,
+     different token). Note the bot token and the username you set.
+  3. Set `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_WEBHOOK_SECRET`
+     (any random string you choose), and `MERQO_CUSTOMER_SECRET` (any
+     random string you choose) in merqo's Vercel env, Production +
+     Preview, then deploy this branch's code.
+  4. Set the **same** `MERQO_CUSTOMER_SECRET` value in the calling kit's
+     own Vercel env (qkit first, per its own
+     `2026-08-16-customer-telegram-connect.md` plan; loopkit next) — this
+     is a shared-bearer secret, one value known by merqo and every
+     participating kit.
+  5. **One-time `setWebhook` call**, after step 3 is live:
+     ```bash
+     curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook" \
+       -d "url=https://<merqo-domain>/api/telegram/webhook" \
+       -d "secret_token=<TELEGRAM_WEBHOOK_SECRET>"
+     ```
+     Without this, Telegram never calls the webhook route at all — a
+     customer's connect QR will render (once the calling kit ships its own
+     side), but scanning it does nothing (no `/start` ever reaches merqo).
+     Re-run this whenever the domain or the webhook secret changes.
+     None of the above can be done by an agent — no real BotFather bot
+     registration, Vercel env write, or outbound `setWebhook` call is
+     available in this repo's tooling.

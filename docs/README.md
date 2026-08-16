@@ -10,4 +10,7 @@
   vendor push provisioning, etc.), plus 2 earlier unpaired specs
   (`2026-07-06-merqo-home-landing-design.md`,
   `2026-07-06-merqo-kit-stacker-design.md`) predating the plan-file
-  convention — implemented directly without a separate plan doc.
+  convention — implemented directly without a separate plan doc. Most
+  recent: `2026-08-16-customer-telegram-connect-design.md` — merqo's own
+  third Telegram bot plus the first kit → merqo HTTP direction in this
+  codebase.

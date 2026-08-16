@@ -94,6 +94,8 @@ src/app/admin/              — Merqo-team console: overview (page.tsx) + vendor
 src/app/profile/            — shared account page (signed-in gate only — reachable from
                                both the vendor dashboard and the admin console)
 src/app/login/              — email/password sign-in
+src/app/api/telegram/webhook/ — merqo's own Telegram bot's webhook (customer connect)
+src/app/api/merqo/          — bearer-secret endpoints qkit/loopkit call INTO merqo
 src/proxy.ts                — Supabase session refresh + route guard (Next 16)
 src/components/landing/     — landing sections (nav, hero, kit-stacker, back-to-top, …)
 src/components/dashboard/   — dashboard widgets (stat cards, kit discovery/preview cards)
@@ -116,9 +118,15 @@ One shared Supabase project, schema per kit. Merqo owns `merqo.*`:
 `metrics_secret`), `vendor_links` (vendor↔kit access, email-keyed),
 `billing_settings` (cross-kit pricing levers — currently just the
 bundle-discount toggle, public-read, service-role-only write),
-`customers` (cross-kit customer identity, phone-keyed per vendor — the
-shared counterpart to `vendor_profile`, reachable only through the
-`upsert_customer` SECURITY DEFINER function, called by qkit/loopkit).
+`customers` (cross-kit customer identity — phone-keyed OR Telegram-chat-keyed
+per vendor since the 2026-08-16 widening, the shared counterpart to
+`vendor_profile`, reachable only through `upsert_customer` and three
+Telegram-identity SECURITY DEFINER functions, called by qkit/loopkit),
+`telegram_link_tokens` (short-lived deep-link tokens for merqo's own
+customer-facing Telegram bot, service-role only). Merqo also hosts that
+bot's webhook plus two bearer-secret endpoints qkit/loopkit call into —
+the first kit → merqo HTTP direction in this codebase (see
+`docs/superpowers/specs/2026-08-16-customer-telegram-connect-design.md`).
 RLS default-deny; `products`/`vendor_links` are read/written via the
 service-role client only, so `metrics_secret` never reaches a browser.
 

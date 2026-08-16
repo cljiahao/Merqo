@@ -14,6 +14,8 @@ that isn't a route or a component.
 - `billing-settings.test.ts` — mocked `createServiceClient` coverage: returns the live row's value, falls back to the default on a read error, and falls back when no row exists.
 - `admin.ts` — Merqo-team admin gate (`requireTeamMember`-style helpers) and vendor-grant status queries used by `/admin`.
 - `brand-icon.tsx` — Merqo's mark as concrete hex constants, for `ImageResponse`-based icon routes (`icon.tsx`/`apple-icon.tsx`).
+- `customer-notify-auth.ts` — `customerNotifySecretOk(request)`: constant-time check of `Authorization: Bearer <MERQO_CUSTOMER_SECRET>`, mirroring qkit's own `provisionBearerOk` shape — the first time merqo is the RECEIVING side of a bearer-authenticated call. Gates the two `/api/merqo/*` customer-notify routes.
+- `customer-notify-auth.test.ts` — valid/missing/wrong-prefix/wrong-secret/wrong-length bearer cases, plus fails-closed when `MERQO_CUSTOMER_SECRET` is unset.
 - `downgrade-request.ts` — posts a vendor's Pro→Free downgrade request to a kit's metrics API.
 - `ecosystem.ts` — data for the landing "kit stacker" graph (node positions, edges); `status` per node is derived from `kits.ts` (the source of truth) at module load, not hand-duplicated, so the two can't drift out of sync.
 - `feedback-support-schemas.ts` — Zod schemas for the vendor feedback (NPS) and support-message forms.
@@ -32,6 +34,8 @@ that isn't a route or a component.
 - `schemas.ts` — Zod schemas for the shared `merqo.vendor_profile` social/website links.
 - `support.ts` — reads open cross-kit support messages for the admin console.
 - `team.ts` — gates an operator page on Merqo-team membership, redirecting a non-member.
+- `telegram.ts` — `sendTelegramMessage(chatId, text)` (fire-and-forget POST to the Bot API's `sendMessage`, no-ops without `TELEGRAM_BOT_TOKEN`, catches+logs a fetch failure rather than throwing) and `generateLinkToken()` (a `[A-Za-z0-9_-]{1,64}`-safe token for the `t.me/<bot>?start=<token>` deep link — Telegram's own payload constraint). Same shape as every kit's own Phase A copy, deliberately not shared as a package.
+- `telegram.test.ts` — the send/no-op/catch/token-shape assertions above.
 - `tour-prefs.ts` — `stampTourSeen(supabase, userId)`: upserts `dashboard_prefs.tour_seen_at = now()`. A plain (non-`"use server"`) module so `src/app/dashboard/(app)/layout.tsx` can call it directly during its own server render — the durable half of the onboarding-tour "stamp on start" fix, since the client-fired path (`src/app/dashboard/tour-actions.ts`'s `markTourSeen`, which also delegates here) is fire-and-forget and can be aborted by a hard navigation before it lands.
 - `types.ts` — hand-maintained DB types mirroring `supabase/migrations` (`SocialLinks`, etc.).
 - `upgrade-request.ts` — posts a vendor's Free→Pro upgrade request to a kit's metrics API.

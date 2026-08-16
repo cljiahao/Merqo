@@ -8,6 +8,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Customer Telegram connect (Phase B+D): merqo's own third Telegram bot
+  (`/api/telegram/webhook`), distinct from qkit's and loopkit's own Phase A
+  vendor-alert bots, plus two bearer-secret endpoints
+  (`/api/merqo/customer-connect-token`, `/api/merqo/notify-customer`) that
+  qkit and loopkit call — the first kit → merqo HTTP direction in this
+  codebase. `merqo.customers` widened (nullable `phone`, new
+  `telegram_chat_id`/`consent_given_at`/`pending_notify_ref` columns) so a
+  customer can connect via Telegram alone; new `merqo.telegram_link_tokens`
+  table. `notify-customer` supports two mutually exclusive lookup modes:
+  `notify_ref` (single-use) and `phone` (a standing connection, never
+  cleared). Requires a manual BotFather bot registration, new env vars, and
+  a one-time `setWebhook` call before qkit/loopkit can consume it — see
+  `docs/DEPLOY.md`.
+
 - Shared `merqo.customers` table + `upsert_customer()` RPC, mirroring
   loopkit's own proven phone-keyed customer shape — closes the biggest
   gap flagged by the 2026-07-28 cross-kit retention research (only
