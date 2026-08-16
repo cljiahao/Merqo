@@ -31,6 +31,8 @@ that isn't a route or a component.
 - `nps.ts` — Net Promoter Score bucketing/scoring, ported from qkit's own `nps.ts`.
 - `overview.ts` — aggregates per-kit metrics into the admin overview's platform totals.
 - `products.ts` — the kit registry (`RegistryRow`) read/cache from `merqo.products`, including each kit's `metrics_secret`.
+- `qr.ts` — `qrSvg(text)`: renders `text` (a Telegram deep link) as an inline SVG markup string via the `qrcode` package, for `@merqo/ui`'s `VendorTelegramSection` to render via `dangerouslySetInnerHTML`. Same shape/library as loopkit's and qkit's own (now-retired, Phase A2) per-kit `qrSvg` helpers.
+- `qr.test.ts` — asserts the rendered string is real SVG markup.
 - `schemas.ts` — Zod schemas for the shared `merqo.vendor_profile` social/website links.
 - `support.ts` — reads open cross-kit support messages for the admin console.
 - `team.ts` — gates an operator page on Merqo-team membership, redirecting a non-member.
