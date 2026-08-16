@@ -8,6 +8,23 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Vendor Telegram connect (Phase A2): consolidates qkit's and loopkit's own
+  separate per-kit vendor-alert bots onto merqo's shared bot (the same one
+  Phase B+D built for customers). New `merqo.vendor_telegram` table
+  (`vendor_id` PK, own-row RLS, no client write grant) and a `kind` column
+  on `merqo.telegram_link_tokens` (`'customer'` default-backfilled or
+  `'vendor'`; `notify_ref`/`kit_slug` now nullable) the webhook route's
+  `/start` handler branches on. Two new bearer-secret endpoints
+  (`/api/merqo/vendor-connect-token`, `/api/merqo/notify-vendor`) and a new
+  `VendorTelegramSection` component in `@merqo/ui` (v0.15.0), wired into
+  merqo's own `/profile` page via a server action that mints a connect
+  token directly (no HTTP hop). No new bot/env-var setup — reuses the
+  already-live bot token. Every vendor who'd previously linked qkit's or
+  loopkit's own bot must reconnect once via merqo's profile page — an
+  expected consequence of retiring those bots, not a bug. Unblocks qkit's
+  and loopkit's own Phase A2 plans, which retire their local bots and call
+  these endpoints instead.
+
 - Customer Telegram connect (Phase B+D): merqo's own third Telegram bot
   (`/api/telegram/webhook`), distinct from qkit's and loopkit's own Phase A
   vendor-alert bots, plus two bearer-secret endpoints

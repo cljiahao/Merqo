@@ -9,11 +9,15 @@ vi.mock("@/lib/telegram", () => ({
 // token lookup (select) + burn (delete); the customer upsert itself goes
 // through the merqo.upsert_customer_telegram RPC (not a second .from() —
 // see supabase/migrations/0019_customer_telegram.sql's comment on why a
-// plain .upsert() can't target a partial unique index).
+// plain .upsert() can't target a partial unique index). `vendor_telegram`
+// (0020) grants service_role a plain table write — a vendor link is a
+// direct .upsert(), no RPC needed (unlike customers, which has zero grants
+// to anyone).
 type QueryResult = { data: unknown; error: unknown };
 let maybeSingleQueue: QueryResult[] = [];
 const deleteEq = vi.fn().mockResolvedValue({ data: null, error: null });
 const rpc = vi.fn().mockResolvedValue({ data: null, error: null });
+const vendorUpsert = vi.fn().mockResolvedValue({ data: null, error: null });
 const from = vi.fn((table: string) => {
   if (table === "telegram_link_tokens") {
     return {
@@ -27,6 +31,9 @@ const from = vi.fn((table: string) => {
       }),
       delete: () => ({ eq: deleteEq }),
     };
+  }
+  if (table === "vendor_telegram") {
+    return { upsert: vendorUpsert };
   }
   throw new Error(`unexpected table: ${table}`);
 });
@@ -58,6 +65,8 @@ beforeEach(() => {
   rpc.mockClear();
   rpc.mockResolvedValue({ data: null, error: null });
   deleteEq.mockClear();
+  vendorUpsert.mockClear();
+  vendorUpsert.mockResolvedValue({ data: null, error: null });
   from.mockClear();
   sendTelegramMessage.mockClear();
 });
@@ -88,13 +97,14 @@ describe("POST /api/telegram/webhook", () => {
     expect(res.status).toBe(401);
   });
 
-  it("upserts the customer via RPC and deletes the token on a valid /start", async () => {
+  it("upserts the customer via RPC and deletes the token on a valid /start (kind='customer')", async () => {
     maybeSingleQueue = [
       {
         data: {
           vendor_id: "vendor-1",
           notify_ref: "qkit:order-42",
           expires_at: new Date(Date.now() + 60_000).toISOString(),
+          kind: "customer",
         },
         error: null,
       },
@@ -111,7 +121,35 @@ describe("POST /api/telegram/webhook", () => {
       p_notify_ref: "qkit:order-42",
     });
     expect(deleteEq).toHaveBeenCalledWith("token", "abc123");
+    expect(vendorUpsert).not.toHaveBeenCalled();
     expect(sendTelegramMessage).toHaveBeenCalledWith(999, expect.any(String));
+  });
+
+  it("upserts merqo.vendor_telegram (not the customer RPC) and deletes the token on a valid /start (kind='vendor')", async () => {
+    maybeSingleQueue = [
+      {
+        data: {
+          vendor_id: "vendor-9",
+          notify_ref: null,
+          expires_at: new Date(Date.now() + 60_000).toISOString(),
+          kind: "vendor",
+        },
+        error: null,
+      },
+    ];
+    const res = await POST(
+      makeRequest({
+        message: { text: "/start vendor-token-1", chat: { id: 777 } },
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(rpc).not.toHaveBeenCalled();
+    expect(vendorUpsert).toHaveBeenCalledWith(
+      { vendor_id: "vendor-9", chat_id: 777 },
+      { onConflict: "vendor_id" },
+    );
+    expect(deleteEq).toHaveBeenCalledWith("token", "vendor-token-1");
+    expect(sendTelegramMessage).toHaveBeenCalledWith(777, expect.any(String));
   });
 
   it("writes nothing for an expired token, still responds 200", async () => {
@@ -121,6 +159,7 @@ describe("POST /api/telegram/webhook", () => {
           vendor_id: "vendor-1",
           notify_ref: "qkit:order-42",
           expires_at: new Date(Date.now() - 60_000).toISOString(),
+          kind: "customer",
         },
         error: null,
       },

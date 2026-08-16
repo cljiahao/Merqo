@@ -44,37 +44,57 @@ const updateSchema = z.object({
 /**
  * Resolves a `/start <token>` deep link: looks up the token (service-role —
  * merqo.telegram_link_tokens has no client-read policy at all), rejects
- * silently if missing/expired, otherwise links the chat via the
- * merqo.upsert_customer_telegram RPC and burns the token. This is a
- * distinct insert path from the existing phone-keyed merqo.upsert_customer
- * RPC — a customer connecting this way has no phone yet, so the row is
- * keyed purely on (vendor_id, telegram_chat_id). Any failure here is
- * caught by the caller and logged, never surfaced to Telegram as a
- * non-200.
+ * silently if missing/expired, otherwise links the chat and burns the
+ * token. Branches on the token's `kind` (0020): `'customer'` links via the
+ * merqo.upsert_customer_telegram RPC, a distinct insert path from the
+ * phone-keyed merqo.upsert_customer RPC — a customer connecting this way
+ * has no phone yet, so the row is keyed purely on (vendor_id,
+ * telegram_chat_id). `'vendor'` links via a plain upsert on
+ * merqo.vendor_telegram — that table grants service_role a direct table
+ * write (no RPC indirection needed, unlike customers which has zero
+ * grants to anyone) and is keyed on its own `vendor_id` primary key. Any
+ * failure here is caught by the caller and logged, never surfaced to
+ * Telegram as a non-200.
  */
 async function handleStart(token: string, chatId: number): Promise<void> {
   const supabase = await createServiceClient();
 
   const { data: linkToken } = await supabase
     .from("telegram_link_tokens")
-    .select("vendor_id, notify_ref, expires_at")
+    .select("vendor_id, notify_ref, expires_at, kind")
     .eq("token", token)
     .maybeSingle();
 
   if (!linkToken) return;
   if (new Date(linkToken.expires_at).getTime() < Date.now()) return;
 
-  const { error: rpcError } = await supabase.rpc("upsert_customer_telegram", {
-    p_vendor_id: linkToken.vendor_id,
-    p_telegram_chat_id: chatId,
-    p_notify_ref: linkToken.notify_ref,
-  });
-  if (rpcError) {
-    console.error(
-      "telegram webhook: upsert_customer_telegram failed",
-      rpcError.message,
-    );
-    return;
+  if (linkToken.kind === "vendor") {
+    const { error: upsertError } = await supabase
+      .from("vendor_telegram")
+      .upsert(
+        { vendor_id: linkToken.vendor_id, chat_id: chatId },
+        { onConflict: "vendor_id" },
+      );
+    if (upsertError) {
+      console.error(
+        "telegram webhook: vendor_telegram upsert failed",
+        upsertError.message,
+      );
+      return;
+    }
+  } else {
+    const { error: rpcError } = await supabase.rpc("upsert_customer_telegram", {
+      p_vendor_id: linkToken.vendor_id,
+      p_telegram_chat_id: chatId,
+      p_notify_ref: linkToken.notify_ref,
+    });
+    if (rpcError) {
+      console.error(
+        "telegram webhook: upsert_customer_telegram failed",
+        rpcError.message,
+      );
+      return;
+    }
   }
 
   // Single-use — burn the token whether or not the confirmation send below
@@ -82,7 +102,9 @@ async function handleStart(token: string, chatId: number): Promise<void> {
   await supabase.from("telegram_link_tokens").delete().eq("token", token);
   await sendTelegramMessage(
     chatId,
-    "You're connected! We'll notify you here about your order/reward activity.",
+    linkToken.kind === "vendor"
+      ? "Your Telegram is connected! We'll alert you here about new activity for your shop."
+      : "You're connected! We'll notify you here about your order/reward activity.",
   );
 }
 

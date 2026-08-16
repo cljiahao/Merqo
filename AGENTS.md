@@ -21,12 +21,17 @@ This app is the public brand landing + a role-gated operator console:
 It pulls each kit's metrics over an **HTTP API** (bearer secret) — never a direct
 cross-schema query. As of the customer Telegram-connect work (2026-08-16), merqo
 is also the **receiving** side of a kit → merqo HTTP call for the first time: it
-hosts its own third Telegram bot (`/api/telegram/webhook`, distinct from qkit's
-and loopkit's own vendor-alert bots) plus two bearer-secret endpoints
+hosts its own Telegram bot (`/api/telegram/webhook`) plus bearer-secret endpoints
 (`/api/merqo/customer-connect-token`, `/api/merqo/notify-customer`) that qkit and
 loopkit call so a customer can connect once and get transactional order/reward
-notifications across every kit they interact with. See "Data model" below and
-`docs/superpowers/specs/2026-08-16-customer-telegram-connect-design.md`.
+notifications across every kit they interact with. As of Phase A2 (also
+2026-08-16), that same bot ALSO serves each vendor's own activity alerts —
+`/api/merqo/vendor-connect-token`/`/api/merqo/notify-vendor` — superseding
+qkit's and loopkit's own separate per-kit vendor-alert bots (now retired on
+their side); a vendor connects once from merqo's own `/profile` page. See
+"Data model" below,
+`docs/superpowers/specs/2026-08-16-customer-telegram-connect-design.md`, and
+`docs/superpowers/specs/2026-08-16-vendor-telegram-connect-design.md`.
 
 ## Stack
 
@@ -57,9 +62,11 @@ src/app/admin/              — Merqo-team console: overview (page.tsx) + vendor
 src/app/profile/            — shared account page (signed-in gate only — reachable from
                                both the vendor dashboard and the admin console)
 src/app/login/              — email/password sign-in
-src/app/api/telegram/webhook/ — merqo's own Telegram bot's webhook (customer connect)
+src/app/api/telegram/webhook/ — merqo's own Telegram bot's webhook (customer + vendor connect,
+                               branches on telegram_link_tokens.kind)
 src/app/api/merqo/          — bearer-secret endpoints qkit/loopkit call INTO merqo
-                               (customer-connect-token, notify-customer)
+                               (customer-connect-token, notify-customer, vendor-connect-token,
+                               notify-vendor)
 src/proxy.ts                — Supabase session refresh + route guard (Next 16)
 src/components/landing/      — landing sections (nav, hero, kit-stacker, …)
 src/components/dashboard/    — dashboard widgets (stat cards, kit discovery/preview cards)
@@ -69,7 +76,9 @@ src/lib/supabase/           — browser / server (schema=merqo) / service client
 src/lib/kits.ts             — the kit family config (landing roadmap source of truth)
 src/lib/metrics-client.ts   — fetch of a kit's HTTP metrics endpoint
 src/lib/telegram.ts         — sendTelegramMessage + generateLinkToken (Bot API, no SDK)
-src/lib/customer-notify-auth.ts — customerNotifySecretOk bearer guard (kit → merqo calls)
+src/lib/qr.ts                — qrSvg: renders a Telegram deep link as inline QR SVG markup
+src/lib/customer-notify-auth.ts — customerNotifySecretOk bearer guard (kit → merqo calls,
+                               both customer- and vendor-facing routes)
 supabase/migrations/        — SQL schema (merqo.* tables) + RLS + grants
 ```
 
@@ -94,17 +103,38 @@ table-level grant to anyone: every access path is a SECURITY DEFINER RPC —
 `service_role`-only with `EXECUTE` explicitly revoked from `PUBLIC` (none of
 the three has an in-body caller check the way `upsert_vendor_profile` does —
 the HTTP-layer bearer check below is the only gate). `telegram_link_tokens`
-(0019) is RLS-enabled, zero client policies, `service_role`-only, same shape
-as every other `*_link_tokens` table in this ecosystem.
+(0019, widened by 0020's `kind` column) is RLS-enabled, zero client policies,
+`service_role`-only, same shape as every other `*_link_tokens` table in this
+ecosystem.
+
+**Vendor Telegram connect, Phase A2 (0020, 2026-08-16):** consolidates qkit's
+and loopkit's own separate per-kit vendor-alert bots onto this same shared
+bot — see the master doc's "Phase A2" section for why this supersedes Phase
+A. `telegram_link_tokens` gets a `kind` column (`'customer'` default-backfilled
+for every pre-0019 row, or `'vendor'`; `notify_ref`/`kit_slug` now nullable —
+a standing vendor link has no single order to scope to) so the webhook's
+`/start` handler can resolve either kind. New `vendor_telegram` table
+(`vendor_id` PK — the shared `auth.users.id` every kit already keys on, no
+widened-identity substrate needed here unlike `customers` above): RLS
+enabled, own-row `select` policy (`vendor_id = (select auth.uid())`) plus a
+table-level `select` grant to `authenticated`, no client write grant — every
+write goes through the service-role client (the webhook route on link, the
+profile page's `disconnectVendorTelegram` action). No migration path for an
+already-linked vendor — a Telegram `chat_id` is scoped to a (bot, user) pair,
+so a vendor's old `chat_id` under qkit's/loopkit's now-retired bots is
+meaningless under merqo's bot; they see the connect flow again next time
+they visit `/profile`, same as a vendor who never linked.
 
 **kit → merqo HTTP (new direction, 2026-08-16):** every other cross-kit call in
 this codebase flows merqo → kit (metrics pull, vendor-provision). The customer
-Telegram-connect flow is the first exception — qkit and loopkit call INTO merqo,
-gated by `customerNotifySecretOk` (`src/lib/customer-notify-auth.ts`), a
+Telegram-connect flow was the first exception, and Phase A2's vendor pair
+followed the same shape — qkit and loopkit call INTO merqo, gated by
+`customerNotifySecretOk` (`src/lib/customer-notify-auth.ts`), a
 constant-time check of `Authorization: Bearer <MERQO_CUSTOMER_SECRET>` — one
 shared-secret value known by merqo and every participating kit, same simple
 pattern `MERQO_METRICS_SECRET` already uses in the opposite direction. See
-`docs/superpowers/specs/2026-08-16-customer-telegram-connect-design.md`.
+`docs/superpowers/specs/2026-08-16-customer-telegram-connect-design.md` and
+`docs/superpowers/specs/2026-08-16-vendor-telegram-connect-design.md`.
 
 ## Rules (always)
 
@@ -260,5 +290,23 @@ the git blob at HEAD on every pre-push and in CI.
   must merge and deploy (env vars set, `setWebhook` called — see
   `docs/DEPLOY.md`) before qkit's and loopkit's own customer-telegram-connect
   plans can be implemented against real endpoints.
+- **Vendor Telegram connect, Phase A2 (2026-08-16):** consolidates Phase A's
+  vendor activity alerts (qkit's order alerts, loopkit's reward alerts) off
+  their own separate per-kit bots and onto this same shared bot. Two new
+  bearer-secret endpoints (`src/app/api/merqo/vendor-connect-token/`,
+  `src/app/api/merqo/notify-vendor/`), a `kind` column on
+  `telegram_link_tokens` the webhook route branches on, a new
+  `merqo.vendor_telegram` table, and a new `VendorTelegramSection` component
+  in `@merqo/ui` (bumped to v0.15.0) wired into `src/app/profile/`. No new
+  bot/env-var setup needed — reuses the already-live `TELEGRAM_BOT_TOKEN`/
+  `TELEGRAM_WEBHOOK_SECRET` from Phase B+D. **Every vendor who'd previously
+  linked qkit's or loopkit's own bot must reconnect once via merqo's profile
+  page** — an expected, already-approved consequence of retiring those bots
+  (Telegram's `chat_id` is scoped to a (bot, user) pair, so the old link is
+  meaningless under a different bot), not a migration bug. See the "Data
+  model" section above and
+  `docs/superpowers/specs/2026-08-16-vendor-telegram-connect-design.md`.
+  This must merge and deploy before qkit's and loopkit's own Phase A2 plans
+  can retire their local bots against a real endpoint.
 
 <!-- [[post-harness]] — reserved for trace capture and meta-harness integration -->

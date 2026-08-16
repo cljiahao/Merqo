@@ -4,6 +4,7 @@ import { createServerClient } from "@/lib/supabase/server";
 import { getAvatarUrl, getDisplayName } from "@/lib/account";
 import { getOrCreateVendorProfile } from "@/lib/merqo-vendor-profile";
 import { ProfileForm } from "./profile-form";
+import { VendorTelegramConnect } from "./vendor-telegram-connect";
 
 export const revalidate = 0;
 
@@ -20,6 +21,11 @@ export default async function ProfilePage() {
   if (!user) redirect("/login");
 
   const profile = await getOrCreateVendorProfile(supabase, user.id, null);
+  const { data: vendorTelegram } = await supabase
+    .from("vendor_telegram")
+    .select("vendor_id")
+    .eq("vendor_id", user.id)
+    .maybeSingle();
 
   return (
     <div className="mx-auto max-w-lg space-y-8 px-5 py-8 md:max-w-4xl">
@@ -50,6 +56,11 @@ export default async function ProfilePage() {
         avatarUrl={getAvatarUrl(user)}
         socialLinks={profile.social_links}
       />
+
+      {/* Single-column slot, deliberately outside ProfileForm's own
+          TwoColumnSections shape — a narrow settings block, not a paired
+          field group (see the vendor-connect design spec). */}
+      <VendorTelegramConnect connected={!!vendorTelegram} />
     </div>
   );
 }

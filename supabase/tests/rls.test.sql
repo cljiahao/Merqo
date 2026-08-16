@@ -1,6 +1,6 @@
 -- merqo/supabase/tests/rls.test.sql
 -- RLS isolation — pgTAP, run with `supabase test db`.
--- Covers merqo's nine RLS-bearing tables: merqo_team (team-membership gates
+-- Covers merqo's ten RLS-bearing tables: merqo_team (team-membership gates
 -- visibility of the WHOLE table, not just the caller's own row — see the
 -- comment below), products (RLS is a backstop only; `authenticated` has no
 -- table-level grant at all, so metrics_secret never reaches a browser-reachable
@@ -14,14 +14,18 @@
 -- table-level grant to anyone — reachable only through upsert_customer()
 -- and 0019's three Telegram-identity RPCs — see the "Telegram identity"
 -- block below for the PK/constraint-change verification 0019's own plan
--- called for), telegram_link_tokens (0019: RLS enabled, zero client
--- policies, service-role only — same shape as customers' own zero-grant
--- convention, restated via an explicit `grant ... to service_role` since
--- 0012's blanket grant predates this table).
+-- called for), telegram_link_tokens (0019, widened by 0020's `kind` column:
+-- RLS enabled, zero client policies, service-role only — same shape as
+-- customers' own zero-grant convention, restated via an explicit
+-- `grant ... to service_role` since 0012's blanket grant predates this
+-- table), and vendor_telegram (0020: RLS enabled, own-row select via
+-- `vendor_id = (select auth.uid())`, no client write grant — writes only via
+-- the service-role client, same shape as every kit's own now-retired copy of
+-- this exact table).
 -- Runs in ONE rolled-back transaction with inline fixed-UUID fixtures.
 
 begin;
-select plan(73);
+select plan(83);
 
 -- ── Fixtures (created under the default/superuser test role → RLS + grants
 -- are bypassed here) ─────────────────────────────────────────────────────────
@@ -65,6 +69,11 @@ values
 insert into merqo.dashboard_prefs (user_id, tour_seen_at)
 values ('00000000-0000-0000-0000-00000000000b', now());
 
+-- vendor_telegram (0020) — one standing link, vendor-b's own row, used by
+-- the own-row-select/no-team-override/no-client-write-grant tests below.
+insert into merqo.vendor_telegram (vendor_id, chat_id)
+values ('00000000-0000-0000-0000-00000000000b', 555111);
+
 -- ── RLS is actually enabled on every protected table ─────────────────────────
 select ok((select relrowsecurity from pg_class where oid = 'merqo.merqo_team'::regclass), 'RLS on merqo_team');
 select ok((select relrowsecurity from pg_class where oid = 'merqo.products'::regclass), 'RLS on products');
@@ -75,6 +84,7 @@ select ok((select relrowsecurity from pg_class where oid = 'merqo.vendor_feedbac
 select ok((select relrowsecurity from pg_class where oid = 'merqo.dashboard_prefs'::regclass), 'RLS on dashboard_prefs');
 select ok((select relrowsecurity from pg_class where oid = 'merqo.customers'::regclass), 'RLS on customers');
 select ok((select relrowsecurity from pg_class where oid = 'merqo.telegram_link_tokens'::regclass), 'RLS on telegram_link_tokens');
+select ok((select relrowsecurity from pg_class where oid = 'merqo.vendor_telegram'::regclass), 'RLS on vendor_telegram');
 
 -- merqo.upsert_customer (0018): first call inserts, a repeat call for the
 -- same (vendor_id, phone) updates name/last_seen_at but leaves
@@ -195,6 +205,37 @@ select throws_ok(
   '23505', null,
   'customers_vendor_telegram_idx rejects a duplicate (vendor_id, telegram_chat_id)');
 
+-- ── Vendor Telegram (0020) — telegram_link_tokens' new `kind` column ─────────
+-- Exercised under the default/superuser test role, same as the fixture
+-- inserts above (telegram_link_tokens grants no client role direct access).
+
+-- default 'customer' backfills a row inserted the pre-0020 way (notify_ref/
+-- kit_slug given, kind omitted) — 0020's own plan required verifying this
+-- against a real row, not just the migration's syntax.
+select lives_ok(
+  $$ insert into merqo.telegram_link_tokens (token, vendor_id, kit_slug, notify_ref, expires_at)
+     values ('rls-test-customer-token', '00000000-0000-0000-0000-00000000000a', 'qkit', 'qkit:order-rls', now() + interval '30 minutes') $$,
+  'inserting a telegram_link_tokens row without kind (the pre-0020 shape) succeeds');
+select results_eq(
+  $$ select kind from merqo.telegram_link_tokens where token = 'rls-test-customer-token' $$,
+  $$ values ('customer'::text) $$,
+  'the omitted-kind row backfills to kind=''customer''');
+
+-- kind='vendor' with both notify_ref and kit_slug null — 0020 widens both
+-- to nullable specifically so a standing vendor link isn't forced to
+-- fabricate an order-scoped notify_ref.
+select lives_ok(
+  $$ insert into merqo.telegram_link_tokens (token, vendor_id, kind, expires_at)
+     values ('rls-test-vendor-token', '00000000-0000-0000-0000-00000000000b', 'vendor', now() + interval '30 minutes') $$,
+  'inserting a kind=''vendor'' token with null notify_ref/kit_slug succeeds');
+
+-- the check constraint rejects anything outside ('customer', 'vendor').
+select throws_ok(
+  $$ insert into merqo.telegram_link_tokens (token, vendor_id, kind, expires_at)
+     values ('rls-test-bad-kind', '00000000-0000-0000-0000-00000000000b', 'bogus', now() + interval '30 minutes') $$,
+  '23514', null,
+  'the kind check constraint rejects a value outside (''customer'', ''vendor'')');
+
 -- ── Act as a team member ─────────────────────────────────────────────────────
 set local role authenticated;
 select set_config(
@@ -252,6 +293,22 @@ select throws_ok(
   $$ select 1 from merqo.telegram_link_tokens $$,
   '42501', null,
   'team member cannot SELECT telegram_link_tokens directly (service-role only)');
+
+-- vendor_telegram_own's USING clause is `vendor_id = (select auth.uid())` —
+-- an actual row-scoped predicate, unlike merqo_team/vendor_links/
+-- vendor_feedback's team-sees-all policies above. A team member (not
+-- vendor-b) sees nothing, even though `authenticated` has a table-level
+-- SELECT grant (0020) — this is a genuine RLS filter, not a privilege error.
+select is_empty(
+  $$ select 1 from merqo.vendor_telegram where vendor_id = '00000000-0000-0000-0000-00000000000b' $$,
+  'team member cannot read another vendor''s vendor_telegram row (own-row policy, no team override)');
+-- The grant is SELECT-only (0020) — insert/update/delete all fail at the
+-- privilege check regardless of which vendor_id is targeted, before RLS is
+-- ever evaluated.
+select throws_ok(
+  $$ insert into merqo.vendor_telegram (vendor_id, chat_id) values ('00000000-0000-0000-0000-00000000000a', 999) $$,
+  '42501', null,
+  'team member cannot INSERT into vendor_telegram directly (no client write grant)');
 
 -- vendor_feedback_team_select's USING clause is `is_merqo_team(auth.uid())`
 -- — same row-independent predicate as merqo_team — and `authenticated` DOES
@@ -329,6 +386,21 @@ select throws_ok(
   $$ select 1 from merqo.telegram_link_tokens $$,
   '42501', null,
   'vendor cannot SELECT telegram_link_tokens directly either (service-role only)');
+
+-- vendor_telegram_own: vendor-b's own row IS visible (unlike
+-- telegram_link_tokens above, which grants no client role anything at all).
+select isnt_empty(
+  $$ select 1 from merqo.vendor_telegram where vendor_id = '00000000-0000-0000-0000-00000000000b' $$,
+  'vendor reads its own vendor_telegram row');
+-- Same SELECT-only grant as the team-member case: an update on the
+-- caller's OWN row still fails at the privilege check, not a policy
+-- filter — disconnect is a service-role-only action (the profile page's
+-- disconnectVendorTelegram server action), never a direct client write.
+select throws_ok(
+  $$ update merqo.vendor_telegram set chat_id = 777 where vendor_id = '00000000-0000-0000-0000-00000000000b' $$,
+  '42501', null,
+  'vendor cannot UPDATE its own vendor_telegram row directly (no client write grant)');
+
 select lives_ok(
   $$ select merqo.upsert_customer('00000000-0000-0000-0000-00000000000b', '+6598765432', 'A Customer') $$,
   'vendor (authenticated, any vendor_id) can call upsert_customer - no ownership check, mirrors how a kit backend already resolves the real vendor_id server-side before calling this');
@@ -411,6 +483,10 @@ select throws_ok(
   $$ select 1 from merqo.telegram_link_tokens $$,
   '42501', null,
   'anon cannot read telegram_link_tokens (service-role only)');
+select throws_ok(
+  $$ select 1 from merqo.vendor_telegram $$,
+  '42501', null,
+  'anon cannot read vendor_telegram (no SELECT grant — that''s authenticated-only)');
 
 -- The three 0019 Telegram-identity RPCs have no in-body caller check at
 -- all (unlike upsert_vendor_profile/submit_vendor_feedback) —
