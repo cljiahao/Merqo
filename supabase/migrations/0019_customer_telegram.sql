@@ -9,12 +9,21 @@
 alter table merqo.customers
   add column telegram_chat_id  bigint,
   add column consent_given_at  timestamptz,
-  add column pending_notify_ref text,
-  alter column phone drop not null;
+  add column pending_notify_ref text;
+
+-- Drop the old (vendor_id, phone) PK BEFORE touching phone's NOT NULL —
+-- a primary-key column is implicitly NOT NULL via the PK constraint
+-- itself, so "alter column phone drop not null" fails with "column phone
+-- is in a primary key" if run first. Verified against a real Postgres 17
+-- instance; the master design doc's own snippet had this ordering wrong.
+-- The constraint name is customers_pkey, NOT merqo_customers_pkey — also
+-- verified against real Postgres (it auto-names a table's PK constraint
+-- from the table name alone, unqualified by schema).
+alter table merqo.customers drop constraint customers_pkey;
+alter table merqo.customers alter column phone drop not null;
 
 -- Surrogate PK replaces the old (vendor_id, phone) composite — phone alone
 -- can no longer identify a row now that a Telegram-only customer has none.
-alter table merqo.customers drop constraint merqo_customers_pkey;
 alter table merqo.customers add column id uuid primary key default gen_random_uuid();
 
 alter table merqo.customers add constraint customers_identity_check

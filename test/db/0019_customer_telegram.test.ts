@@ -20,8 +20,13 @@ describe("0019_customer_telegram migration", () => {
     expect(sql).toContain("alter column phone drop not null");
   });
 
-  it("replaces the (vendor_id, phone) PK with a surrogate id PK", () => {
-    expect(sql).toContain("drop constraint merqo_customers_pkey");
+  it("replaces the (vendor_id, phone) PK with a surrogate id PK, using the REAL auto-generated constraint name", () => {
+    // Postgres auto-names a table's PK constraint from the table name
+    // alone (unqualified by schema) — customers_pkey, not
+    // merqo_customers_pkey. Verified against a real Postgres 17 instance;
+    // the master design doc's own snippet had this wrong.
+    expect(sql).toContain("drop constraint customers_pkey");
+    expect(sql).not.toContain("drop constraint merqo_customers_pkey");
     expect(sql).toContain(
       "add column id uuid primary key default gen_random_uuid()",
     );
