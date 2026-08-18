@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Brand theme: `globals.css`'s color tokens replaced with "Harbour
+  Control" (harbour-navy primary, buoy-amber accent), light and dark,
+  replacing "Control Room" (pine-green + marigold-gold). Purely
+  cosmetic — no component/behavior change.
+
 ### Added
 
 - Vendor Telegram connect (Phase A2): consolidates qkit's and loopkit's own
