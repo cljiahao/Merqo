@@ -1,9 +1,10 @@
 import type { ReactElement } from "react";
 
 // Merqo's own mark, approximated from the OKLCH theme tokens as
-// concrete hex — ImageResponse needs literal CSS colors.
-export const BRAND_PINE = "#2f6b57";
-export const BRAND_GOLD = "#d9a94a";
+// concrete hex — ImageResponse needs literal CSS colors. "Harbour
+// Control" (as of 2026-08-19): harbour-navy primary, buoy-amber accent.
+export const BRAND_PINE = "#20416f";
+export const BRAND_GOLD = "#e6a13c";
 
 /**
  * Merqo's "q" app mark for ImageResponse-generated icons. Merqo's display

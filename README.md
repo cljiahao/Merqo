@@ -18,7 +18,8 @@ Merqo pulls per-kit metrics over an HTTP API (bearer secret) — it never
 queries another kit's schema directly. Brand theme is "Harbour Control"
 (harbour-navy primary, buoy-amber accent) as of 2026-08-19, replacing
 "Control Room" (pine-green + marigold-gold) — see `globals.css`'s own
-header comment. In production, every kit's auth
+header comment. `src/lib/brand-icon.tsx`'s ImageResponse-generated
+favicon/apple-touch-icon carries the same rebrand. In production, every kit's auth
 cookie is scoped to `.merqo.io` (`NEXT_PUBLIC_AUTH_COOKIE_DOMAIN`,
 `src/lib/supabase/`), so signing in on one kit signs you in on the rest —
 unset in dev/preview, where each kit still runs on its own `*.vercel.app`

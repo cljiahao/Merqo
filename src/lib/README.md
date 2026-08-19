@@ -13,7 +13,7 @@ that isn't a route or a component.
 - `billing-settings.ts` — `getBillingSettings()`: reads the singleton `merqo.billing_settings` row (currently just `bundle_discount_enabled`), falling back to `DEFAULT_BILLING_SETTINGS` (`false`) if the row can't be read. Backs the admin overview page's bundle-discount toggle; no kit consumes this flag yet.
 - `billing-settings.test.ts` — mocked `createServiceClient` coverage: returns the live row's value, falls back to the default on a read error, and falls back when no row exists.
 - `admin.ts` — Merqo-team admin gate (`requireTeamMember`-style helpers) and vendor-grant status queries used by `/admin`.
-- `brand-icon.tsx` — Merqo's mark as concrete hex constants, for `ImageResponse`-based icon routes (`icon.tsx`/`apple-icon.tsx`).
+- `brand-icon.tsx` — Merqo's mark as concrete hex constants, for `ImageResponse`-based icon routes (`icon.tsx`/`apple-icon.tsx`); tracks the "Harbour Control" theme (as of 2026-08-19).
 - `customer-notify-auth.ts` — `customerNotifySecretOk(request)`: constant-time check of `Authorization: Bearer <MERQO_CUSTOMER_SECRET>`, mirroring qkit's own `provisionBearerOk` shape — the first time merqo is the RECEIVING side of a bearer-authenticated call. Gates the two `/api/merqo/*` customer-notify routes.
 - `customer-notify-auth.test.ts` — valid/missing/wrong-prefix/wrong-secret/wrong-length bearer cases, plus fails-closed when `MERQO_CUSTOMER_SECRET` is unset.
 - `downgrade-request.ts` — posts a vendor's Pro→Free downgrade request to a kit's metrics API.

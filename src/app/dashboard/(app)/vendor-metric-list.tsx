@@ -2,8 +2,8 @@ import type { VendorMetricsResult } from "@/lib/vendor-metrics-client";
 import { timeAgo } from "@/lib/format";
 
 /** The kit tile's stats block — a headline number (the kit's first metric,
- *  in the gold "value moment" accent per the Control Room system) plus up
- *  to three supporting figures. A kit that hasn't implemented the
+ *  in the amber "value moment" accent per the Harbour Control system) plus
+ *  up to three supporting figures. A kit that hasn't implemented the
  *  vendor-metrics endpoint yet (or is briefly unreachable) reads as a
  *  pending feature, not a broken one — see
  *  docs/superpowers/specs/2026-07-26-vendor-stats-overview-design.md. */
