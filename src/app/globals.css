@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @source "../../node_modules/@merqo/ui/dist";
 
+@custom-variant dark (&:is(.dark *));
+
 /* ── Merqo — "Harbour Control" ─────────────────────────────────────────────
    Port-control-tower identity: harbour-navy authority + buoy-amber accents,
    replacing the prior neutral "Control Room" pine-green + marigold-gold system. */
@@ -31,30 +33,28 @@
   --gold-foreground: oklch(0.247 0.028 249.3);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* harbour dusk — near-black navy canvas, lifted-lightness same-hue primary */
-    --background: oklch(0.176 0.012 254.5);
-    --foreground: oklch(0.925 0.009 93.3);
-    --card: oklch(0.176 0.012 254.5);
-    --card-foreground: oklch(0.925 0.009 93.3);
-    --popover: oklch(0.176 0.012 254.5);
-    --popover-foreground: oklch(0.925 0.009 93.3);
-    --primary: oklch(0.67 0.081 256.9);
-    --primary-foreground: oklch(0.176 0.012 254.5);
-    --secondary: oklch(0.255 0.003 100);
-    --secondary-foreground: oklch(0.94 0.002 100);
-    --muted: oklch(0.245 0.003 100);
-    --muted-foreground: oklch(0.7 0.004 100);
-    --accent: oklch(0.27 0.003 100);
-    --accent-foreground: oklch(0.965 0.002 100);
-    --destructive: oklch(0.63 0.2 27);
-    --border: oklch(0.285 0.003 100);
-    --input: oklch(0.3 0.003 100);
-    --ring: oklch(0.67 0.081 256.9);
-    --gold: oklch(0.751 0.13 79.7);
-    --gold-foreground: oklch(0.247 0.028 249.3);
-  }
+.dark {
+  /* harbour dusk — near-black navy canvas, lifted-lightness same-hue primary */
+  --background: oklch(0.176 0.012 254.5);
+  --foreground: oklch(0.925 0.009 93.3);
+  --card: oklch(0.176 0.012 254.5);
+  --card-foreground: oklch(0.925 0.009 93.3);
+  --popover: oklch(0.176 0.012 254.5);
+  --popover-foreground: oklch(0.925 0.009 93.3);
+  --primary: oklch(0.67 0.081 256.9);
+  --primary-foreground: oklch(0.176 0.012 254.5);
+  --secondary: oklch(0.255 0.003 100);
+  --secondary-foreground: oklch(0.94 0.002 100);
+  --muted: oklch(0.245 0.003 100);
+  --muted-foreground: oklch(0.7 0.004 100);
+  --accent: oklch(0.27 0.003 100);
+  --accent-foreground: oklch(0.965 0.002 100);
+  --destructive: oklch(0.63 0.2 27);
+  --border: oklch(0.285 0.003 100);
+  --input: oklch(0.3 0.003 100);
+  --ring: oklch(0.67 0.081 256.9);
+  --gold: oklch(0.751 0.13 79.7);
+  --gold-foreground: oklch(0.247 0.028 249.3);
 }
 
 @theme inline {

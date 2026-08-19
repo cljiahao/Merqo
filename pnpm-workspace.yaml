@@ -5,6 +5,7 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
+  "@merqo/ui@https://codeload.github.com/cljiahao/merqo-ui/tar.gz/982ab522ae058d9a65a219ced82d25b115b820a8": true
 onlyBuiltDependencies:
   - esbuild
   - unrs-resolver

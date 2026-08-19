@@ -28,6 +28,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Manual Light/Dark/System theme control, via `@merqo/ui`'s `AccountMenu`
+  (bumped to v0.18.0), now wired up by wrapping the root layout in
+  `next-themes`' `ThemeProvider` (`attribute="class"`). `globals.css`'s dark
+  token block moved from a pure `@media (prefers-color-scheme: dark)` query
+  to a `.dark` class selector (`@custom-variant dark (&:is(.dark *));`), so
+  the account menu's toggle can now override the OS preference instead of
+  only following it.
+
 - Vendor Telegram connect (Phase A2): consolidates qkit's and loopkit's own
   separate per-kit vendor-alert bots onto merqo's shared bot (the same one
   Phase B+D built for customers). New `merqo.vendor_telegram` table
