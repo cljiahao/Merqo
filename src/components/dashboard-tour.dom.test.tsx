@@ -51,7 +51,7 @@ describe("DashboardTour", () => {
     expect(typeof props().steps).toBe("function");
 
     const resolver = props().steps as () => { element: string }[];
-    expect(resolver()).toHaveLength(3);
+    expect(resolver()).toHaveLength(4);
   });
 
   it("passes seen through unchanged", () => {

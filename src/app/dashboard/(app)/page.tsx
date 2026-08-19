@@ -142,7 +142,10 @@ export default async function DashboardPage() {
 
       <SavingsSummary totals={savings} />
 
-      <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <section
+        data-tour="kit-cards"
+        className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2"
+      >
         {active.map((t) => (
           <VendorKitCard
             key={t.slug}
