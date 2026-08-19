@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- The favicon/apple-touch-icon (`src/lib/brand-icon.tsx`) still rendered
+  the old "Control Room" pine-green/marigold hex after the Harbour
+  Control rebrand — a real visible bug, not just stale docs. Also fixed
+  a stale code comment in `vendor-metric-list.tsx`.
+
 ### Changed
 
 - Brand theme: `globals.css`'s color tokens replaced with "Harbour
