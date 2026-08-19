@@ -40,7 +40,11 @@ or scoped to `dashboard/`/`landing/`.
   title + description) for the dashboard tour, kept free of any DOM/React
   dependency so it's trivially unit-testable. The account-menu step targets
   `[data-tour="nav-account"]` — `@merqo/ui`'s `AccountMenu` trigger's own
-  hardcoded anchor, not a Merqo-chosen name.
+  hardcoded anchor, not a Merqo-chosen name. The "your kits" step's
+  description embeds a `.tour-example` HTML snippet (styled in
+  `src/app/globals.css`, rendered via driver.js's own `innerHTML` popover)
+  showing a realistic kit-card preview, same pattern as every other kit's
+  first tour step.
 - `tour-steps.test.ts` — unit tests asserting the step list.
 - `elevated-card.tsx` — `ElevatedCard({ as, className, children })`: the
   shared raised-card container (rounded, bordered, soft shadow) used by the

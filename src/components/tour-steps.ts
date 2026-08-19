@@ -20,7 +20,13 @@ const STEPS: TourStep[] = [
     element: sel("dashboard-welcome"),
     title: "Welcome to Merqo",
     description:
-      "This is your home base — every kit you run shows up here as a card, with live metrics pulled straight from each one.",
+      "This is your home base. Every kit you run shows up here as a card, with live metrics pulled straight from each one.",
+  },
+  {
+    element: sel("kit-cards"),
+    title: "Your kits",
+    description:
+      'Tap a card to open that kit\'s own dashboard. A kit you have not activated yet shows up here too, so you can turn it on whenever you are ready.<div class="tour-example"><div class="tour-example-label">Example kit card</div><div class="tour-example-row" style="margin-top:0.35rem"><strong>qkit &middot; 128 orders this month</strong><span class="tour-example-pill">Free</span></div></div>',
   },
   {
     // "nav-account", not "account-menu": @merqo/ui's AccountMenu hardcodes
@@ -30,13 +36,13 @@ const STEPS: TourStep[] = [
     element: sel("nav-account"),
     title: "Your account",
     description:
-      "Update your profile, get help, or send feedback from here — shared across every Merqo kit you use.",
+      "Update your profile, get help, or send feedback from here. Shared across every Merqo kit you use.",
   },
   {
     element: sel("tour-replay"),
     title: "Replay anytime",
     description:
-      "Tap here to run this tour again whenever you like. Now — take a look at your kits below →",
+      "Tap here to run this tour again whenever you like. Take a look at your kits below.",
   },
 ];
 

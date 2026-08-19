@@ -15,6 +15,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Dashboard onboarding tour: added a fourth step spotlighting the active-kit
+  grid (`data-tour="kit-cards"`, new tour-only anchor on
+  `dashboard/(app)/page.tsx`), dropped a trailing arrow from the copy, and
+  added an example kit-card preview to that step's description, matching
+  the example-card treatment every other kit's own tour now has on its
+  first step.
 - Brand theme: `globals.css`'s color tokens replaced with "Harbour
   Control" (harbour-navy primary, buoy-amber accent), light and dark,
   replacing "Control Room" (pine-green + marigold-gold). Purely

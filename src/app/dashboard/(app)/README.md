@@ -31,8 +31,11 @@ without this group's own segment showing in the path). Gated one level up by
   metrics (`fetchVendorMetrics`), and renders — urgency-first, directly under
   the `h1` — a merged "Needs your attention" band (requested + needs-setup
   kits, admin overview's colored-row treatment), then the active-kit grid
-  (`VendorKitCard`), then a `border-t`-divided "Explore more kits" /
-  "Complete your toolkit" discovery section (`KitDiscoveryCard` +
+  (`VendorKitCard`, wrapped in a `data-tour="kit-cards"` section — the
+  dashboard tour's "your kits" spotlight target, see
+  `src/components/README.md`'s `tour-steps.ts` entry), then a
+  `border-t`-divided "Explore more kits" / "Complete your toolkit"
+  discovery section (`KitDiscoveryCard` +
   `ActivateKitsButton`/`JoinWaitlistButton`).
 - `page.test.tsx` — RTL coverage of the page's kit-grouping and re-sync
   behavior.

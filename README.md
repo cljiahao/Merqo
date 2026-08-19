@@ -30,9 +30,12 @@ and since that client-fired stamp is fire-and-forget and can be aborted by
 a hard navigation (the tour's own steps spotlight `@merqo/ui`'s
 `AccountMenu` trigger, whose dropdown renders links as plain `<a>` tags),
 `/dashboard`'s own server render (`src/app/dashboard/(app)/layout.tsx`)
-also stamps it synchronously, durably, as part of the request. The landing
-footer matches qkit's exactly (single-row wordmark/tagline/credit-line/
-sign-in link, no CTA band above it).
+also stamps it synchronously, durably, as part of the request. The tour's
+"your kits" step now spotlights the active-kit grid (`data-tour="kit-cards"`)
+with an inline example kit-card preview in its description, the same
+example-card treatment every other Merqo kit's own onboarding tour carries
+on its first step. The landing footer matches qkit's exactly (single-row
+wordmark/tagline/credit-line/sign-in link, no CTA band above it).
 
 Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.11.1`), the shared
 component package for the kit family (see qkit/loopkit/paykit/stockkit for

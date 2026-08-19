@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import { tourSteps } from "./tour-steps";
 
 describe("tourSteps", () => {
-  it("returns 3 steps — Merqo's nav has no burger/collapse to split a desktop/mobile list on", () => {
-    expect(tourSteps()).toHaveLength(3);
+  it("returns 4 steps — Merqo's nav has no burger/collapse to split a desktop/mobile list on", () => {
+    expect(tourSteps()).toHaveLength(4);
   });
 
   it("anchors every step to a data-tour selector with non-empty copy", () => {
@@ -21,10 +21,11 @@ describe("tourSteps", () => {
     expect(steps[steps.length - 1].element).toBe('[data-tour="tour-replay"]');
   });
 
-  it("spotlights the account menu in between, anchored to @merqo/ui's AccountMenu trigger", () => {
+  it("spotlights the kit cards and account menu in between, anchored to @merqo/ui's AccountMenu trigger", () => {
     const elements = tourSteps().map((s) => s.element);
     expect(elements).toEqual([
       '[data-tour="dashboard-welcome"]',
+      '[data-tour="kit-cards"]',
       '[data-tour="nav-account"]',
       '[data-tour="tour-replay"]',
     ]);
