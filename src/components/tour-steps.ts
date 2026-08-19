@@ -26,7 +26,7 @@ const STEPS: TourStep[] = [
     element: sel("kit-cards"),
     title: "Your kits",
     description:
-      "Tap a card to open that kit's own dashboard. A kit you have not activated yet shows up here too, so you can turn it on whenever you are ready.",
+      'Tap a card to open that kit\'s own dashboard. A kit you have not activated yet shows up here too, so you can turn it on whenever you are ready.<div class="tour-example"><div class="tour-example-label">Example kit card</div><div class="tour-example-row" style="margin-top:0.35rem"><strong>qkit &middot; 128 orders this month</strong><span class="tour-example-pill">Free</span></div></div>',
   },
   {
     // "nav-account", not "account-menu": @merqo/ui's AccountMenu hardcodes
