@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 const { requireMerqoTeamMock, hasActiveVendorAccessMock, getAvatarUrlMock } =
@@ -37,12 +37,14 @@ describe("AdminLayout", () => {
     getAvatarUrlMock.mockReturnValue("https://x.supabase.co/avatar.png");
 
     const { default: AdminLayout } = await import("./layout");
-    render(await AdminLayout({ children: <div>page content</div> }));
+    const { getByText, container } = render(
+      await AdminLayout({ children: <div>page content</div> }),
+    );
 
     expect(hasActiveVendorAccessMock).toHaveBeenCalledWith("team@merqo.io");
-    expect(screen.getByText("page content")).toBeInTheDocument();
-    expect(screen.getByText("team@merqo.io")).toBeInTheDocument();
-    expect(document.querySelector("img")).toHaveAttribute(
+    expect(getByText("page content")).toBeInTheDocument();
+    expect(getByText("team@merqo.io")).toBeInTheDocument();
+    expect(container.querySelector("img")).toHaveAttribute(
       "src",
       "https://x.supabase.co/avatar.png",
     );
@@ -54,12 +56,14 @@ describe("AdminLayout", () => {
     });
 
     const { default: AdminLayout } = await import("./layout");
-    render(await AdminLayout({ children: <div>page content</div> }));
+    const { getByText } = render(
+      await AdminLayout({ children: <div>page content</div> }),
+    );
 
     expect(hasActiveVendorAccessMock).not.toHaveBeenCalled();
-    expect(screen.getByText("page content")).toBeInTheDocument();
+    expect(getByText("page content")).toBeInTheDocument();
     // No email means AccountMenu's trigger falls back to the "•" initials
     // placeholder instead of rendering an email span.
-    expect(screen.getByText("•")).toBeInTheDocument();
+    expect(getByText("•")).toBeInTheDocument();
   });
 });
