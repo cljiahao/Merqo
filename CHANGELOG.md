@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Landing hero no longer claims Merqo is "starting with queues" — the real
+  first customer segment is event carts/pop-ups (weddings, private
+  events), not queue-clearing hawkers, and the live kit family already
+  covers loyalty/payments/stock beyond queues alone.
 - `src/app/admin/layout.test.tsx` used the global `screen` object, which
   queries all of `document.body` instead of just its own render output —
   an intermittent "multiple elements found" failure under vitest's worker

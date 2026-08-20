@@ -54,12 +54,12 @@ export function Hero({ authed = false }: { authed?: boolean }) {
           Merqo · small-business toolkit
         </p>
         <h1 className="mt-4 max-w-xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-balance sm:text-5xl">
-          Simple tools to run your small business. Starting with queues.
+          Simple tools to run your small business.
         </h1>
         <p className="mt-5 max-w-md text-lg text-muted-foreground">
           Merqo builds a family of no-fuss tools for Singapore&rsquo;s small
-          sellers. Take orders, clear your queue, and keep customers coming back
-          &mdash; from a phone, not a POS.
+          sellers &mdash; hawkers, home businesses, and event-day pop-ups. Take
+          orders, earn loyalty, and get paid &mdash; from a phone, not a POS.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button asChild size="lg">
