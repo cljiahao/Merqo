@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- `src/app/admin/layout.test.tsx` used the global `screen` object, which
+  queries all of `document.body` instead of just its own render output —
+  an intermittent "multiple elements found" failure under vitest's worker
+  parallelism. Switched both assertions to `render()`'s own bound queries,
+  scoped to that render's container.
 - The favicon/apple-touch-icon (`src/lib/brand-icon.tsx`) still rendered
   the old "Control Room" pine-green/marigold hex after the Harbour
   Control rebrand — a real visible bug, not just stale docs. Also fixed
