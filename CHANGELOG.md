@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Cards were visually indistinguishable from the page background in both
+  light and dark mode — the Harbour Control rebrand set `--card`/
+  `--popover` to the exact same OKLCH value as `--background`. Restored a
+  distinct card treatment in both modes (`src/app/globals.css`).
 - Landing hero no longer claims Merqo is "starting with queues" — the real
   first customer segment is event carts/pop-ups (weddings, private
   events), not queue-clearing hawkers, and the live kit family already
