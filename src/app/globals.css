@@ -10,9 +10,9 @@
 :root {
   --background: oklch(0.956 0.009 97.6);
   --foreground: oklch(0.247 0.028 249.3);
-  --card: oklch(0.956 0.009 97.6);
+  --card: oklch(0.992 0 97.6);
   --card-foreground: oklch(0.247 0.028 249.3);
-  --popover: oklch(0.956 0.009 97.6);
+  --popover: oklch(0.992 0 97.6);
   --popover-foreground: oklch(0.247 0.028 249.3);
   --primary: oklch(0.375 0.088 257.1);
   --primary-foreground: oklch(0.956 0.009 97.6);
@@ -37,9 +37,9 @@
   /* harbour dusk — near-black navy canvas, lifted-lightness same-hue primary */
   --background: oklch(0.176 0.012 254.5);
   --foreground: oklch(0.925 0.009 93.3);
-  --card: oklch(0.176 0.012 254.5);
+  --card: oklch(0.246 0.024 254.5);
   --card-foreground: oklch(0.925 0.009 93.3);
-  --popover: oklch(0.176 0.012 254.5);
+  --popover: oklch(0.246 0.024 254.5);
   --popover-foreground: oklch(0.925 0.009 93.3);
   --primary: oklch(0.67 0.081 256.9);
   --primary-foreground: oklch(0.176 0.012 254.5);
