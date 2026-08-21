@@ -145,7 +145,8 @@ service-role client only, so `metrics_secret` never reaches a browser.
 
 - Changelog: `CHANGELOG.md` (includes a fix restoring card/background
   contrast in both modes after the Harbour Control rebrand had
-  accidentally collapsed them to the same color)
+  accidentally collapsed them to the same color, plus a follow-up
+  dark-mode brightness bump)
 - Deploy runbook: `docs/DEPLOY.md`
 - Plans/specs: `docs/superpowers/`
 - AI harness/hooks/skills map: `.claude/README.md`
