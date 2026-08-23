@@ -22,7 +22,8 @@ header comment. `src/lib/brand-icon.tsx`'s ImageResponse-generated
 favicon/apple-touch-icon carries the same rebrand. Dark mode moved from a
 pure OS-media-query to a `.dark`-class-based approach (`@custom-variant
 dark`), driven by `next-themes`' `ThemeProvider` wrapping the root layout,
-so `@merqo/ui`'s `AccountMenu` (v0.18.0) now exposes a manual Light/Dark/
+so `@merqo/ui`'s `AccountMenu` (v0.18.0, collapsed into a "Theme · {current}"
+submenu as of v0.19.0) now exposes a manual Light/Dark/
 System control on top of the existing OS-auto behavior. In production, every kit's auth
 cookie is scoped to `.merqo.io` (`NEXT_PUBLIC_AUTH_COOKIE_DOMAIN`,
 `src/lib/supabase/`), so signing in on one kit signs you in on the rest —
@@ -41,7 +42,7 @@ example-card treatment every other Merqo kit's own onboarding tour carries
 on its first step. The landing footer matches qkit's exactly (single-row
 wordmark/tagline/credit-line/sign-in link, no CTA band above it).
 
-Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.11.1`), the shared
+Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.19.0`), the shared
 component package for the kit family (see qkit/loopkit/paykit/stockkit for
 the same dependency). `useAsyncAction`, `InfoTooltip`, `Section`,
 `TwoColumnSections`, `ImageUploader`, and `DashboardTour` are used directly
