@@ -1,5 +1,8 @@
 // Pure step config for the dashboard onboarding tour. No driver.js import here
 // so it stays node-unit-testable; the controller maps these to driver's Config.
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { Badge } from "@/components/ui/badge";
 
 export type TourStep = {
   /** CSS selector for the element to spotlight. */
@@ -9,6 +12,11 @@ export type TourStep = {
 };
 
 const sel = (tour: string) => `[data-tour="${tour}"]`;
+
+// Renders the real badge, not a hand-copied color, so the example can't drift.
+const exampleFreeBadge = renderToStaticMarkup(
+  createElement(Badge, { variant: "muted" }, "Free"),
+);
 
 // Merqo's dashboard nav is just a brand wordmark + an account-menu trigger —
 // no burger, no nav links, nothing that collapses on a narrow viewport (see
@@ -26,7 +34,8 @@ const STEPS: TourStep[] = [
     element: sel("kit-cards"),
     title: "Your kits",
     description:
-      'Tap a card to open that kit\'s own dashboard. A kit you have not activated yet shows up here too, so you can turn it on whenever you are ready.<div class="tour-example"><div class="tour-example-label">Example kit card</div><div class="tour-example-row" style="margin-top:0.35rem"><strong>qkit &middot; 128 orders this month</strong><span class="tour-example-pill">Free</span></div></div>',
+      "Tap a card to open that kit's own dashboard. A kit you have not activated yet shows up here too, so you can turn it on whenever you are ready." +
+      `<div class="tour-example"><div class="tour-example-label">Example kit card</div><div class="tour-example-row" style="margin-top:0.35rem"><strong>qkit &middot; 128 orders this month</strong>${exampleFreeBadge}</div></div>`,
   },
   {
     // "nav-account", not "account-menu": @merqo/ui's AccountMenu hardcodes

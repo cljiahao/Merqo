@@ -37,14 +37,18 @@ or scoped to `dashboard/`/`landing/`.
   `scopeClassName`) — the tour mechanism itself is `@merqo/ui`'s own tests'
   job.
 - `tour-steps.ts` — `tourSteps()`: pure step config (element selector +
-  title + description) for the dashboard tour, kept free of any DOM/React
-  dependency so it's trivially unit-testable. The account-menu step targets
+  title + description) for the dashboard tour, kept free of any `driver.js`
+  import so it's still node-unit-testable. The account-menu step targets
   `[data-tour="nav-account"]` — `@merqo/ui`'s `AccountMenu` trigger's own
   hardcoded anchor, not a Merqo-chosen name. The "your kits" step's
   description embeds a `.tour-example` HTML snippet (styled in
   `src/app/globals.css`, rendered via driver.js's own `innerHTML` popover)
   showing a realistic kit-card preview, same pattern as every other kit's
-  first tour step.
+  first tour step — its plan-tier pill renders the real `Badge` component
+  (`renderToStaticMarkup`) instead of a hand-copied color, so it can't
+  drift from what the badge actually looks like; see
+  `../docs/superpowers/specs/2026-08-25-tour-example-badge-drift-fix-design.md`
+  (workspace root, cross-kit).
 - `tour-steps.test.ts` — unit tests asserting the step list.
 - `elevated-card.tsx` — `ElevatedCard({ as, className, children })`: the
   shared raised-card container (rounded, bordered, soft shadow) used by the

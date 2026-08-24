@@ -36,6 +36,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   added an example kit-card preview to that step's description, matching
   the example-card treatment every other kit's own tour now has on its
   first step.
+- That preview's plan-tier pill now renders the real `Badge` component
+  instead of a hand-copied color, so it can't drift from what the badge
+  actually looks like.
 - Brand theme: `globals.css`'s color tokens replaced with "Harbour
   Control" (harbour-navy primary, buoy-amber accent), light and dark,
   replacing "Control Room" (pine-green + marigold-gold). Purely

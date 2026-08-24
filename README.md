@@ -39,8 +39,10 @@ also stamps it synchronously, durably, as part of the request. The tour's
 "your kits" step now spotlights the active-kit grid (`data-tour="kit-cards"`)
 with an inline example kit-card preview in its description, the same
 example-card treatment every other Merqo kit's own onboarding tour carries
-on its first step. The landing footer matches qkit's exactly (single-row
-wordmark/tagline/credit-line/sign-in link, no CTA band above it).
+on its first step — that preview's plan-tier pill renders the real `Badge`
+component instead of a hand-copied color, so it can't drift from what the
+badge actually looks like. The landing footer matches qkit's exactly
+(single-row wordmark/tagline/credit-line/sign-in link, no CTA band above it).
 
 Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.19.0`), the shared
 component package for the kit family (see qkit/loopkit/paykit/stockkit for
