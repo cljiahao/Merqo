@@ -30,4 +30,10 @@ describe("tourSteps", () => {
       '[data-tour="tour-replay"]',
     ]);
   });
+
+  it("renders the real Badge markup for the example kit card, not a hand-copied color", () => {
+    const description = tourSteps()[1].description;
+    expect(description).toContain("bg-muted");
+    expect(description).not.toContain('class="tour-example-pill"');
+  });
 });
