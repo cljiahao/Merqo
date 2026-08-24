@@ -39,6 +39,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - That preview's plan-tier pill now renders the real `Badge` component
   instead of a hand-copied color, so it can't drift from what the badge
   actually looks like.
+- Fixed the spec-doc link this added to `src/components/README.md` — was
+  two directory levels short of the workspace root.
 - Brand theme: `globals.css`'s color tokens replaced with "Harbour
   Control" (harbour-navy primary, buoy-amber accent), light and dark,
   replacing "Control Room" (pine-green + marigold-gold). Purely

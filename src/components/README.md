@@ -47,7 +47,7 @@ or scoped to `dashboard/`/`landing/`.
   first tour step — its plan-tier pill renders the real `Badge` component
   (`renderToStaticMarkup`) instead of a hand-copied color, so it can't
   drift from what the badge actually looks like; see
-  `../docs/superpowers/specs/2026-08-25-tour-example-badge-drift-fix-design.md`
+  `../../../docs/superpowers/specs/2026-08-25-tour-example-badge-drift-fix-design.md`
   (workspace root, cross-kit).
 - `tour-steps.test.ts` — unit tests asserting the step list.
 - `elevated-card.tsx` — `ElevatedCard({ as, className, children })`: the

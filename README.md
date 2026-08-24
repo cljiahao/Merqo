@@ -41,7 +41,9 @@ with an inline example kit-card preview in its description, the same
 example-card treatment every other Merqo kit's own onboarding tour carries
 on its first step — that preview's plan-tier pill renders the real `Badge`
 component instead of a hand-copied color, so it can't drift from what the
-badge actually looks like. The landing footer matches qkit's exactly
+badge actually looks like — see
+`../docs/superpowers/specs/2026-08-25-tour-example-badge-drift-fix-design.md`
+(workspace root, cross-kit spec). The landing footer matches qkit's exactly
 (single-row wordmark/tagline/credit-line/sign-in link, no CTA band above it).
 
 Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.19.0`), the shared
