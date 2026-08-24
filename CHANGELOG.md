@@ -40,6 +40,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Control" (harbour-navy primary, buoy-amber accent), light and dark,
   replacing "Control Room" (pine-green + marigold-gold). Purely
   cosmetic — no component/behavior change.
+- Bumped `@merqo/ui` to v0.19.0: the account menu's theme control now sits
+  behind a collapsed "Theme · {current}" submenu instead of three
+  always-expanded radio options.
 
 ### Added
 

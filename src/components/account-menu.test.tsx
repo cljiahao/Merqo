@@ -75,7 +75,7 @@ describe("AccountMenu", () => {
     );
   });
 
-  it("account menu has Profile, Get help, Feedback (in that order), then Sign out — no Plan item", async () => {
+  it("account menu has Profile, Get help, Feedback, Theme (in that order), then Sign out — no Plan item", async () => {
     const user = userEvent.setup();
     render(<AccountMenu email="team@merqo.io" avatarUrl={null} />);
     await user.click(screen.getByRole("button", { name: /account menu/i }));
@@ -85,6 +85,7 @@ describe("AccountMenu", () => {
       "Profile",
       "Get help",
       "Feedback",
+      "Theme · System",
       "Sign out",
     ]);
   });

@@ -78,6 +78,8 @@ directly from `@merqo/ui` at their call sites instead of living here — see
 `image-upload-adapter.ts` entry. `FeedbackForm`/`SupportForm` (formerly
 local, opened from `account-menu.tsx`'s Sheets) are gone entirely —
 `@merqo/ui`'s `AccountMenu` owns that Sheet chrome directly now.
+`account-menu.test.tsx`'s menu-order test now expects a "Theme · System"
+entry, matching `@merqo/ui` v0.19.0's collapsed theme submenu.
 
 ## Parent
 
