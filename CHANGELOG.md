@@ -30,6 +30,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Bumped `@merqo/ui` to v0.20.0: `StatCard` (`src/components/dashboard/`)
+  now wraps the new shared `StatTile`/`DeltaPill` content instead of a
+  fully local implementation — no visible change, merqo's own card shell,
+  icon slot, and 3-state trend indicator are unchanged.
 - Dashboard onboarding tour: added a fourth step spotlighting the active-kit
   grid (`data-tour="kit-cards"`, new tour-only anchor on
   `dashboard/(app)/page.tsx`), dropped a trailing arrow from the copy, and
