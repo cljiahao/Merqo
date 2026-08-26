@@ -12,6 +12,7 @@ This app is the public brand landing plus a role-gated operator console:
 - `/admin/team` — manage Merqo-team members
 - `/admin/products` — per-kit health from the metrics API
 - `/admin/feedback` — vendor NPS + comments per kit
+- `/admin/activity` — the admin-audit trail (every real mutating admin action)
 
 Each kit runs its own app on its own schema in a shared Supabase project.
 Merqo pulls per-kit metrics over an HTTP API (bearer secret) — it never
@@ -106,7 +107,7 @@ src/app/page.tsx            — public brand landing (static-prerendered)
 src/app/dashboard/          — vendor dashboard: (app)/ (active-kit overview + kit discovery)
                                and pending/ (no-active-kit state)
 src/app/admin/              — Merqo-team console: overview (page.tsx) + vendors/, team/,
-                               products/, feedback/ (all auth-gated)
+                               products/, feedback/, activity/ (all auth-gated)
 src/app/profile/            — shared account page (signed-in gate only — reachable from
                                both the vendor dashboard and the admin console)
 src/app/login/              — email/password sign-in
@@ -139,7 +140,11 @@ per vendor since the 2026-08-16 widening, the shared counterpart to
 `vendor_profile`, reachable only through `upsert_customer` and three
 Telegram-identity SECURITY DEFINER functions, called by qkit/loopkit),
 `telegram_link_tokens` (short-lived deep-link tokens for merqo's own
-customer-facing Telegram bot, service-role only). Merqo also hosts that
+customer-facing Telegram bot, service-role only), `admin_audit` (every real
+mutating admin action — kit-access grant/revoke, team add/remove, the
+bundle-discount toggle, support-message resolution — recorded via
+`recordAudit()`; immutable at the grant level, no `update`/`delete` grant
+to any role; surfaced on `/admin/activity`). Merqo also hosts that
 bot's webhook plus two bearer-secret endpoints qkit/loopkit call into —
 the first kit → merqo HTTP direction in this codebase (see
 `docs/superpowers/specs/2026-08-16-customer-telegram-connect-design.md`).
@@ -148,10 +153,10 @@ service-role client only, so `metrics_secret` never reaches a browser.
 
 ## Docs
 
-- Changelog: `CHANGELOG.md` (includes a fix restoring card/background
-  contrast in both modes after the Harbour Control rebrand had
-  accidentally collapsed them to the same color, plus a follow-up
-  dark-mode brightness bump)
+- Changelog: `CHANGELOG.md` (includes the new admin-audit trail, plus a fix
+  restoring card/background contrast in both modes after the Harbour
+  Control rebrand had accidentally collapsed them to the same color and a
+  follow-up dark-mode brightness bump)
 - Deploy runbook: `docs/DEPLOY.md`
 - Plans/specs: `docs/superpowers/`
 - AI harness/hooks/skills map: `.claude/README.md`

@@ -9,7 +9,7 @@ names one-to-one.
 ## Contents
 
 - `account.test.ts` — `src/lib/account.ts` metadata field reads.
-- `admin.test.ts` — `src/lib/admin.ts`'s read helpers (team/grant listing) and write paths (`grantKit`/`revokeKit`/`removeTeamMember`, incl. duplicate-grant and not-found edge cases), all against a mocked Supabase service client.
+- `admin.test.ts` — `src/lib/admin.ts`'s read helpers (team/grant listing, `listAdminAuditEntries`'s admin-id-to-email resolution) and write paths (`grantKit`/`revokeKit`/`removeTeamMember`/`addTeamMemberByEmail` — the last now returns the added member's user id, or `null` when no account matches — plus `recordAudit`'s best-effort insert), incl. duplicate-grant and not-found edge cases, all against a mocked Supabase service client.
 - `downgrade-request.test.ts` — `src/lib/downgrade-request.ts`'s metrics-API call.
 - `ecosystem.test.ts` — the kit-stacker graph data/edge logic in `src/lib/ecosystem.ts`.
 - `feedback-action.test.ts` — the vendor feedback Server Action.

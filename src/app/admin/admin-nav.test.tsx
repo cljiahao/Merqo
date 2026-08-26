@@ -17,6 +17,7 @@ const TABS = [
   { label: "Products", href: "/admin/products" },
   { label: "Team", href: "/admin/team" },
   { label: "Feedback", href: "/admin/feedback" },
+  { label: "Activity", href: "/admin/activity" },
 ];
 
 describe("AdminNav", () => {

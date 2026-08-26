@@ -3,9 +3,9 @@
 ## Purpose
 
 The Merqo-team operator console — cross-kit revenue/activation overview, vendor
-kit-access management, team membership, product health, and the shared
-support/feedback inbox. Every route under this folder is gated by
-`requireMerqoTeam()` (via `layout.tsx`).
+kit-access management, team membership, product health, the shared
+support/feedback inbox, and the admin-audit trail. Every route under this
+folder is gated by `requireMerqoTeam()` (via `layout.tsx`).
 
 ## Contents
 
@@ -16,12 +16,13 @@ support/feedback inbox. Every route under this folder is gated by
   email/avatar, and passes them down to `<AdminNav>`.
 - `admin-nav.tsx` — `AdminNav` client component. Owns the entire sticky header
   (burger button + `Wordmark` + `AccountMenu`) plus the section-tab nav
-  (Overview / Vendors / Products / Team / Feedback), highlighting the active
-  tab via `usePathname()`. Below `sm`, the tab row is replaced by a burger
-  toggle beside the wordmark that reveals a mobile dropdown panel listing the
-  same tabs — the same burger-beside-logo pattern as the vendor dashboard nav
-  and every kit's own nav. The open/close state lives here (not in the server
-  `layout.tsx`) because both the burger and the panel it reveals need it.
+  (Overview / Vendors / Products / Team / Feedback / Activity), highlighting
+  the active tab via `usePathname()`. Below `sm`, the tab row is replaced by a
+  burger toggle beside the wordmark that reveals a mobile dropdown panel
+  listing the same tabs — the same burger-beside-logo pattern as the vendor
+  dashboard nav and every kit's own nav. The open/close state lives here (not
+  in the server `layout.tsx`) because both the burger and the panel it
+  reveals need it.
 - `admin-nav.dom.test.tsx` — RTL/jsdom coverage of `AdminNav`: burger renders
   and toggles `aria-expanded`, clicking it opens/closes the mobile panel, the
   mobile panel lists the same tabs (and hrefs) as the desktop nav, and
@@ -41,10 +42,13 @@ support/feedback inbox. Every route under this folder is gated by
   service client, revalidates `/admin`); `setBundleDiscountEnabledAction(enabled)`
   flips the `merqo.billing_settings` singleton's `bundle_discount_enabled`
   flag (team-gated, same write pattern). No kit reads this flag yet — see
-  `bundle-discount-toggle.tsx` below.
+  `bundle-discount-toggle.tsx` below. Both call `recordAudit()` (`@/lib/admin`)
+  after a successful write (`resolve_support_message`, `toggle_bundle_discount`
+  — see `activity/page.tsx` below for where these surface).
 - `actions.test.ts` — mocked `requireMerqoTeam`/`createServiceClient`/
-  `revalidatePath` coverage for both actions above: happy path, a DB-error
-  path, and (for the bundle-discount action) confirms the team gate is
+  `recordAudit`/`revalidatePath` coverage for both actions above: happy path
+  (asserting the `recordAudit` call), a DB-error path (asserting no audit row
+  is recorded), and (for the bundle-discount action) confirms the team gate is
   checked before any database call.
 - `bundle-discount-toggle.tsx` — `BundleDiscountToggle({ enabled })` client
   component. A single shadcn `Switch` + label describing the current
@@ -84,16 +88,37 @@ support/feedback inbox. Every route under this folder is gated by
 - `products/` — sub-route: product/kit registry health list
   (`product-health-card.tsx`).
 - `team/` — sub-route: add/remove Merqo-team members (`add-team-form.tsx`,
-  `remove-member.tsx`, server `actions.ts`).
+  `remove-member.tsx`, server `actions.ts`). Both actions call
+  `recordAudit()` after a successful write (`add_team_member`,
+  `remove_team_member`) — `add_team_member`'s `target_id` is the newly
+  added member's own user id (returned by `addTeamMemberByEmail()`), not
+  the acting admin's.
 - `vendors/` — sub-route: vendor list + per-vendor (`[email]/`) kit-access
   grant/revoke management (`grant-form.tsx`, `revoke-button.tsx`, server
-  `actions.ts`).
+  `actions.ts`). Both actions call `recordAudit()` after a successful write
+  (`grant_kit_access`, `revoke_kit_access`) — vendors are email-keyed with
+  no stable uuid at grant time, so `target_id` is `null` and the vendor
+  email + kit slug travel in `detail` instead.
+- `activity/` — sub-route (`page.tsx` + `page.test.tsx`): `AdminActivityPage`
+  server-fetches the most recent 100 `merqo.admin_audit` rows via
+  `listAdminAuditEntries()` (`@/lib/admin`) and maps each row to an
+  `AuditLogEntry` (`actor` = the resolved admin email, `target` = `target_id`,
+  `detail` = the `detail` jsonb stringified) — plain, serializable data, passed
+  to `activity-log.tsx`'s `ActivityLog` client component. `ActivityLog` wraps
+  `@merqo/ui`'s `AuditLogTable` (all of `@merqo/ui` is a Client Component,
+  so its `formatAction` prop — a plain function, not a Server Action — can't
+  be passed from the server `page.tsx` directly; `ActivityLog` owns that
+  function locally instead) with a `formatAction()` lookup from raw action
+  strings (see the bullets above for the full list) to human labels.
 
 ## Connectivity
 
 `layout.tsx` wraps every route below it (including `feedback/`, `products/`,
-`team/`, and `vendors/`) and is the only place the `requireMerqoTeam()` gate
-and header data-resolution live; `AdminNav` reads `usePathname()` to highlight
+`team/`, `vendors/`, and `activity/`) and is the only place the
+`requireMerqoTeam()` gate and header data-resolution live; every real
+mutating action across those sub-routes (plus this folder's own `actions.ts`)
+calls `recordAudit()`, and `activity/page.tsx` is where those rows surface.
+`AdminNav` reads `usePathname()` to highlight
 whichever sub-route is active. `page.tsx` is the overview dashboard, built
 from this folder's own components (`StatusBanner`, `OnboardingFunnelView`,
 `ProductTile`, `SupportMessageRow`) plus shared `StatCard`

@@ -1,6 +1,7 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { requireMerqoTeam } from "@/lib/team";
+import { recordAudit } from "@/lib/admin";
 import { createServiceClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/lib/action-result";
 
@@ -9,7 +10,7 @@ import type { ActionResult } from "@/lib/action-result";
 export async function resolveSupportMessageAction(
   id: string,
 ): Promise<ActionResult> {
-  await requireMerqoTeam();
+  const { user } = await requireMerqoTeam();
   const supabase = await createServiceClient();
   const { error } = await supabase
     .from("support_messages")
@@ -19,6 +20,7 @@ export async function resolveSupportMessageAction(
     console.error("resolveSupportMessageAction failed", error.message);
     return { success: false, error: "Could not resolve" };
   }
+  await recordAudit(user.id, "resolve_support_message", id, null);
   revalidatePath("/admin");
   return { success: true };
 }
@@ -31,7 +33,7 @@ export async function resolveSupportMessageAction(
 export async function setBundleDiscountEnabledAction(
   enabled: boolean,
 ): Promise<ActionResult> {
-  await requireMerqoTeam();
+  const { user } = await requireMerqoTeam();
   const supabase = await createServiceClient();
   const { error } = await supabase
     .from("billing_settings")
@@ -44,6 +46,7 @@ export async function setBundleDiscountEnabledAction(
     console.error("setBundleDiscountEnabledAction failed", error.message);
     return { success: false, error: "Could not update setting" };
   }
+  await recordAudit(user.id, "toggle_bundle_discount", null, { enabled });
   revalidatePath("/admin");
   return { success: true };
 }

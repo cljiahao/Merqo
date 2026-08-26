@@ -5,17 +5,22 @@ const {
   createServiceClientMock,
   requireMerqoTeamMock,
   revalidatePathMock,
+  recordAuditMock,
 } = vi.hoisted(() => ({
   fromMock: vi.fn(),
   createServiceClientMock: vi.fn(),
   requireMerqoTeamMock: vi.fn(),
   revalidatePathMock: vi.fn(),
+  recordAuditMock: vi.fn(),
 }));
 vi.mock("@/lib/supabase/server", () => ({
   createServiceClient: createServiceClientMock,
 }));
 vi.mock("@/lib/team", () => ({
   requireMerqoTeam: requireMerqoTeamMock,
+}));
+vi.mock("@/lib/admin", () => ({
+  recordAudit: recordAuditMock,
 }));
 vi.mock("next/cache", () => ({
   revalidatePath: revalidatePathMock,
@@ -47,6 +52,12 @@ describe("setBundleDiscountEnabledAction", () => {
     );
     expect(eqMock).toHaveBeenCalledWith("id", 1);
     expect(revalidatePathMock).toHaveBeenCalledWith("/admin");
+    expect(recordAuditMock).toHaveBeenCalledWith(
+      "u1",
+      "toggle_bundle_discount",
+      null,
+      { enabled: true },
+    );
   });
 
   it("surfaces a friendly error on a DB failure", async () => {
@@ -57,6 +68,7 @@ describe("setBundleDiscountEnabledAction", () => {
     const res = await setBundleDiscountEnabledAction(false);
 
     expect(res).toEqual({ success: false, error: "Could not update setting" });
+    expect(recordAuditMock).not.toHaveBeenCalled();
   });
 
   it("gates on team membership before touching the database", async () => {
@@ -81,5 +93,11 @@ describe("resolveSupportMessageAction", () => {
 
     expect(res).toEqual({ success: true });
     expect(eqMock).toHaveBeenCalledWith("id", "msg-1");
+    expect(recordAuditMock).toHaveBeenCalledWith(
+      "u1",
+      "resolve_support_message",
+      "msg-1",
+      null,
+    );
   });
 });

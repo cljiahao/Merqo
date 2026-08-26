@@ -2,7 +2,7 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { requireMerqoTeam } from "@/lib/team";
-import { grantKit, revokeKit } from "@/lib/admin";
+import { grantKit, revokeKit, recordAudit } from "@/lib/admin";
 import type { ActionResult } from "@/lib/action-result";
 
 const grantSchema = z.object({
@@ -13,7 +13,7 @@ const grantSchema = z.object({
 export async function grantKitAction(
   formData: FormData,
 ): Promise<ActionResult> {
-  await requireMerqoTeam();
+  const { user } = await requireMerqoTeam();
   const parsed = grantSchema.safeParse({
     email: formData.get("email"),
     slug: formData.get("slug"),
@@ -26,6 +26,7 @@ export async function grantKitAction(
   } catch {
     return { success: false, error: "Couldn't grant access. Try again." };
   }
+  await recordAudit(user.id, "grant_kit_access", null, parsed.data);
   revalidatePath("/admin/vendors");
   return { success: true };
 }
@@ -33,7 +34,7 @@ export async function grantKitAction(
 export async function revokeKitAction(
   formData: FormData,
 ): Promise<ActionResult> {
-  await requireMerqoTeam();
+  const { user } = await requireMerqoTeam();
   const parsed = grantSchema.safeParse({
     email: formData.get("email"),
     slug: formData.get("slug"),
@@ -46,6 +47,7 @@ export async function revokeKitAction(
   } catch {
     return { success: false, error: "Couldn't revoke access. Try again." };
   }
+  await recordAudit(user.id, "revoke_kit_access", null, parsed.data);
   revalidatePath("/admin/vendors");
   return { success: true };
 }

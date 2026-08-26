@@ -12,7 +12,7 @@ that isn't a route or a component.
 - `action-result.ts` — `ActionResult<T>`, the discriminated success/error return type every Server Action uses.
 - `billing-settings.ts` — `getBillingSettings()`: reads the singleton `merqo.billing_settings` row (currently just `bundle_discount_enabled`), falling back to `DEFAULT_BILLING_SETTINGS` (`false`) if the row can't be read. Backs the admin overview page's bundle-discount toggle; no kit consumes this flag yet.
 - `billing-settings.test.ts` — mocked `createServiceClient` coverage: returns the live row's value, falls back to the default on a read error, and falls back when no row exists.
-- `admin.ts` — Merqo-team admin gate (`requireTeamMember`-style helpers) and vendor-grant status queries used by `/admin`.
+- `admin.ts` — Merqo-team admin gate (`requireTeamMember`-style helpers) and vendor-grant status queries used by `/admin`. Also owns the admin-audit trail: `recordAudit(adminId, action, targetId, detail)` (best-effort insert into `merqo.admin_audit`, called by every real mutating admin action) and `listAdminAuditEntries(limit)` (recent rows, most recent first, `admin_id` resolved to an email — backs `/admin/activity`).
 - `brand-icon.tsx` — Merqo's mark as concrete hex constants, for `ImageResponse`-based icon routes (`icon.tsx`/`apple-icon.tsx`); tracks the "Harbour Control" theme (as of 2026-08-19).
 - `customer-notify-auth.ts` — `customerNotifySecretOk(request)`: constant-time check of `Authorization: Bearer <MERQO_CUSTOMER_SECRET>`, mirroring qkit's own `provisionBearerOk` shape — the first time merqo is the RECEIVING side of a bearer-authenticated call. Gates the two `/api/merqo/*` customer-notify routes.
 - `customer-notify-auth.test.ts` — valid/missing/wrong-prefix/wrong-secret/wrong-length bearer cases, plus fails-closed when `MERQO_CUSTOMER_SECRET` is unset.
@@ -39,7 +39,7 @@ that isn't a route or a component.
 - `telegram.ts` — `sendTelegramMessage(chatId, text)` (fire-and-forget POST to the Bot API's `sendMessage`, no-ops without `TELEGRAM_BOT_TOKEN`, catches+logs a fetch failure rather than throwing) and `generateLinkToken()` (a `[A-Za-z0-9_-]{1,64}`-safe token for the `t.me/<bot>?start=<token>` deep link — Telegram's own payload constraint). Same shape as every kit's own Phase A copy, deliberately not shared as a package.
 - `telegram.test.ts` — the send/no-op/catch/token-shape assertions above.
 - `tour-prefs.ts` — `stampTourSeen(supabase, userId)`: upserts `dashboard_prefs.tour_seen_at = now()`. A plain (non-`"use server"`) module so `src/app/dashboard/(app)/layout.tsx` can call it directly during its own server render — the durable half of the onboarding-tour "stamp on start" fix, since the client-fired path (`src/app/dashboard/tour-actions.ts`'s `markTourSeen`, which also delegates here) is fire-and-forget and can be aborted by a hard navigation before it lands.
-- `types.ts` — hand-maintained DB types mirroring `supabase/migrations` (`SocialLinks`, etc.).
+- `types.ts` — hand-maintained DB types mirroring `supabase/migrations` (`SocialLinks`, `Json`, `AdminAudit`, etc.).
 - `upgrade-request.ts` — posts a vendor's Free→Pro upgrade request to a kit's metrics API.
 - `utils.ts` — `cn()` (clsx + tailwind-merge), shared across every component.
 - `vendor-feedback.ts` — reads cross-kit `merqo.vendor_feedback` (NPS) rows for the admin feedback page.
