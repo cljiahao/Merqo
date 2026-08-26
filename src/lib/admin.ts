@@ -10,6 +10,7 @@ import type {
   ProductOption,
   LinkRow,
 } from "@/lib/vendor-grants";
+import type { Json, AdminAudit } from "@/lib/types";
 
 // All writes here run through the service client (bypasses RLS). Every caller
 // MUST gate with requireMerqoTeam() first — these helpers do not re-check.
@@ -118,19 +119,22 @@ export async function revokeKit(email: string, slug: string): Promise<void> {
 /**
  * Add a Merqo-team member by email. The person must already have an auth
  * account (signed in once) — we resolve email → user id via the admin API.
- * Returns false if no account matches that email.
+ * Returns the added member's user id, or null if no account matches that
+ * email.
  */
-export async function addTeamMemberByEmail(email: string): Promise<boolean> {
+export async function addTeamMemberByEmail(
+  email: string,
+): Promise<string | null> {
   const supabase = await createServiceClient();
   const key = email.toLowerCase();
   const users = await listAllAuthUsers(supabase);
   const user = users.find((u) => u.email?.toLowerCase() === key);
-  if (!user) return false;
+  if (!user) return null;
   const { error } = await supabase
     .from("merqo_team")
     .upsert({ user_id: user.id }, { onConflict: "user_id" });
   if (error) throw new Error(`add team: ${error.message}`);
-  return true;
+  return user.id;
 }
 
 export async function removeTeamMember(userId: string): Promise<void> {
@@ -140,4 +144,55 @@ export async function removeTeamMember(userId: string): Promise<void> {
     .delete()
     .eq("user_id", userId);
   if (error) throw new Error(`remove team: ${error.message}`);
+}
+
+// ── Audit trail ──────────────────────────────────────────────────────────
+
+/**
+ * Append an admin-audit row. Best-effort: a hiccup here must not fail the
+ * action it records, but it's logged so a broken trail stays visible. Every
+ * real mutating admin action in this console calls this after its write
+ * succeeds — see src/app/admin/actions.ts, vendors/actions.ts, and
+ * team/actions.ts.
+ */
+export async function recordAudit(
+  adminId: string,
+  action: string,
+  targetId: string | null,
+  detail: Json,
+): Promise<void> {
+  const supabase = await createServiceClient();
+  const { error } = await supabase.from("admin_audit").insert({
+    admin_id: adminId,
+    action,
+    target_id: targetId,
+    detail,
+  });
+  if (error) console.error("admin_audit insert failed", error.message);
+}
+
+export type AdminAuditEntry = AdminAudit & { adminEmail: string };
+
+/**
+ * Recent admin_audit rows, most recent first, with `admin_id` resolved to an
+ * email where possible (falls back to the raw id). Gate callers with
+ * requireMerqoTeam().
+ */
+export async function listAdminAuditEntries(
+  limit = 100,
+): Promise<AdminAuditEntry[]> {
+  const supabase = await createServiceClient();
+  const { data, error } = await supabase
+    .from("admin_audit")
+    .select("id, admin_id, action, target_id, detail, created_at")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(`admin_audit read: ${error.message}`);
+  const rows = (data ?? []) as AdminAudit[];
+  const users = await listAllAuthUsers(supabase);
+  const emailById = new Map(users.map((u) => [u.id, u.email ?? null]));
+  return rows.map((r) => ({
+    ...r,
+    adminEmail: emailById.get(r.admin_id) ?? r.admin_id,
+  }));
 }

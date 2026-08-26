@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Admin-audit trail: a new `merqo.admin_audit` table (immutable at the
+  grant level from day one — service_role gets `select`/`insert` only, no
+  `update`/`delete`), mirroring every sibling kit's own `admin_audit` +
+  `recordAudit()` convention. Every real mutating admin action now records
+  a row — kit-access grant/revoke, team add/remove, the bundle-discount
+  toggle, and support-message resolution — via `recordAudit()`
+  (`src/lib/admin.ts`). A new `/admin/activity` tab renders the trail
+  through `@merqo/ui`'s `AuditLogTable`.
+
 ### Fixed
 
 - Cards were visually indistinguishable from the page background in both

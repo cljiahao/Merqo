@@ -98,6 +98,13 @@ test.describe("authed areas", () => {
     ).toBeVisible();
   });
 
+  test("admin activity page renders the audit trail", async ({ page }) => {
+    await page.goto("/admin/activity");
+    await expect(
+      page.getByRole("heading", { name: "Activity", exact: true }),
+    ).toBeVisible();
+  });
+
   test("grants and revokes a kit for a vendor", async ({ page }) => {
     const vendorEmail = `e2e-vendor-${test.info().workerIndex}-${Date.now()}@merqo.test`;
     await page.goto("/admin/vendors");
@@ -126,6 +133,12 @@ test.describe("authed areas", () => {
         .getByRole("listitem")
         .filter({ hasText: vendorEmail }),
     ).toHaveCount(0);
+
+    // Round-trips the whole audit pipeline against the real local Supabase
+    // instance (migration + grants + recordAudit + listAdminAuditEntries),
+    // not just the mocked unit coverage.
+    await page.goto("/admin/activity");
+    await expect(page.getByText(vendorEmail).first()).toBeVisible();
   });
 
   test("adds and removes a team member", async ({ page }) => {

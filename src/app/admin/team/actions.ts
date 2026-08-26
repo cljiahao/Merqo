@@ -2,7 +2,11 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { requireMerqoTeam } from "@/lib/team";
-import { addTeamMemberByEmail, removeTeamMember } from "@/lib/admin";
+import {
+  addTeamMemberByEmail,
+  removeTeamMember,
+  recordAudit,
+} from "@/lib/admin";
 import type { ActionResult } from "@/lib/action-result";
 import type { AddTeamState } from "./state";
 
@@ -25,6 +29,7 @@ export async function removeTeamMemberAction(
   } catch {
     return { success: false, error: "Couldn't remove the member. Try again." };
   }
+  await recordAudit(user.id, "remove_team_member", parsed.data, null);
   revalidatePath("/admin/team");
   return { success: true };
 }
@@ -33,20 +38,23 @@ export async function addTeamMemberAction(
   _prev: AddTeamState,
   formData: FormData,
 ): Promise<AddTeamState> {
-  await requireMerqoTeam();
+  const { user } = await requireMerqoTeam();
   const parsed = emailSchema.safeParse(formData.get("email"));
   if (!parsed.success) {
     return { status: "error", message: "Enter a valid email address." };
   }
   try {
-    const added = await addTeamMemberByEmail(parsed.data);
-    if (!added) {
+    const addedUserId = await addTeamMemberByEmail(parsed.data);
+    if (!addedUserId) {
       return {
         status: "error",
         message:
           "No Merqo account for that email yet — they must sign in once first.",
       };
     }
+    await recordAudit(user.id, "add_team_member", addedUserId, {
+      email: parsed.data,
+    });
     revalidatePath("/admin/team");
     return { status: "success", message: `Added ${parsed.data} to the team.` };
   } catch {

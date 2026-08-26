@@ -15,6 +15,7 @@ const TABS = [
   { href: "/admin/products", label: "Products" },
   { href: "/admin/team", label: "Team" },
   { href: "/admin/feedback", label: "Feedback" },
+  { href: "/admin/activity", label: "Activity" },
 ];
 
 /** Overview matches exactly; other tabs match by prefix. */

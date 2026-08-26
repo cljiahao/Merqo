@@ -84,7 +84,7 @@ describe("listTeamMembers", () => {
 });
 
 describe("addTeamMemberByEmail", () => {
-  it("finds a matching account past the first page and adds it", async () => {
+  it("finds a matching account past the first page, adds it, and returns their id", async () => {
     const page1 = Array.from({ length: 1000 }, (_, i) => ({
       id: `filler-${i}`,
       email: `filler-${i}@example.com`,
@@ -101,20 +101,20 @@ describe("addTeamMemberByEmail", () => {
     const result = await addTeamMemberByEmail("late@example.com");
 
     expect(listUsersMock).toHaveBeenCalledTimes(2);
-    expect(result).toBe(true);
+    expect(result).toBe("u1");
     expect(upsertMock).toHaveBeenCalledWith(
       { user_id: "u1" },
       { onConflict: "user_id" },
     );
   });
 
-  it("returns false when no account matches the email", async () => {
+  it("returns null when no account matches the email", async () => {
     listUsersMock.mockResolvedValue({ data: { users: [] }, error: null });
 
     const { addTeamMemberByEmail } = await import("@/lib/admin");
     const result = await addTeamMemberByEmail("nobody@example.com");
 
-    expect(result).toBe(false);
+    expect(result).toBeNull();
     expect(upsertMock).not.toHaveBeenCalled();
   });
 });
@@ -226,6 +226,105 @@ describe("removeTeamMember", () => {
     const { removeTeamMember } = await import("@/lib/admin");
     await expect(removeTeamMember("u1")).rejects.toThrow(
       /remove team: service unavailable/,
+    );
+  });
+});
+
+describe("recordAudit", () => {
+  function fakeInsertClient(result: { error: { message: string } | null }) {
+    const insertMock = vi.fn().mockResolvedValue(result);
+    return { client: { from: () => ({ insert: insertMock }) }, insertMock };
+  }
+
+  it("inserts an admin_audit row with the given fields", async () => {
+    const { client, insertMock } = fakeInsertClient({ error: null });
+    createServiceClientMock.mockResolvedValue(client);
+
+    const { recordAudit } = await import("@/lib/admin");
+    await recordAudit("admin-1", "grant_kit_access", null, {
+      email: "vendor@business.sg",
+    });
+
+    expect(insertMock).toHaveBeenCalledWith({
+      admin_id: "admin-1",
+      action: "grant_kit_access",
+      target_id: null,
+      detail: { email: "vendor@business.sg" },
+    });
+  });
+
+  it("logs but does not throw on an insert error", async () => {
+    const { client } = fakeInsertClient({ error: { message: "boom" } });
+    createServiceClientMock.mockResolvedValue(client);
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { recordAudit } = await import("@/lib/admin");
+    await expect(
+      recordAudit("admin-1", "resolve_support_message", "msg-1", null),
+    ).resolves.toBeUndefined();
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "admin_audit insert failed",
+      "boom",
+    );
+
+    consoleSpy.mockRestore();
+  });
+});
+
+describe("listAdminAuditEntries", () => {
+  function fakeReadClient(
+    rows: unknown[] | null,
+    error: { message: string } | null = null,
+  ) {
+    const limitMock = vi.fn().mockResolvedValue({ data: rows, error });
+    const orderMock = vi.fn(() => ({ limit: limitMock }));
+    const selectMock = vi.fn(() => ({ order: orderMock }));
+    return { from: () => ({ select: selectMock }) };
+  }
+
+  it("resolves admin_id to an email and falls back to the raw id when unknown", async () => {
+    const rows = [
+      {
+        id: "1",
+        admin_id: "u1",
+        action: "grant_kit_access",
+        target_id: null,
+        detail: null,
+        created_at: "2026-08-01T00:00:00Z",
+      },
+      {
+        id: "2",
+        admin_id: "u2",
+        action: "toggle_bundle_discount",
+        target_id: null,
+        detail: { enabled: true },
+        created_at: "2026-08-02T00:00:00Z",
+      },
+    ];
+    createServiceClientMock.mockResolvedValue({
+      ...fakeReadClient(rows),
+      auth: { admin: { listUsers: listUsersMock } },
+    });
+    listUsersMock.mockResolvedValue({
+      data: { users: [{ id: "u1", email: "team@merqo.io" }] },
+      error: null,
+    });
+
+    const { listAdminAuditEntries } = await import("@/lib/admin");
+    const result = await listAdminAuditEntries(50);
+
+    expect(result[0].adminEmail).toBe("team@merqo.io");
+    expect(result[1].adminEmail).toBe("u2");
+  });
+
+  it("throws a wrapped error when the read fails", async () => {
+    createServiceClientMock.mockResolvedValue(
+      fakeReadClient(null, { message: "boom" }),
+    );
+
+    const { listAdminAuditEntries } = await import("@/lib/admin");
+    await expect(listAdminAuditEntries()).rejects.toThrow(
+      "admin_audit read: boom",
     );
   });
 });
