@@ -5,6 +5,9 @@ import { getVendorGrant, listProducts } from "@/lib/admin";
 import { Badge } from "@/components/ui/badge";
 import { GrantForm } from "../grant-form";
 import { RevokeButton } from "../revoke-button";
+import { listLiveProducts } from "@/lib/products";
+import { getVendorActivity } from "@/lib/vendor-activity-client";
+import { VendorActivityCard } from "./vendor-activity-card";
 
 export const revalidate = 0;
 
@@ -21,6 +24,19 @@ export default async function VendorDetailPage({
     listProducts(),
   ]);
   if (!grant) notFound();
+
+  const activeSlugs = new Set(
+    grant.kits.filter((k) => k.status === "active").map((k) => k.slug),
+  );
+  const liveProducts = await listLiveProducts();
+  const activityResults = await Promise.all(
+    liveProducts
+      .filter((p) => activeSlugs.has(p.slug))
+      .map((p) => getVendorActivity(p, grant.email)),
+  );
+  // Reading the wall clock in an async server component is intentional here.
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
 
   return (
     <main className="mx-auto max-w-7xl space-y-8 px-5 py-8">
@@ -64,6 +80,22 @@ export default async function VendorDetailPage({
           </ul>
         )}
       </section>
+
+      {activeSlugs.size > 0 && (
+        <section>
+          <h2 className="font-display text-lg font-bold">Activity</h2>
+          <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {activityResults.map((result) => (
+              <VendorActivityCard
+                key={result.slug}
+                slug={result.slug}
+                result={result}
+                now={now}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="rounded-xl border bg-card p-5 shadow-sm">
         <h2 className="font-display text-lg font-bold">Grant a kit</h2>

@@ -45,6 +45,8 @@ that isn't a route or a component.
 - `vendor-feedback.ts` — reads cross-kit `merqo.vendor_feedback` (NPS) rows for the admin feedback page.
 - `vendor-grants.ts` — pure `GrantStatus` (`active`/`waitlist`/`needs_setup`) helpers; client-safe (no `supabase/server` import) since `vendor-list.tsx` imports it directly.
 - `vendor-metrics-client.ts` / `vendor-metrics-schema.ts` — fetch + Zod-validate a single vendor's per-kit stats for the vendor dashboard.
+- `vendor-activity-client.ts` / `vendor-activity-schema.ts` — fetch + Zod-validate a single vendor's per-kit triage status/metrics/last-activity from a live kit's `/api/merqo/vendor-activity`, for the admin `/admin/vendors/[email]` detail page. Never throws — a kit that hasn't implemented the endpoint, 404s, or is briefly down all collapse to `ok: false`.
+- `vendor-activity-client.test.ts` — 200/404/missing-config/schema-mismatch/network-failure cases for `getVendorActivity`.
 - `vendor-sync.ts` — provisions/syncs a vendor's `vendor_links` rows against the live kit registry.
 - `vendor.ts` — gates the vendor dashboard on an authenticated session with at least one kit grant.
 - `waitlist.ts` — adds an email to a kit's waitlist, from either the public landing form or the signed-in dashboard.

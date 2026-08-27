@@ -98,7 +98,10 @@ folder is gated by `requireMerqoTeam()` (via `layout.tsx`).
   `actions.ts`). Both actions call `recordAudit()` after a successful write
   (`grant_kit_access`, `revoke_kit_access`) — vendors are email-keyed with
   no stable uuid at grant time, so `target_id` is `null` and the vendor
-  email + kit slug travel in `detail` instead.
+  email + kit slug travel in `detail` instead. `[email]/page.tsx` also
+  renders an "Activity" section — one card per kit the vendor is `active`
+  on, pulled live via `getVendorActivity()` (`@/lib/vendor-activity-client`)
+  — see `[email]/README.md`.
 - `activity/` — sub-route (`page.tsx` + `page.test.tsx`): `AdminActivityPage`
   server-fetches the most recent 100 `merqo.admin_audit` rows via
   `listAdminAuditEntries()` (`@/lib/admin`) and maps each row to an
