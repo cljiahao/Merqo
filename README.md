@@ -122,6 +122,8 @@ src/components/social-icons.tsx / social-links-fields.tsx — shared social-link
 src/hooks/use-async-action.ts — shared pending/error state for server-action buttons
 src/lib/kits.ts             — kit family config (landing roadmap source of truth)
 src/lib/metrics-client.ts   — fetch of a kit's HTTP metrics endpoint
+src/lib/vendor-activity-client.ts — fetch of a single vendor's per-kit triage status/metrics
+                               (admin/vendors/[email]'s Activity cards)
 src/lib/schemas.ts          — Zod schemas for the profile page's forms
 src/lib/merqo-vendor-profile.ts — typed wrapper over the shared vendor_profile RPCs
 src/lib/supabase/           — browser / server (schema=merqo) / service-role clients

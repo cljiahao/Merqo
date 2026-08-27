@@ -4,10 +4,29 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0] - 2026-08-27
 
 ### Added
 
+- Cross-kit vendor-activity view: `/admin/vendors/[email]` now shows a
+  live "Activity" section, one card per kit the vendor is `active` on —
+  each kit's own triage status (`StatusBadge`, skipped when a kit has no
+  per-vendor health concept), plan, and kit-chosen metrics
+  (`@merqo/ui`'s `StatTile`). New `GET /api/merqo/vendor-activity` bearer
+  contract (`src/lib/vendor-activity-client.ts`/`vendor-activity-schema.ts`),
+  generalizing the existing `vendor-status` precedent — a kit that hasn't
+  implemented it yet, 404s, or is briefly down just renders no card, never
+  an error. See `docs/business/2026-08-26-cross-kit-vendor-activity-design.md`.
+- stockkit flipped to `status = 'live'` in `merqo.products`
+  (`0022_stockkit_live.sql`) — it shipped its own full merqo cutover
+  (metrics/vendor-status/vendor-provision/vendor-activity endpoints) this
+  same session and was previously silently excluded from vendor sync,
+  provisioning, and metrics pulls despite being listed `live` on the public
+  landing since `kits.ts`'s original seed (same bug class `0013`/`0014`
+  already fixed for loopkit/paykit).
+- Bumped `@merqo/ui` to v0.22.1 to pick up the shared `StatusBadge`/
+  `DataTable` components (already adopted by every kit this session) —
+  merqo's own console hadn't been bumped onto them yet.
 - Admin-audit trail: a new `merqo.admin_audit` table (immutable at the
   grant level from day one — service_role gets `select`/`insert` only, no
   `update`/`delete`), mirroring every sibling kit's own `admin_audit` +
