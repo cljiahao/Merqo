@@ -22,7 +22,9 @@ Merqo kit once auth cookies are scoped to the shared `.merqo.io` domain.
   `cookieOptions` is irrelevant there and intentionally omitted.
 - `middleware.ts` — `updateSession(request)`: refreshes the session cookie
   on every request, redirecting unauthenticated requests to `/login` for
-  `/admin`/`/dashboard`. Also runs `clearLegacyHostOnlyCookie()`: a vendor
+  `/admin`/`/dashboard` (a session is all `/dashboard` needs — it's open to
+  every signed-in user; only `/admin` layers on `requireMerqoTeam()`). Also
+  runs `clearLegacyHostOnlyCookie()`: a vendor
   signed in before the `.merqo.io` cookie domain shipped has a HOST-ONLY
   version of the same-named auth cookie; once both exist, the browser and
   Next's cookie parser can disagree on which one wins (RFC 6265 ordering

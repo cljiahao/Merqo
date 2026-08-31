@@ -100,6 +100,11 @@ landing — a later migration corrects an earlier one.
   still seeded `coming_soon` despite shipping its own full merqo cutover
   (metrics/vendor-status/vendor-provision/vendor-activity endpoints) in the
   same work session as this migration; flips it to `live`.
+- `0023_vendor_sync_state.sql` — `merqo.vendor_sync_state` (`email` PK,
+  `last_synced_at`): a per-email throttle marker so `syncVendorKits()` skips
+  its per-kit HTTP fan-out within a 60s window, now that `/dashboard` is open
+  to every signed-in user and re-syncs on every render. Service-role only,
+  RLS-on with zero client policies (same shape as `telegram_link_tokens`).
 
 ## Connectivity
 
