@@ -196,4 +196,83 @@ describe("syncVendorKits throttle", () => {
 
     expect(global.fetch).toHaveBeenCalled();
   });
+
+  it("runs the fan-out when no prior sync state exists", async () => {
+    syncClient(null);
+    listLiveProductsMock.mockResolvedValue([
+      { slug: "qkit", app_url: "https://qkit.test", metrics_secret: "s1" },
+    ]);
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ active: false, plan: null }),
+    });
+
+    await syncVendorKits("vendor@business.sg");
+
+    expect(global.fetch).toHaveBeenCalled();
+  });
+
+  it("degrades to [] when the vendor_links read fails", async () => {
+    const linksReadError = { select: () => ({ eq: () => value }) };
+    const value = Promise.resolve({
+      data: null,
+      error: { message: "read boom" },
+    });
+    fromMock.mockImplementation((table: string) => {
+      if (table === "vendor_sync_state") {
+        return {
+          select: () => ({
+            eq: () => ({ maybeSingle: async () => ({ data: null }) }),
+          }),
+          upsert: vi.fn().mockResolvedValue({ error: null }),
+        };
+      }
+      if (table === "vendor_links") return linksReadError;
+      throw new Error(`unexpected table: ${table}`);
+    });
+    listLiveProductsMock.mockResolvedValue([]);
+    global.fetch = vi.fn();
+
+    const links = await syncVendorKits("vendor@business.sg");
+
+    expect(links).toEqual([]);
+  });
+
+  it("still returns links when the sync-state upsert fails (best-effort)", async () => {
+    const syncStateUpsert = vi
+      .fn()
+      .mockResolvedValue({ error: { message: "state boom" } });
+    fromMock.mockImplementation((table: string) => {
+      if (table === "vendor_sync_state") {
+        return {
+          select: () => ({
+            eq: () => ({ maybeSingle: async () => ({ data: null }) }),
+          }),
+          upsert: syncStateUpsert,
+        };
+      }
+      if (table === "vendor_links") {
+        return {
+          upsert: vi.fn().mockResolvedValue({ error: null }),
+          select: () => ({
+            eq: () =>
+              Promise.resolve({
+                data: [{ product_slug: "qkit", status: "active", plan: null }],
+                error: null,
+              }),
+          }),
+        };
+      }
+      throw new Error(`unexpected table: ${table}`);
+    });
+    listLiveProductsMock.mockResolvedValue([]);
+    global.fetch = vi.fn();
+
+    const links = await syncVendorKits("vendor@business.sg");
+
+    expect(syncStateUpsert).toHaveBeenCalled();
+    expect(links).toEqual([
+      { product_slug: "qkit", status: "active", plan: null },
+    ]);
+  });
 });
