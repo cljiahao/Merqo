@@ -69,7 +69,7 @@ describe("DashboardTour", () => {
   });
 
   it("isHomeRoute is false off /dashboard", () => {
-    mocks.state.pathname = "/dashboard/pending";
+    mocks.state.pathname = "/profile";
     render(<DashboardTour seen={true} />);
     expect(props().isHomeRoute).toBe(false);
   });

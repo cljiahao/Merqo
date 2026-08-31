@@ -35,7 +35,6 @@ export async function activateKitsAction(
       parsed.data,
     );
     revalidatePath("/dashboard");
-    revalidatePath("/dashboard/pending");
     return { success: true, results };
   } catch (err) {
     console.error("activateKitsAction: unexpected failure", err);

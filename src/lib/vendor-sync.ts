@@ -79,16 +79,57 @@ export function upsertsFromChecks(
     }));
 }
 
+/** How long a completed sync stays "fresh". The dashboard re-renders (and so
+ *  re-syncs) on every visit now that it's open to every signed-in user — this
+ *  keeps a burst of visits from fanning an HTTP call out to every kit each
+ *  time, while still picking up a newly-joined kit within a minute. */
+const SYNC_TTL_MS = 60_000;
+
+async function readVendorLinks(
+  supabase: Awaited<ReturnType<typeof createServiceClient>>,
+  email: string,
+): Promise<VendorLink[]> {
+  const { data, error } = await supabase
+    .from("vendor_links")
+    .select("product_slug, status, plan, last_verified_at")
+    .eq("email", email);
+  if (error) {
+    console.error("vendor sync: read failed", error.message);
+    return [];
+  }
+  return (data ?? []) as VendorLink[];
+}
+
 /**
  * Ask every live kit whether `email` is one of their active vendors, upsert
  * any positive matches into vendor_links, and return the vendor's current
- * links. Never throws — a kit-down, network, or DB failure degrades to
- * returning [] (the caller then shows the same empty state it shows today,
- * not an error page).
+ * links. Skips the kit fan-out when a sync completed less than SYNC_TTL_MS
+ * ago (pass `force` to bypass — fresh logins do, via /post-login). Never
+ * throws — a kit-down, network, or DB failure degrades to returning [] (the
+ * caller then shows the same empty state it shows today, not an error page).
  */
-export async function syncVendorKits(email: string): Promise<VendorLink[]> {
+export async function syncVendorKits(
+  email: string,
+  opts: { force?: boolean } = {},
+): Promise<VendorLink[]> {
   try {
     const supabase = await createServiceClient();
+    const normalizedEmail = email.toLowerCase();
+
+    if (!opts.force) {
+      const { data: state } = await supabase
+        .from("vendor_sync_state")
+        .select("last_synced_at")
+        .eq("email", normalizedEmail)
+        .maybeSingle();
+      const syncedAt = state?.last_synced_at
+        ? new Date(state.last_synced_at).getTime()
+        : 0;
+      if (Date.now() - syncedAt < SYNC_TTL_MS) {
+        return readVendorLinks(supabase, normalizedEmail);
+      }
+    }
+
     const kits = await listLiveProducts();
     const checks = await Promise.all(
       kits.map((kit) => checkVendorStatus(kit, email)),
@@ -105,15 +146,20 @@ export async function syncVendorKits(email: string): Promise<VendorLink[]> {
       }
     }
 
-    const { data, error: readError } = await supabase
-      .from("vendor_links")
-      .select("product_slug, status, plan, last_verified_at")
-      .eq("email", email.toLowerCase());
-    if (readError) {
-      console.error("vendor sync: read failed", readError.message);
-      return [];
+    const { error: stateError } = await supabase
+      .from("vendor_sync_state")
+      .upsert(
+        { email: normalizedEmail, last_synced_at: new Date().toISOString() },
+        { onConflict: "email" },
+      );
+    if (stateError) {
+      console.error(
+        "vendor sync: sync-state upsert failed",
+        stateError.message,
+      );
     }
-    return (data ?? []) as VendorLink[];
+
+    return readVendorLinks(supabase, normalizedEmail);
   } catch (err) {
     console.error("vendor sync: unexpected failure", err);
     return [];

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireActiveVendor } from "@/lib/vendor";
+import { requireVendorSession } from "@/lib/vendor";
 import { getAvatarUrl } from "@/lib/account";
 import { AccountMenu } from "@/components/account-menu";
 import { DashboardTour } from "@/components/dashboard-tour";
@@ -12,8 +12,9 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Gate every gated /dashboard route once here; the page re-derives links cheaply.
-  const { user, isTeam } = await requireActiveVendor();
+  // Gate every /dashboard route once here (signed-in only); the page re-derives
+  // links cheaply.
+  const { user, isTeam } = await requireVendorSession();
 
   // A fresh user has no dashboard_prefs row at all yet (unlike a plain
   // column-on-an-existing-row, this table starts empty) — maybeSingle()

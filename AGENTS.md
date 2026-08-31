@@ -55,8 +55,8 @@ pnpm format       # prettier --write
 ```
 src/app/                    — app router (landing, dashboard, admin console, server actions)
 src/app/page.tsx            — public brand landing (static-prerendered)
-src/app/dashboard/          — vendor dashboard: (app)/ (active-kit overview + kit discovery)
-                               and pending/ (no-active-kit state)
+src/app/dashboard/          — vendor dashboard: (app)/ (overview + kit discovery),
+                               open to every signed-in user (requireVendorSession)
 src/app/admin/              — Merqo-team console: overview (page.tsx) + vendors/, team/,
                                products/, feedback/ (all auth-gated)
 src/app/profile/            — shared account page (signed-in gate only — reachable from
@@ -87,7 +87,8 @@ supabase/migrations/        — SQL schema (merqo.* tables) + RLS + grants
 One shared Supabase project, schema per kit. Merqo owns `merqo.*`:
 `merqo_team` (team membership, managed on `/admin/team`), `products` (kit registry +
 per-product `metrics_secret`, surfaced on `/dashboard`), `vendor_links`
-(vendor↔kit, email-keyed, waitlist/active — granted/revoked on `/admin/vendors`).
+(vendor↔kit, email-keyed, waitlist/active — granted/revoked on `/admin/vendors`),
+`vendor_sync_state` (`0023`, per-email kit-sync throttle marker, service-role only).
 RLS default-deny; team-membership via `merqo.is_merqo_team()`. `products` +
 `vendor_links` are read/written via the **service-role client** (server-only) so
 the `metrics_secret` never reaches a browser.

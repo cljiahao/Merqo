@@ -27,7 +27,7 @@ describe("activateKitsAction", () => {
     expect(provisionVendorKitsMock).not.toHaveBeenCalled();
   });
 
-  it("calls provisionVendorKits for the signed-in vendor and revalidates the dashboard", async () => {
+  it("calls provisionVendorKits for the signed-in vendor and revalidates /dashboard", async () => {
     loadVendorContextMock.mockResolvedValue({
       user: { id: "u1", email: "v@x.com" },
       links: [],
@@ -50,7 +50,6 @@ describe("activateKitsAction", () => {
       ["qkit"],
     );
     expect(revalidatePathMock).toHaveBeenCalledWith("/dashboard");
-    expect(revalidatePathMock).toHaveBeenCalledWith("/dashboard/pending");
   });
 
   it("rejects non-array/oversized input without calling provisionVendorKits", async () => {

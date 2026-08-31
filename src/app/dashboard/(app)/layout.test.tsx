@@ -2,16 +2,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 
-const { requireActiveVendorMock, maybeSingleMock, stampTourSeenMock } =
+const { requireVendorSessionMock, maybeSingleMock, stampTourSeenMock } =
   vi.hoisted(() => ({
-    requireActiveVendorMock: vi.fn(),
+    requireVendorSessionMock: vi.fn(),
     maybeSingleMock: vi.fn(),
     stampTourSeenMock: vi.fn(async () => {}),
   }));
 
 vi.mock("@/lib/vendor", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/vendor")>();
-  return { ...actual, requireActiveVendor: requireActiveVendorMock };
+  return { ...actual, requireVendorSession: requireVendorSessionMock };
 });
 
 vi.mock("@/lib/tour-prefs", () => ({
@@ -46,7 +46,7 @@ describe("DashboardLayout", () => {
   });
 
   it("links the logo to /dashboard and renders the account menu", async () => {
-    requireActiveVendorMock.mockResolvedValue({
+    requireVendorSessionMock.mockResolvedValue({
       user: { id: "v1", email: "vendor@business.sg" },
       isTeam: false,
       links: [],
@@ -65,7 +65,7 @@ describe("DashboardLayout", () => {
   });
 
   it("shows the admin switch link for a team member", async () => {
-    requireActiveVendorMock.mockResolvedValue({
+    requireVendorSessionMock.mockResolvedValue({
       user: { id: "team-1", email: "team@merqo.io" },
       isTeam: true,
       links: [],
@@ -81,7 +81,7 @@ describe("DashboardLayout", () => {
   });
 
   it("renders the DashboardTour replay button, threading dashboard_prefs.tour_seen_at as seen", async () => {
-    requireActiveVendorMock.mockResolvedValue({
+    requireVendorSessionMock.mockResolvedValue({
       user: { id: "v1", email: "vendor@business.sg" },
       isTeam: false,
       links: [],
@@ -99,7 +99,7 @@ describe("DashboardLayout", () => {
   });
 
   it("durably stamps tour_seen_at during its own render when unset", async () => {
-    requireActiveVendorMock.mockResolvedValue({
+    requireVendorSessionMock.mockResolvedValue({
       user: { id: "v1", email: "vendor@business.sg" },
       isTeam: false,
       links: [],
@@ -113,7 +113,7 @@ describe("DashboardLayout", () => {
   });
 
   it("durably stamps tour_seen_at when no dashboard_prefs row exists yet", async () => {
-    requireActiveVendorMock.mockResolvedValue({
+    requireVendorSessionMock.mockResolvedValue({
       user: { id: "v1", email: "vendor@business.sg" },
       isTeam: false,
       links: [],
@@ -127,7 +127,7 @@ describe("DashboardLayout", () => {
   });
 
   it("does not re-stamp once the tour has already been seen", async () => {
-    requireActiveVendorMock.mockResolvedValue({
+    requireVendorSessionMock.mockResolvedValue({
       user: { id: "v1", email: "vendor@business.sg" },
       isTeam: false,
       links: [],

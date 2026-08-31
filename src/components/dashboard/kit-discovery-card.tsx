@@ -2,9 +2,9 @@ import type { Kit } from "@/lib/kits";
 import { KIT_PREVIEWS } from "./kit-previews";
 
 /** One discovery-bucket card — used for all three of /dashboard's
- *  "Explore more kits" subsections (Ready to add / Coming soon / Planned)
- *  and the single featured card on /dashboard/pending. The `cta` slot is
- *  omitted entirely for planned kits (no real action exists for them yet).
+ *  "Explore more kits" subsections (Ready to add / Coming soon / Planned).
+ *  The `cta` slot is omitted entirely for planned kits (no real action
+ *  exists for them yet).
  *  The feature-bullet line is always in the DOM (not conditionally
  *  rendered) — only its opacity is hover-gated, so it stays available to
  *  screen readers and to touch/keyboard users who never trigger :hover. */

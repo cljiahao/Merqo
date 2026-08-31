@@ -9,11 +9,8 @@ import { VendorTelegramConnect } from "./vendor-telegram-connect";
 export const revalidate = 0;
 
 // Deliberately NOT under /dashboard: AccountMenu (and therefore the Profile
-// link) is shared by both the vendor dashboard and the admin console, so a
-// pure-admin account (no active kit) must be able to reach this page without
-// requireActiveVendor() bouncing them to /dashboard/pending. Gated by
-// "signed in" only, matching neither requireActiveVendor() nor
-// requireMerqoTeam()'s stricter checks.
+// link) is shared by both the vendor dashboard and the admin console. Gated by
+// "signed in" only, not requireMerqoTeam()'s stricter check.
 export default async function ProfilePage() {
   const supabase = await createServerClient();
   const { data } = await supabase.auth.getUser();

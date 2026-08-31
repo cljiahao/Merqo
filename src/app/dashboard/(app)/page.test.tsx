@@ -4,12 +4,12 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const {
-  requireActiveVendorMock,
+  requireVendorSessionMock,
   syncVendorKitsMock,
   listLiveProductsMock,
   fetchVendorMetricsMock,
 } = vi.hoisted(() => ({
-  requireActiveVendorMock: vi.fn(),
+  requireVendorSessionMock: vi.fn(),
   syncVendorKitsMock: vi.fn(),
   listLiveProductsMock: vi.fn(),
   fetchVendorMetricsMock: vi.fn(),
@@ -19,7 +19,7 @@ vi.mock("@/lib/vendor", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/vendor")>();
   return {
     ...actual,
-    requireActiveVendor: requireActiveVendorMock,
+    requireVendorSession: requireVendorSessionMock,
   };
 });
 
@@ -43,7 +43,7 @@ vi.mock("next/navigation", () => ({
 
 describe("DashboardPage", () => {
   beforeEach(() => {
-    requireActiveVendorMock.mockReset();
+    requireVendorSessionMock.mockReset();
     syncVendorKitsMock.mockReset();
     listLiveProductsMock.mockReset();
     listLiveProductsMock.mockResolvedValue([
@@ -73,7 +73,7 @@ describe("DashboardPage", () => {
   });
 
   it("re-syncs vendor kits on load so a kit added elsewhere shows up without a fresh login", async () => {
-    requireActiveVendorMock.mockResolvedValue({
+    requireVendorSessionMock.mockResolvedValue({
       user: { email: "vendor@business.sg" },
       isTeam: false,
       links: [{ product_slug: "qkit", status: "active", plan: "free" }],
@@ -96,7 +96,7 @@ describe("DashboardPage", () => {
   });
 
   it("still renders when the vendor has no email (never syncs or fetches metrics)", async () => {
-    requireActiveVendorMock.mockResolvedValue({
+    requireVendorSessionMock.mockResolvedValue({
       user: { email: null },
       isTeam: false,
       links: [{ product_slug: "qkit", status: "active", plan: "free" }],
@@ -111,7 +111,7 @@ describe("DashboardPage", () => {
   });
 
   it("shows a Needs your attention section for a needs_setup kit", async () => {
-    requireActiveVendorMock.mockResolvedValue({
+    requireVendorSessionMock.mockResolvedValue({
       user: { email: "vendor@business.sg" },
       isTeam: false,
       links: [
@@ -140,7 +140,7 @@ describe("DashboardPage", () => {
   });
 
   it("states how many of the live kits the vendor has connected", async () => {
-    requireActiveVendorMock.mockResolvedValue({
+    requireVendorSessionMock.mockResolvedValue({
       user: { email: "vendor@business.sg" },
       isTeam: false,
       links: [{ product_slug: "qkit", status: "active", plan: "free" }],
@@ -161,7 +161,7 @@ describe("DashboardPage", () => {
   });
 
   it("fetches and renders real vendor metrics for an active kit found in the registry", async () => {
-    requireActiveVendorMock.mockResolvedValue({
+    requireVendorSessionMock.mockResolvedValue({
       user: { email: "vendor@business.sg" },
       isTeam: false,
       links: [{ product_slug: "qkit", status: "active", plan: "free" }],
@@ -200,5 +200,27 @@ describe("DashboardPage", () => {
     );
     expect(screen.getByText("42")).toBeInTheDocument();
     expect(screen.getByText("Orders (7d)")).toBeInTheDocument();
+  });
+
+  it("shows a pick-a-kit hero (not the overview) for a signed-in user with no kits", async () => {
+    requireVendorSessionMock.mockResolvedValue({
+      user: { email: "buyer@business.sg" },
+      isTeam: false,
+      links: [],
+    });
+    syncVendorKitsMock.mockResolvedValue([]);
+
+    const { default: DashboardPage } = await import("./page");
+    render(<TooltipProvider>{await DashboardPage()}</TooltipProvider>);
+
+    expect(
+      screen.getByRole("heading", { name: "Pick a kit to get started" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Activate all my kits" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText("kits connected", { exact: false }),
+    ).not.toBeInTheDocument();
   });
 });

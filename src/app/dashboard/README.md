@@ -3,8 +3,8 @@
 ## Purpose
 
 Shared logic for `/dashboard` that doesn't belong to any one route group —
-sits alongside `(app)/` (active-kit overview), `pending/` (no-active-kit
-state), and `profile/` (the `AccountMenu`-link redirect shim).
+sits alongside `(app)/` (the dashboard itself, open to every signed-in user)
+and `profile/` (the `AccountMenu`-link redirect shim).
 
 ## Contents
 
