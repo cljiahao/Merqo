@@ -20,9 +20,8 @@ discovery cards, and stat tiles — as distinct from `src/components/landing/`
   path yet, toasts confirmation.
 - `kit-discovery-card.tsx` — `KitDiscoveryCard({ kit, cta })`: the one
   discovery-bucket card used across all three of `/dashboard`'s "Explore
-  more kits" subsections (Ready to add / Coming soon / Planned) and the
-  single featured card on `/dashboard/pending`. `cta` is omitted entirely
-  for planned kits (no real action exists for them yet).
+  more kits" subsections (Ready to add / Coming soon / Planned). `cta` is
+  omitted entirely for planned kits (no real action exists for them yet).
 - `kit-previews/` — `KIT_PREVIEWS`: a slug-keyed map of small, real (not
   faked) per-kit preview components (`qkit-preview.tsx`, `loopkit-preview.tsx`)
   each wrapped in `mockup-window.tsx`'s browser-chrome frame, shown on the

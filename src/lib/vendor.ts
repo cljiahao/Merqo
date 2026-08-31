@@ -4,7 +4,7 @@ import { KITS, type Kit } from "@/lib/kits";
 import type { GrantStatus } from "@/lib/admin";
 import { createServerClient } from "@/lib/supabase/server";
 
-export type HomeDestination = "/admin" | "/dashboard" | "/dashboard/pending";
+export type HomeDestination = "/admin" | "/dashboard";
 
 export type KitTile = {
   slug: string;
@@ -26,29 +26,11 @@ export type VendorLink = {
   last_verified_at?: string | null;
 };
 
-/** Where a signed-in user belongs. Pure so it can be unit-tested; callers
- *  supply the two facts (team membership, whether any kit is active). */
-export function resolveHome(input: {
-  isTeam: boolean;
-  hasActiveKit: boolean;
-}): HomeDestination {
-  if (input.isTeam) return "/admin";
-  if (input.hasActiveKit) return "/dashboard";
-  return "/dashboard/pending";
-}
-
-/** Where `requireActiveVendor` redirects AWAY to when the signed-in user
- *  has no active kit. Unlike resolveHome (which always sends a team member
- *  to /admin as the post-login default), this only blocks /dashboard for
- *  the absence of an active kit — a dual-role account (team + active kit)
- *  is never blocked here, even though resolveHome would still land them on
- *  /admin fresh from login. */
-export function dashboardGateDestination(
-  isTeam: boolean,
-  hasActiveKit: boolean,
-): HomeDestination {
-  if (hasActiveKit) return "/dashboard";
-  return isTeam ? "/admin" : "/dashboard/pending";
+/** Where a signed-in user belongs after login. Team members land on the admin
+ *  console; everyone else lands on the dashboard, which is open to any
+ *  signed-in user and adapts to how many kits they have. Pure — unit-tested. */
+export function resolveHome(input: { isTeam: boolean }): HomeDestination {
+  return input.isTeam ? "/admin" : "/dashboard";
 }
 
 /** Map a vendor's link rows onto display tiles via the static KITS config.
@@ -200,18 +182,17 @@ export async function loadVendorContext(): Promise<{
   };
 }
 
-/** Gate a /dashboard page on active-vendor access. Also returns isTeam so
- *  callers (the dashboard layout) can offer a switch link to /admin for
- *  dual-role accounts. */
-export async function requireActiveVendor(): Promise<{
+/** Gate a /dashboard page on being signed in — nothing more. The dashboard is
+ *  open to every authenticated user and adapts to how many kits they have (a
+ *  seller with none gets a "pick a kit" surface). Returns isTeam so the
+ *  dashboard layout can offer a switch link to /admin for dual-role accounts. */
+export async function requireVendorSession(): Promise<{
   user: User;
   links: VendorLink[];
   isTeam: boolean;
 }> {
   const { user, isTeam, links } = await loadVendorContext();
   if (!user) redirect("/login");
-  const dest = dashboardGateDestination(isTeam, hasRenderableActiveKit(links));
-  if (dest !== "/dashboard") redirect(dest);
   return { user, links, isTeam };
 }
 

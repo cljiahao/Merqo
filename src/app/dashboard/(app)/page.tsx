@@ -1,6 +1,6 @@
 import Link from "next/link";
 import {
-  requireActiveVendor,
+  requireVendorSession,
   tilesForLinks,
   addableKits,
   provisionableKits,
@@ -23,12 +23,10 @@ import { ActivateKitsButton } from "@/components/dashboard/activate-kits-button"
 export const revalidate = 0;
 
 export default async function DashboardPage() {
-  const { user, links: initialLinks } = await requireActiveVendor();
-  // Unlike /dashboard/pending, this page has no "Check again" affordance —
-  // without re-syncing here, a vendor who signs up directly on another
-  // kit's site (the "Add {kit}" link just opens that kit's own login page)
-  // never sees it reflected without a full logout/login, since sync
-  // otherwise only runs from /post-login.
+  const { user, links: initialLinks } = await requireVendorSession();
+  // Re-sync on every load (throttled in syncVendorKits) so a kit joined
+  // directly on its own site shows up here without a full logout/login —
+  // sync otherwise only runs from /post-login.
   const links = user.email ? await syncVendorKits(user.email) : initialLinks;
   const { active, pending, needsSetup } = tilesForLinks(links);
   const savings = computeVendorSavings(links);
@@ -60,6 +58,10 @@ export default async function DashboardPage() {
   );
   const comingSoon = comingKits(links);
   const planned = KITS.filter((k) => k.status === "planned");
+  // The dashboard is open to every signed-in user; someone who hasn't joined
+  // any kit yet gets a "pick a kit" surface instead of the overview.
+  const hasNoKits =
+    active.length === 0 && pending.length === 0 && needsSetup.length === 0;
 
   // Reading the wall clock in an async server component is intentional here,
   // same as admin's overview page — a stable "now" for every freshness label
@@ -88,12 +90,21 @@ export default async function DashboardPage() {
     <>
       <div data-tour="dashboard-welcome">
         <h1 className="font-display text-2xl font-bold tracking-tight">
-          Your kits
+          {hasNoKits ? "Pick a kit to get started" : "Your kits"}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {active.length} of {LIVE_KITS.length} kits connected — everything you
-          run through Merqo, in one place.
+          {hasNoKits
+            ? "Merqo is your control room for every kit you run — add one below and it shows up here."
+            : `${active.length} of ${LIVE_KITS.length} kits connected — everything you run through Merqo, in one place.`}
         </p>
+        {hasNoKits && provisionableSlugs.size > 0 && (
+          <div className="mt-4">
+            <ActivateKitsButton
+              slugs={[...provisionableSlugs]}
+              label="Activate all my kits"
+            />
+          </div>
+        )}
       </div>
 
       {(pending.length > 0 || needsSetup.length > 0) && (
@@ -140,7 +151,7 @@ export default async function DashboardPage() {
         </section>
       )}
 
-      <SavingsSummary totals={savings} />
+      {active.length > 0 && <SavingsSummary totals={savings} />}
 
       <section
         data-tour="kit-cards"

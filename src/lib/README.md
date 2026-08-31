@@ -47,8 +47,8 @@ that isn't a route or a component.
 - `vendor-metrics-client.ts` / `vendor-metrics-schema.ts` — fetch + Zod-validate a single vendor's per-kit stats for the vendor dashboard.
 - `vendor-activity-client.ts` / `vendor-activity-schema.ts` — fetch + Zod-validate a single vendor's per-kit triage status/metrics/last-activity from a live kit's `/api/merqo/vendor-activity`, for the admin `/admin/vendors/[email]` detail page. Never throws — a kit that hasn't implemented the endpoint, 404s, or is briefly down all collapse to `ok: false`.
 - `vendor-activity-client.test.ts` — 200/404/missing-config/schema-mismatch/network-failure cases for `getVendorActivity`.
-- `vendor-sync.ts` — provisions/syncs a vendor's `vendor_links` rows against the live kit registry.
-- `vendor.ts` — gates the vendor dashboard on an authenticated session with at least one kit grant.
+- `vendor-sync.ts` — provisions/syncs a vendor's `vendor_links` rows against the live kit registry; the kit-status sync is throttled per email via `merqo.vendor_sync_state` (`0023`), bypassed on fresh login (`force`).
+- `vendor.ts` — loads vendor/team context and gates the dashboard on an authenticated session only (`requireVendorSession`); `resolveHome` routes team members to `/admin`, everyone else to `/dashboard`.
 - `waitlist.ts` — adds an email to a kit's waitlist, from either the public landing form or the signed-in dashboard.
 - `savings.ts` / `savings.test.ts` — the "hours/cost saved" estimate shown on the vendor dashboard.
 - `vendor-feedback.test.ts`, `vendor-sync.test.ts`, `vendor.test.ts` — co-located unit tests for the same-named modules above.

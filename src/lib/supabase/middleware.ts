@@ -3,9 +3,9 @@ import { type NextRequest, NextResponse } from "next/server";
 import type { User } from "@supabase/supabase-js";
 
 // All operator areas require a session. Everything else (landing, /login,
-// /no-access) is public. Merqo-team membership and vendor-active status are
-// additionally enforced in each page via requireMerqoTeam() / requireActiveVendor();
-// the proxy only guarantees a session.
+// /no-access) is public. Merqo-team membership is additionally enforced in each
+// /admin page via requireMerqoTeam(); /dashboard needs only a session
+// (requireVendorSession). The proxy only guarantees a session.
 function isProtectedPath(path: string): boolean {
   return path.startsWith("/admin") || path.startsWith("/dashboard");
 }

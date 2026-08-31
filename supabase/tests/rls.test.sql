@@ -1,6 +1,6 @@
 -- merqo/supabase/tests/rls.test.sql
 -- RLS isolation — pgTAP, run with `supabase test db`.
--- Covers merqo's ten RLS-bearing tables: merqo_team (team-membership gates
+-- Covers merqo's eleven RLS-bearing tables: merqo_team (team-membership gates
 -- visibility of the WHOLE table, not just the caller's own row — see the
 -- comment below), products (RLS is a backstop only; `authenticated` has no
 -- table-level grant at all, so metrics_secret never reaches a browser-reachable
@@ -21,11 +21,12 @@
 -- table), and vendor_telegram (0020: RLS enabled, own-row select via
 -- `vendor_id = (select auth.uid())`, no client write grant — writes only via
 -- the service-role client, same shape as every kit's own now-retired copy of
--- this exact table).
+-- this exact table), and vendor_sync_state (0023: RLS enabled, zero client
+-- policies, service-role only — the dashboard-open kit-sync throttle marker).
 -- Runs in ONE rolled-back transaction with inline fixed-UUID fixtures.
 
 begin;
-select plan(83);
+select plan(86);
 
 -- ── Fixtures (created under the default/superuser test role → RLS + grants
 -- are bypassed here) ─────────────────────────────────────────────────────────
@@ -74,6 +75,10 @@ values ('00000000-0000-0000-0000-00000000000b', now());
 insert into merqo.vendor_telegram (vendor_id, chat_id)
 values ('00000000-0000-0000-0000-00000000000b', 555111);
 
+-- vendor_sync_state (0023) — service-role-only throttle marker, no client
+-- role gets any grant; one row so the no-read tests below have a target.
+insert into merqo.vendor_sync_state (email) values ('vendor-b@test.local');
+
 -- ── RLS is actually enabled on every protected table ─────────────────────────
 select ok((select relrowsecurity from pg_class where oid = 'merqo.merqo_team'::regclass), 'RLS on merqo_team');
 select ok((select relrowsecurity from pg_class where oid = 'merqo.products'::regclass), 'RLS on products');
@@ -85,6 +90,7 @@ select ok((select relrowsecurity from pg_class where oid = 'merqo.dashboard_pref
 select ok((select relrowsecurity from pg_class where oid = 'merqo.customers'::regclass), 'RLS on customers');
 select ok((select relrowsecurity from pg_class where oid = 'merqo.telegram_link_tokens'::regclass), 'RLS on telegram_link_tokens');
 select ok((select relrowsecurity from pg_class where oid = 'merqo.vendor_telegram'::regclass), 'RLS on vendor_telegram');
+select ok((select relrowsecurity from pg_class where oid = 'merqo.vendor_sync_state'::regclass), 'RLS on vendor_sync_state');
 
 -- merqo.upsert_customer (0018): first call inserts, a repeat call for the
 -- same (vendor_id, phone) updates name/last_seen_at but leaves
@@ -293,6 +299,10 @@ select throws_ok(
   $$ select 1 from merqo.telegram_link_tokens $$,
   '42501', null,
   'team member cannot SELECT telegram_link_tokens directly (service-role only)');
+select throws_ok(
+  $$ select 1 from merqo.vendor_sync_state $$,
+  '42501', null,
+  'team member cannot SELECT vendor_sync_state directly (service-role only)');
 
 -- vendor_telegram_own's USING clause is `vendor_id = (select auth.uid())` —
 -- an actual row-scoped predicate, unlike merqo_team/vendor_links/
@@ -487,6 +497,10 @@ select throws_ok(
   $$ select 1 from merqo.vendor_telegram $$,
   '42501', null,
   'anon cannot read vendor_telegram (no SELECT grant — that''s authenticated-only)');
+select throws_ok(
+  $$ select 1 from merqo.vendor_sync_state $$,
+  '42501', null,
+  'anon cannot read vendor_sync_state (service-role only)');
 
 -- The three 0019 Telegram-identity RPCs have no in-body caller check at
 -- all (unlike upsert_vendor_profile/submit_vendor_feedback) —

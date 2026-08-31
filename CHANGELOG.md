@@ -4,6 +4,27 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-08-31
+
+### Changed
+
+- `/dashboard` is now open to every signed-in user, not just vendors with an
+  active kit grant. Merqo is a free management hub with no Pro tier to gate —
+  a seller who has onboarded a kit (or none yet) reaches the dashboard
+  directly. A user with no kits gets a "pick a kit to get started" hero over
+  the discovery section; one or more kits gets the usual savings + per-kit
+  overview. `requireActiveVendor()` → `requireVendorSession()` (signed-in
+  only), `resolveHome()` drops its active-kit branch, and `/dashboard/pending`
+  is removed (its UI folded into the dashboard's zero-kits state). See
+  `docs/superpowers/specs/2026-08-31-open-merqo-dashboard-design.md`.
+
+### Added
+
+- `merqo.vendor_sync_state` (`0023`): a per-email throttle marker so
+  `syncVendorKits()` — which the now-open dashboard runs on every render —
+  skips its per-kit HTTP fan-out within a 60s window. Fresh logins bypass it
+  (`/post-login` passes `force`). Service-role only, RLS-on / zero-policy.
+
 ## [0.2.0] - 2026-08-27
 
 ### Added

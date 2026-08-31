@@ -3,9 +3,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-const { requireActiveVendorMock, syncVendorKitsMock, listLiveProductsMock } =
+const { requireVendorSessionMock, syncVendorKitsMock, listLiveProductsMock } =
   vi.hoisted(() => ({
-    requireActiveVendorMock: vi.fn(),
+    requireVendorSessionMock: vi.fn(),
     syncVendorKitsMock: vi.fn(),
     listLiveProductsMock: vi.fn(),
   }));
@@ -13,7 +13,7 @@ const { requireActiveVendorMock, syncVendorKitsMock, listLiveProductsMock } =
 vi.mock("@/lib/vendor", async () => {
   const actual =
     await vi.importActual<typeof import("@/lib/vendor")>("@/lib/vendor");
-  return { ...actual, requireActiveVendor: requireActiveVendorMock };
+  return { ...actual, requireVendorSession: requireVendorSessionMock };
 });
 vi.mock("@/lib/vendor-sync", () => ({ syncVendorKits: syncVendorKitsMock }));
 vi.mock("@/lib/products", () => ({ listLiveProducts: listLiveProductsMock }));
@@ -35,7 +35,7 @@ describe("DashboardPage — Ready to add kits", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("still shows a KitDiscoveryCard for paykit (kits.ts-live but no provisioning capability), with the old external login link instead of an activate button; loopkit gets the activate button", async () => {
-    requireActiveVendorMock.mockResolvedValue({
+    requireVendorSessionMock.mockResolvedValue({
       user: { id: "u1", email: "v@x.com" },
       isTeam: false,
       links: [{ product_slug: "qkit", status: "active", plan: "free" }],
@@ -97,7 +97,7 @@ describe("DashboardPage — Ready to add kits", () => {
   });
 
   it("degrades to no provisionable kits (old external links for every ready-to-add kit) when listLiveProducts throws", async () => {
-    requireActiveVendorMock.mockResolvedValue({
+    requireVendorSessionMock.mockResolvedValue({
       user: { id: "u1", email: "v@x.com" },
       isTeam: false,
       links: [],

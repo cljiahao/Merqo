@@ -2,17 +2,18 @@
 
 ## Purpose
 
-The vendor dashboard's active-kit overview and kit-discovery home —
-`/dashboard` for a vendor with at least one kit grant (a route group so
-`pending/`'s no-active-kit state can share the parent `dashboard/` URL
-without this group's own segment showing in the path). Gated one level up by
-`dashboard/layout.tsx`'s `requireActiveVendor()` call.
+The vendor dashboard's overview and kit-discovery home — `/dashboard`, open
+to every signed-in user (a route group purely to keep the layout shell and
+its own segment out of the URL path). Gated one level up by
+`dashboard/layout.tsx`'s `requireVendorSession()` call (signed-in only). A
+user with no kits gets a "pick a kit to get started" hero above the discovery
+section; one or more kits gets the savings + per-kit overview.
 
 ## Contents
 
 - `layout.tsx` — `DashboardLayout`. Resolves the signed-in vendor/team
-  context via `requireActiveVendor()`, redirects admins to `/admin` and a
-  brand-new user to `/onboarding` before this group's header shell paints,
+  context via `requireVendorSession()` (signed-in only — team members reach
+  here via the account-menu switch link and get a "Go to admin" item back),
   renders the sticky header (`Wordmark` + `@/components/account-menu.tsx`'s
   `AccountMenu`), and mounts `DashboardTour` with the vendor's
   `dashboard_prefs.tour_seen_at` threaded through as `seen`. Also, if
@@ -26,17 +27,19 @@ without this group's own segment showing in the path). Gated one level up by
   `stampTourSeen` fires when `tour_seen_at` is null/missing and never fires
   once it's already set.
 - `page.tsx` — `DashboardPage` (`revalidate = 0`). Re-syncs the vendor's kit
-  grants (`syncVendorKits`) so a kit added elsewhere shows up without a
-  fresh login, computes savings (`computeVendorSavings`) and per-kit live
-  metrics (`fetchVendorMetrics`), and renders — urgency-first, directly under
-  the `h1` — a merged "Needs your attention" band (requested + needs-setup
-  kits, admin overview's colored-row treatment), then the active-kit grid
-  (`VendorKitCard`, wrapped in a `data-tour="kit-cards"` section — the
-  dashboard tour's "your kits" spotlight target, see
+  grants (`syncVendorKits`, throttled) so a kit added elsewhere shows up
+  without a fresh login, computes savings (`computeVendorSavings`) and per-kit
+  live metrics (`fetchVendorMetrics`), and renders — urgency-first, directly
+  under the `h1` — a merged "Needs your attention" band (requested +
+  needs-setup kits, admin overview's colored-row treatment), then the
+  active-kit grid (`VendorKitCard`, wrapped in a `data-tour="kit-cards"`
+  section — the dashboard tour's "your kits" spotlight target, see
   `src/components/README.md`'s `tour-steps.ts` entry), then a
   `border-t`-divided "Explore more kits" / "Complete your toolkit"
   discovery section (`KitDiscoveryCard` +
-  `ActivateKitsButton`/`JoinWaitlistButton`).
+  `ActivateKitsButton`/`JoinWaitlistButton`). When the vendor has no kits at
+  all, the `h1` block is a "pick a kit to get started" hero with the bulk
+  `ActivateKitsButton`, and the savings/overview are skipped.
 - `page.test.tsx` — RTL coverage of the page's kit-grouping and re-sync
   behavior.
 - `loading.tsx` — skeleton shown while `page.tsx`'s data resolves.

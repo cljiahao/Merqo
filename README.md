@@ -104,8 +104,8 @@ release ships within the allowed range.
 ```
 src/app/                    — app router (landing, dashboard, admin console, server actions)
 src/app/page.tsx            — public brand landing (static-prerendered)
-src/app/dashboard/          — vendor dashboard: (app)/ (active-kit overview + kit discovery)
-                               and pending/ (no-active-kit state)
+src/app/dashboard/          — vendor dashboard: (app)/ (overview + kit discovery,
+                               open to every signed-in user)
 src/app/admin/              — Merqo-team console: overview (page.tsx) + vendors/, team/,
                                products/, feedback/, activity/ (all auth-gated)
 src/app/profile/            — shared account page (signed-in gate only — reachable from
