@@ -35,7 +35,10 @@ consolidated off qkit's/loopkit's own retired per-kit bots.
   `consent_given_at` and any queued `pending_notify_ref` for every
   `merqo.customers` row linked to that `chat_id` (no vendor scope — one
   `/stop` opts out of all of them), a no-op if the chat was never
-  connected — then confirms. Always responds `200` to any Telegram-shaped
+  connected — then confirms. Both `notify-customer` lookup modes then stop
+  resolving the chat: the `notify_ref` path because its ref is cleared, the
+  `phone` path because `find_customer_telegram_by_phone` guards on
+  `consent_given_at` (0026). Always responds `200` to any Telegram-shaped
   payload regardless of internal outcome — Telegram retries aggressively on
   a non-2xx, so every internal failure is logged, never surfaced as a
   webhook error. A malformed (non-JSON) body also gets a `200` rather than

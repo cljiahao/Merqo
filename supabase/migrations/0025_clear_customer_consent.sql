@@ -1,8 +1,8 @@
 -- merqo/supabase/migrations/0025_clear_customer_consent.sql
--- End-customer consent withdrawal via the Telegram bot's /stop command
--- (docs/superpowers/specs/2026-09-04-merqo-legal-docs-design.md — the
--- retention schedule names "consent withdrawn" as a real state for
--- merqo.customers, and Task 13 wires the /stop command that reaches it).
+-- End-customer consent withdrawal via the Telegram bot's /stop command —
+-- the legal-docs retention schedule names "consent withdrawn" as a real
+-- state for merqo.customers, and Task 13 wires the /stop command that
+-- reaches it.
 --
 -- merqo.customers has no table-level write grant to anyone (0018: "no
 -- client queries this table directly, only through the RPC"; 0019 restated

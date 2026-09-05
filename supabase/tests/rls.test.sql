@@ -11,10 +11,12 @@
 -- writes only via submit_vendor_feedback), billing_settings (0017:
 -- public-read singleton, no UPDATE grant to any client role), customers
 -- (0018, widened by 0019: RLS enabled with zero policies and no
--- table-level grant to anyone — reachable only through upsert_customer()
--- and 0019's three Telegram-identity RPCs — see the "Telegram identity"
--- block below for the PK/constraint-change verification 0019's own plan
--- called for), telegram_link_tokens (0019, widened by 0020's `kind` column:
+-- table-level grant to anyone — reachable only through upsert_customer(),
+-- 0019's three Telegram-identity RPCs, and 0025's
+-- clear_customer_consent_by_telegram() (0026 adds a consent guard to
+-- find_customer_telegram_by_phone) — see the "Telegram identity" block
+-- below for the PK/constraint-change verification 0019's own plan called
+-- for), telegram_link_tokens (0019, widened by 0020's `kind` column:
 -- RLS enabled, zero client policies, service-role only — same shape as
 -- customers' own zero-grant convention, restated via an explicit
 -- `grant ... to service_role` since 0012's blanket grant predates this
@@ -30,7 +32,7 @@
 -- Runs in ONE rolled-back transaction with inline fixed-UUID fixtures.
 
 begin;
-select plan(97);
+select plan(99);
 
 -- ── Fixtures (created under the default/superuser test role → RLS + grants
 -- are bypassed here) ─────────────────────────────────────────────────────────
@@ -205,6 +207,21 @@ select results_eq(
   $$ select merqo.find_customer_telegram_by_phone('00000000-0000-0000-0000-00000000000a', '+6591234567') $$,
   $$ values (null::bigint) $$,
   'find_customer_telegram_by_phone returns null when the phone matches but no Telegram chat is linked');
+
+-- 0026: the phone lookup requires consent, so /stop (which nulls
+-- consent_given_at) stops the loopkit reward path too — not just the
+-- notify_ref path. Resolves while consent is set; returns nothing once it
+-- is nulled (post-/stop), even though phone + telegram_chat_id still match.
+select results_eq(
+  $$ select merqo.find_customer_telegram_by_phone('00000000-0000-0000-0000-00000000000a', '+6590000001') $$,
+  $$ values (555666::bigint) $$,
+  'find_customer_telegram_by_phone resolves the chat while consent_given_at is set');
+update merqo.customers set consent_given_at = null
+  where vendor_id = '00000000-0000-0000-0000-00000000000a' and phone = '+6590000001';
+select results_eq(
+  $$ select merqo.find_customer_telegram_by_phone('00000000-0000-0000-0000-00000000000a', '+6590000001') $$,
+  $$ values (null::bigint) $$,
+  'find_customer_telegram_by_phone returns null once consent_given_at is nulled (post-/stop)');
 
 -- customers_vendor_telegram_idx (partial unique index) enforcement: a bare
 -- INSERT (not the upsert RPC's ON CONFLICT path) with an already-used

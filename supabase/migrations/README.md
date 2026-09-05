@@ -119,6 +119,14 @@ landing — a later migration corrects an earlier one.
   several vendors; `/stop` opts out of all of them). service_role EXECUTE,
   revoked from PUBLIC — same gate class as the three `0019` functions. A
   no-op for a chat that was never connected.
+- `0026_notify_phone_requires_consent.sql` — redefines `0019`'s
+  `find_customer_telegram_by_phone` with a `consent_given_at is not null`
+  guard on its WHERE clause. Without it, `notify-customer`'s phone lookup
+  mode (loopkit's reward path) still resolved a chat id after the customer
+  had `/stop`'d, since `/stop` (`0025`) only nulls `consent_given_at` /
+  `pending_notify_ref` and this function never checked the former. Same
+  `security definer` / `set search_path = ''` / service-role grant + PUBLIC
+  revoke as the `0019` original.
 
 ## Connectivity
 

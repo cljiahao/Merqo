@@ -22,8 +22,7 @@ function commandOf(text: string | undefined): string | undefined {
 /**
  * `/privacy` reply: links to the end-customer notice + Privacy Policy. The
  * notice is a plain-language disclosure, not a contract — there's no ToS
- * binding an end-customer. See
- * docs/superpowers/specs/2026-09-04-merqo-legal-docs-design.md.
+ * binding an end-customer.
  */
 function privacyReply(origin: string): string {
   return [
@@ -37,8 +36,11 @@ function privacyReply(origin: string): string {
 }
 
 /**
- * `/stop`: clears `consent_given_at` for the `merqo.customers` row(s) linked
- * to this Telegram chat, so the cross-kit notify path stops messaging them.
+ * `/stop`: clears `consent_given_at` (and any queued `pending_notify_ref`)
+ * for the `merqo.customers` row(s) linked to this Telegram chat. Both
+ * notify-customer lookup modes then stop resolving the chat — the
+ * `notify_ref` path because its ref is cleared, the `phone` path because
+ * `find_customer_telegram_by_phone` guards on `consent_given_at` (0026).
  * Keyed on the incoming `chat_id` alone — no vendor scope, because one chat
  * can be linked under several vendors and `/stop` opts out of all of them.
  * The customers table has no direct write grant (0018/0019), so this goes
