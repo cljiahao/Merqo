@@ -207,6 +207,65 @@ describe("POST /api/telegram/webhook", () => {
     expect(res.status).toBe(200);
   });
 
+  it("replies to /privacy with links to the end-customer notice and the Privacy Policy", async () => {
+    const res = await POST(
+      makeRequest({ message: { text: "/privacy", chat: { id: 555 } } }),
+    );
+    expect(res.status).toBe(200);
+    expect(from).not.toHaveBeenCalled();
+    expect(rpc).not.toHaveBeenCalled();
+    const [chatId, text] = sendTelegramMessage.mock.calls[0];
+    expect(chatId).toBe(555);
+    expect(text).toContain("Privacy Policy");
+    expect(text).toContain(
+      "https://merqo.example.com/legal/end-customer-notice",
+    );
+    expect(text).toContain("https://merqo.example.com/legal/privacy");
+  });
+
+  it("handles /privacy@botname (Telegram's group-chat command form) too", async () => {
+    const res = await POST(
+      makeRequest({
+        message: { text: "/privacy@merqo_bot", chat: { id: 556 } },
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(sendTelegramMessage).toHaveBeenCalledWith(
+      556,
+      expect.stringContaining("/legal/privacy"),
+    );
+  });
+
+  it("replies to /stop by clearing consent for that chat_id and confirming", async () => {
+    const res = await POST(
+      makeRequest({ message: { text: "/stop", chat: { id: 888 } } }),
+    );
+    expect(res.status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("clear_customer_consent_by_telegram", {
+      p_telegram_chat_id: 888,
+    });
+    const [chatId, text] = sendTelegramMessage.mock.calls[0];
+    expect(chatId).toBe(888);
+    expect(text).toMatch(/unsubscrib/i);
+  });
+
+  it("still confirms /stop (and responds 200) when the consent-clear RPC errors", async () => {
+    rpc.mockResolvedValueOnce({ data: null, error: { message: "boom" } });
+    const res = await POST(
+      makeRequest({ message: { text: "/stop", chat: { id: 889 } } }),
+    );
+    expect(res.status).toBe(200);
+    expect(sendTelegramMessage).toHaveBeenCalledWith(889, expect.any(String));
+  });
+
+  it("responds 200 (not 500) when the /stop RPC throws", async () => {
+    rpc.mockRejectedValueOnce(new Error("db unreachable"));
+    const res = await POST(
+      makeRequest({ message: { text: "/stop", chat: { id: 890 } } }),
+    );
+    expect(res.status).toBe(200);
+  });
+
   it("responds 200 (not 500) on a malformed JSON body", async () => {
     const req = new Request("https://merqo.example.com/api/telegram/webhook", {
       method: "POST",

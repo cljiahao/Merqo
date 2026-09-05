@@ -30,7 +30,7 @@
 -- Runs in ONE rolled-back transaction with inline fixed-UUID fixtures.
 
 begin;
-select plan(92);
+select plan(97);
 
 -- ── Fixtures (created under the default/superuser test role → RLS + grants
 -- are bypassed here) ─────────────────────────────────────────────────────────
@@ -214,6 +214,38 @@ select throws_ok(
      values ('00000000-0000-0000-0000-00000000000a', 333444, now()) $$,
   '23505', null,
   'customers_vendor_telegram_idx rejects a duplicate (vendor_id, telegram_chat_id)');
+
+-- ── /stop consent withdrawal (0025) — clear_customer_consent_by_telegram ─────
+-- Exercised under the default/superuser test role, same as the RPCs above
+-- (customers grants no client role direct access).
+
+select lives_ok(
+  $$ insert into merqo.customers (vendor_id, telegram_chat_id, consent_given_at, pending_notify_ref)
+     values ('00000000-0000-0000-0000-00000000000a', 909090, now(), 'qkit:order-stop') $$,
+  'fixture: a connected, consented customer for the /stop test');
+
+select lives_ok(
+  $$ select merqo.clear_customer_consent_by_telegram(909090) $$,
+  'clear_customer_consent_by_telegram runs for a connected chat');
+select results_eq(
+  $$ select consent_given_at, pending_notify_ref from merqo.customers
+     where vendor_id = '00000000-0000-0000-0000-00000000000a' and telegram_chat_id = 909090 $$,
+  $$ values (null::timestamptz, null::text) $$,
+  'it clears both consent_given_at and any queued pending_notify_ref for that chat');
+
+-- A /stop from a chat that was never connected is a no-op, never an error.
+select lives_ok(
+  $$ select merqo.clear_customer_consent_by_telegram(424242) $$,
+  'clear_customer_consent_by_telegram is a no-op (not an error) for an unknown chat');
+
+-- anon/authenticated cannot call it directly (revoked from public) — same
+-- gate class as the three 0019 functions.
+set local role authenticated;
+select throws_ok(
+  $$ select merqo.clear_customer_consent_by_telegram(909090) $$,
+  '42501', null,
+  'clear_customer_consent_by_telegram is not callable as authenticated (revoked from public)');
+reset role;
 
 -- ── Vendor Telegram (0020) — telegram_link_tokens' new `kind` column ─────────
 -- Exercised under the default/superuser test role, same as the fixture

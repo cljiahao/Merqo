@@ -9,6 +9,61 @@ export const revalidate = 0;
 const START_PREFIX = "/start ";
 
 /**
+ * The leading command word of a message, normalised — `/privacy@merqobot arg`
+ * and `  /PRIVACY ` both resolve to `/privacy`. Returns undefined for a
+ * non-command message.
+ */
+function commandOf(text: string | undefined): string | undefined {
+  const first = text?.trim().split(/\s+/, 1)[0]?.toLowerCase();
+  if (!first?.startsWith("/")) return undefined;
+  return first.split("@", 1)[0];
+}
+
+/**
+ * `/privacy` reply: links to the end-customer notice + Privacy Policy. The
+ * notice is a plain-language disclosure, not a contract — there's no ToS
+ * binding an end-customer. See
+ * docs/superpowers/specs/2026-09-04-merqo-legal-docs-design.md.
+ */
+function privacyReply(origin: string): string {
+  return [
+    "Merqo sends you order and reward updates on behalf of the shop you bought from.",
+    "",
+    `How your information is used: ${origin}/legal/end-customer-notice`,
+    `Full Privacy Policy: ${origin}/legal/privacy`,
+    "",
+    "Reply /stop to stop these messages.",
+  ].join("\n");
+}
+
+/**
+ * `/stop`: clears `consent_given_at` for the `merqo.customers` row(s) linked
+ * to this Telegram chat, so the cross-kit notify path stops messaging them.
+ * Keyed on the incoming `chat_id` alone — no vendor scope, because one chat
+ * can be linked under several vendors and `/stop` opts out of all of them.
+ * The customers table has no direct write grant (0018/0019), so this goes
+ * through a SECURITY DEFINER RPC. A `/stop` from a chat that was never
+ * connected clears nothing and still gets the same confirmation.
+ */
+async function handleStop(chatId: number): Promise<void> {
+  const supabase = await createServiceClient();
+  const { error } = await supabase.rpc("clear_customer_consent_by_telegram", {
+    p_telegram_chat_id: chatId,
+  });
+  if (error) {
+    console.error(
+      "telegram webhook: clear_customer_consent_by_telegram failed",
+      error.message,
+    );
+  }
+  await sendTelegramMessage(
+    chatId,
+    "You're unsubscribed. This bot will no longer send you order or reward updates. " +
+      "The shop you bought from still has your order details — contact them directly for anything about your order.",
+  );
+}
+
+/**
  * Constant-time check of Telegram's `X-Telegram-Bot-Api-Secret-Token`
  * header against `TELEGRAM_WEBHOOK_SECRET` (configured on this bot's
  * `setWebhook` call — see docs/DEPLOY.md's deploy notes). Mandatory, not
@@ -133,6 +188,22 @@ export async function POST(request: Request): Promise<Response> {
       // Internal failure resolving/linking — log it, but Telegram retries
       // aggressively on any non-2xx, so this must never surface as one.
       console.error("telegram webhook: /start handling failed", err);
+    }
+  } else if (message) {
+    const cmd = commandOf(message.text);
+    try {
+      if (cmd === "/privacy") {
+        await sendTelegramMessage(
+          message.chat.id,
+          privacyReply(new URL(request.url).origin),
+        );
+      } else if (cmd === "/stop") {
+        await handleStop(message.chat.id);
+      }
+    } catch (err) {
+      // Same reason as /start above — a failed reply or consent-clear is
+      // logged, never a non-2xx that Telegram would retry.
+      console.error(`telegram webhook: ${cmd} handling failed`, err);
     }
   }
 

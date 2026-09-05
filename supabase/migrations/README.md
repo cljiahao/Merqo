@@ -112,6 +112,13 @@ landing — a later migration corrects an earlier one.
   `legal_acceptances_own_select` (same `is_merqo_team(...)` +
   lower-email-match shape as `vendor_links_own_select`); service_role gets
   the only client-reachable insert grant.
+- `0025_clear_customer_consent.sql` — `merqo.clear_customer_consent_by_telegram(bigint)`:
+  SECURITY DEFINER RPC the Telegram bot's `/stop` command calls to clear
+  `consent_given_at` + any queued `pending_notify_ref` for every
+  `merqo.customers` row linked to a chat id (one chat can be linked under
+  several vendors; `/stop` opts out of all of them). service_role EXECUTE,
+  revoked from PUBLIC — same gate class as the three `0019` functions. A
+  no-op for a chat that was never connected.
 
 ## Connectivity
 
