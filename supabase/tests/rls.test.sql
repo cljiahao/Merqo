@@ -1,6 +1,6 @@
 -- merqo/supabase/tests/rls.test.sql
 -- RLS isolation — pgTAP, run with `supabase test db`.
--- Covers merqo's eleven RLS-bearing tables: merqo_team (team-membership gates
+-- Covers merqo's twelve RLS-bearing tables: merqo_team (team-membership gates
 -- visibility of the WHOLE table, not just the caller's own row — see the
 -- comment below), products (RLS is a backstop only; `authenticated` has no
 -- table-level grant at all, so metrics_secret never reaches a browser-reachable
@@ -21,12 +21,16 @@
 -- table), and vendor_telegram (0020: RLS enabled, own-row select via
 -- `vendor_id = (select auth.uid())`, no client write grant — writes only via
 -- the service-role client, same shape as every kit's own now-retired copy of
--- this exact table), and vendor_sync_state (0023: RLS enabled, zero client
--- policies, service-role only — the dashboard-open kit-sync throttle marker).
+-- this exact table), vendor_sync_state (0023: RLS enabled, zero client
+-- policies, service-role only — the dashboard-open kit-sync throttle marker),
+-- and legal_acceptances (0024: RLS enabled, own-email select via
+-- `lower(vendor_email) = lower(jwt email)` plus a team-sees-all branch —
+-- same own-row-vs-team-select shape as vendor_links, service-role gets the
+-- only client-reachable write grant).
 -- Runs in ONE rolled-back transaction with inline fixed-UUID fixtures.
 
 begin;
-select plan(86);
+select plan(92);
 
 -- ── Fixtures (created under the default/superuser test role → RLS + grants
 -- are bypassed here) ─────────────────────────────────────────────────────────
@@ -553,6 +557,71 @@ select throws_ok(
   $$ update merqo.billing_settings set bundle_discount_enabled = true where id = 1 $$,
   '42501', null,
   'anon cannot update billing_settings (no UPDATE policy/grant)');
+
+reset role;
+
+-- ── legal_acceptances (0024) ──────────────────────────────────────────────
+-- Append-only vendor Terms/Privacy/Pilot acceptance record — see
+-- docs/superpowers/specs/2026-09-04-merqo-legal-docs-design.md.
+-- legal_acceptances_own_select mirrors vendor_links_own_select's exact
+-- shape: `is_merqo_team(...) OR lower(vendor_email) = lower(jwt email)`, so
+-- a team member sees every row and a vendor sees only rows matching their
+-- own JWT email. Only service_role gets an INSERT grant — a kit's
+-- server-side HTTP call or merqo's own server action, never a
+-- browser-reachable write.
+
+select ok(
+  (select relrowsecurity from pg_class where oid = 'merqo.legal_acceptances'::regclass),
+  'RLS on legal_acceptances');
+
+set local role service_role;
+select lives_ok(
+  $$ insert into merqo.legal_acceptances
+       (vendor_email, auth_uid, doc_type, doc_version, doc_sha256, kit_slug, ip, user_agent)
+     values
+       ('vendor-b@test.local', '00000000-0000-0000-0000-00000000000b', 'terms', 'v1',
+        'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', 'qkit',
+        '127.0.0.1', 'pgTAP') $$,
+  'service_role inserts a legal_acceptances row');
+select throws_ok(
+  $$ insert into merqo.legal_acceptances
+       (vendor_email, auth_uid, doc_type, doc_version, doc_sha256, kit_slug)
+     values
+       ('vendor-b@test.local', '00000000-0000-0000-0000-00000000000b', 'terms', 'v1',
+        'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', 'qkit') $$,
+  '23505', null,
+  'a duplicate (vendor_email, doc_type, doc_version) insert violates the unique constraint');
+reset role;
+
+-- vendor-b's own JWT email matches vendor_email — sees their own row.
+set local role authenticated;
+select set_config(
+  'request.jwt.claims',
+  json_build_object('sub', '00000000-0000-0000-0000-00000000000b', 'role', 'authenticated', 'email', 'vendor-b@test.local')::text,
+  true);
+select isnt_empty(
+  $$ select 1 from merqo.legal_acceptances where vendor_email = 'vendor-b@test.local' $$,
+  'a vendor whose JWT email matches vendor_email can select their own acceptance row');
+
+-- vendor-c is authenticated but a different email — the RLS filter empties
+-- the result, not a privilege error (authenticated has the SELECT grant).
+select set_config(
+  'request.jwt.claims',
+  json_build_object('sub', '00000000-0000-0000-0000-00000000000c', 'role', 'authenticated', 'email', 'vendor-c@test.local')::text,
+  true);
+select is_empty(
+  $$ select 1 from merqo.legal_acceptances where vendor_email = 'vendor-b@test.local' $$,
+  'a vendor with a different JWT email cannot select another vendor''s acceptance row');
+
+-- team-a is on merqo_team — the team branch passes regardless of row, same
+-- as vendor_links_own_select above.
+select set_config(
+  'request.jwt.claims',
+  json_build_object('sub', '00000000-0000-0000-0000-00000000000a', 'role', 'authenticated', 'email', 'team-a@test.local')::text,
+  true);
+select isnt_empty(
+  $$ select 1 from merqo.legal_acceptances where vendor_email = 'vendor-b@test.local' $$,
+  'a team member can select any vendor''s legal_acceptances row');
 
 reset role;
 

@@ -105,6 +105,13 @@ landing — a later migration corrects an earlier one.
   its per-kit HTTP fan-out within a 60s window, now that `/dashboard` is open
   to every signed-in user and re-syncs on every render. Service-role only,
   RLS-on with zero client policies (same shape as `telegram_link_tokens`).
+- `0024_legal_acceptances.sql` — `merqo.legal_acceptances`: append-only
+  vendor Terms/Privacy/Pilot acceptance record, unique on
+  `(vendor_email, doc_type, doc_version)`, with `doc_sha256` proving what
+  was actually rendered at acceptance time. Own-email select via
+  `legal_acceptances_own_select` (same `is_merqo_team(...)` +
+  lower-email-match shape as `vendor_links_own_select`); service_role gets
+  the only client-reachable insert grant.
 
 ## Connectivity
 
