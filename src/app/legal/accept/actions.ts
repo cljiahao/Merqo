@@ -3,6 +3,7 @@
 import { createHash } from "node:crypto";
 import { redirect } from "next/navigation";
 import { createServerClient, createServiceClient } from "@/lib/supabase/server";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 import { getLegalDocSource, LEGAL_VERSIONS } from "@merqo/ui";
 
 function sha256(input: string): string {
@@ -10,11 +11,13 @@ function sha256(input: string): string {
 }
 
 /**
- * Records both terms + privacy acceptance rows for the signed-in vendor and
- * sends them on to `next`. Idempotent: a duplicate (vendor_email, doc_type,
- * doc_version) unique-constraint violation (Postgres 23505 — the vendor
- * already accepted this exact version, e.g. a double form submit) is treated
- * as success, matching /api/merqo/legal-accept's same tolerance.
+ * Records terms + privacy acceptance rows for the signed-in vendor and sends
+ * them on to `next`. Each doc type is inserted independently: a duplicate
+ * (vendor_email, doc_type, doc_version) unique-constraint violation (Postgres
+ * 23505 — this exact version was already accepted, e.g. a double form submit,
+ * or the vendor is already current on one doc but not the other since terms
+ * and privacy versions bump independently) is tolerated per doc type, so a
+ * conflict on one never blocks the other from being persisted.
  */
 export async function acceptLegalTerms(formData: FormData): Promise<void> {
   const supabase = await createServerClient();
@@ -27,27 +30,22 @@ export async function acceptLegalTerms(formData: FormData): Promise<void> {
   }
 
   const service = await createServiceClient();
-  const rows = [
-    {
-      vendor_email: user.email.toLowerCase(),
+  const email = user.email.toLowerCase();
+  const docTypes = ["terms", "privacy"] as const;
+
+  for (const docType of docTypes) {
+    const { error } = await service.from("legal_acceptances").insert({
+      vendor_email: email,
       auth_uid: user.id,
-      doc_type: "terms" as const,
-      doc_version: LEGAL_VERSIONS.terms,
-      doc_sha256: sha256(getLegalDocSource("terms")),
+      doc_type: docType,
+      doc_version: LEGAL_VERSIONS[docType],
+      doc_sha256: sha256(getLegalDocSource(docType)),
       kit_slug: "merqo",
-    },
-    {
-      vendor_email: user.email.toLowerCase(),
-      auth_uid: user.id,
-      doc_type: "privacy" as const,
-      doc_version: LEGAL_VERSIONS.privacy,
-      doc_sha256: sha256(getLegalDocSource("privacy")),
-      kit_slug: "merqo",
-    },
-  ];
-  const { error } = await service.from("legal_acceptances").insert(rows);
-  if (error && error.code !== "23505") {
-    throw new Error(`legal acceptance insert failed: ${error.message}`);
+    });
+    if (error && error.code !== "23505") {
+      throw new Error(`legal acceptance insert failed: ${error.message}`);
+    }
   }
-  redirect(String(formData.get("next") || "/dashboard"));
+
+  redirect(safeRedirectPath(String(formData.get("next") || ""), "/dashboard"));
 }

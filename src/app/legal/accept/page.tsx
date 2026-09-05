@@ -1,4 +1,5 @@
 import { AcceptForm } from "./accept-form";
+import { safeRedirectPath } from "@/lib/safe-redirect";
 
 export const revalidate = 0;
 
@@ -21,7 +22,7 @@ export default async function LegalAcceptPage({
       <p className="mb-6 text-sm text-muted-foreground">
         Please review and accept before continuing.
       </p>
-      <AcceptForm next={next ?? "/dashboard"} />
+      <AcceptForm next={safeRedirectPath(next, "/dashboard")} />
     </div>
   );
 }

@@ -39,7 +39,7 @@ describe("acceptLegalTerms", () => {
     expect(insertMock).not.toHaveBeenCalled();
   });
 
-  it("inserts both terms and privacy rows and redirects to the next param on success", async () => {
+  it("inserts terms and privacy as two independent rows and redirects to the next param on success", async () => {
     getUserMock.mockResolvedValue({
       data: { user: { id: "u1", email: "Vendor@Business.sg" } },
     });
@@ -48,7 +48,9 @@ describe("acceptLegalTerms", () => {
     await acceptLegalTerms(formData("/dashboard/settings"));
 
     expect(fromMock).toHaveBeenCalledWith("legal_acceptances");
-    expect(insertMock).toHaveBeenCalledWith([
+    expect(insertMock).toHaveBeenCalledTimes(2);
+    expect(insertMock).toHaveBeenNthCalledWith(
+      1,
       expect.objectContaining({
         vendor_email: "vendor@business.sg",
         auth_uid: "u1",
@@ -56,6 +58,9 @@ describe("acceptLegalTerms", () => {
         doc_version: "2026-09-04",
         kit_slug: "merqo",
       }),
+    );
+    expect(insertMock).toHaveBeenNthCalledWith(
+      2,
       expect.objectContaining({
         vendor_email: "vendor@business.sg",
         auth_uid: "u1",
@@ -63,7 +68,7 @@ describe("acceptLegalTerms", () => {
         doc_version: "2026-09-04",
         kit_slug: "merqo",
       }),
-    ]);
+    );
     expect(redirectMock).toHaveBeenCalledWith("/dashboard/settings");
   });
 
@@ -99,5 +104,51 @@ describe("acceptLegalTerms", () => {
       "boom",
     );
     expect(redirectMock).not.toHaveBeenCalled();
+  });
+
+  it("inserts privacy successfully even when terms conflicts (23505) — independent per-doc-type idempotency", async () => {
+    // Old single batched insert([rows]) would have dropped privacy here too.
+    getUserMock.mockResolvedValue({
+      data: { user: { id: "u1", email: "vendor@business.sg" } },
+    });
+    insertMock.mockImplementation(async (row: { doc_type: string }) => {
+      if (row.doc_type === "terms") {
+        return { error: { code: "23505" } };
+      }
+      return { error: null };
+    });
+
+    await acceptLegalTerms(formData("/dashboard"));
+
+    expect(insertMock).toHaveBeenCalledTimes(2);
+    expect(insertMock).toHaveBeenCalledWith(
+      expect.objectContaining({ doc_type: "privacy" }),
+    );
+    expect(redirectMock).toHaveBeenCalledWith("/dashboard");
+  });
+
+  it("rejects an unsafe absolute/protocol-relative next and falls back to /dashboard", async () => {
+    getUserMock.mockResolvedValue({
+      data: { user: { id: "u1", email: "vendor@business.sg" } },
+    });
+    insertMock.mockResolvedValue({ error: null });
+
+    await acceptLegalTerms(formData("https://evil.example"));
+    expect(redirectMock).toHaveBeenCalledWith("/dashboard");
+
+    redirectMock.mockClear();
+    await acceptLegalTerms(formData("//evil.example"));
+    expect(redirectMock).toHaveBeenCalledWith("/dashboard");
+  });
+
+  it("preserves a legitimate relative next path", async () => {
+    getUserMock.mockResolvedValue({
+      data: { user: { id: "u1", email: "vendor@business.sg" } },
+    });
+    insertMock.mockResolvedValue({ error: null });
+
+    await acceptLegalTerms(formData("/admin"));
+
+    expect(redirectMock).toHaveBeenCalledWith("/admin");
   });
 });
