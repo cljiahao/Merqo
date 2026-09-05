@@ -30,9 +30,9 @@ export async function GET(request: Request): Promise<Response> {
   const supabase = await createServiceClient();
   const { data, error } = await supabase
     .from("legal_acceptances")
-    .select("doc_type, doc_version")
+    .select("doc_type, doc_version, accepted_at")
     .eq("vendor_email", email.toLowerCase())
-    .order("doc_version", { ascending: false });
+    .order("accepted_at", { ascending: false });
 
   if (error) {
     console.error("legal-status: read failed", error.message);
