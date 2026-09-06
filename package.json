@@ -1,6 +1,6 @@
 {
   "name": "merqo",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "packageManager": "pnpm@11.10.0",
   "scripts": {
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "^13.13.0",
-    "@merqo/ui": "github:cljiahao/merqo-ui#v0.24.0",
+    "@merqo/ui": "github:cljiahao/merqo-ui#v0.25.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.110.0",
     "class-variance-authority": "^0.7.1",
