@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "check": "prettier --check . && eslint . && tsc --noEmit",
+    "check:legal-versions": "node scripts/check-legal-version-skew.mjs",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
