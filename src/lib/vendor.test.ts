@@ -137,13 +137,7 @@ describe("requireVendorSession", () => {
   });
 
   it("redirects when the vendor's most-recently-accepted (by accepted_at) terms version is stale, even though an earlier acceptance of the current version has a higher doc_version string", async () => {
-    // Row order here deliberately disagrees between doc_version's string
-    // sort and accepted_at's real order: the vendor accepted the CURRENT
-    // version long ago, then most recently (re-)accepted an OLDER, stale
-    // version. Sorting by doc_version desc would pick the current-version
-    // row (its string sorts highest) and wrongly conclude "current" — this
-    // only redirects if the gate orders by accepted_at descending instead,
-    // reflecting the vendor's actual latest action.
+    // Current version accepted long ago, stale version accepted most recently — only redirects if sorted by accepted_at, not doc_version.
     getUserMock.mockResolvedValue({
       data: { user: { id: "u1", email: "vendor@business.sg" } },
     });
