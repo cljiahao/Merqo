@@ -13,7 +13,10 @@ line matching the legal docs' phrasing, linked from the landing `Nav` and
   reads "Dashboard" for a signed-in vendor and "Sign in" otherwise. Wraps
   the same `Nav`/`Footer` from `@/components/landing/` as the landing
   page, so this page keeps normal site navigation instead of the bare,
-  chrome-less layout `legal/*` uses.
+  chrome-less layout `legal/*` uses. The story itself is `@merqo/ui`'s
+  shared `AboutMerqo` component (one source, reused by every kit's own
+  `/about` page too) — this page supplies only the `Nav`/`Footer` and
+  the "See the kits" CTA as `AboutMerqo`'s `children`.
 - `page.test.tsx` — covers the founder-note copy, the `#kits` CTA link,
   and the signed-in-vendor Dashboard CTA.
 

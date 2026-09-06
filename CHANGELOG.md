@@ -4,6 +4,18 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-09-07
+
+### Changed
+
+- `/about`'s origin-story content moved into `@merqo/ui`'s new shared
+  `AboutMerqo` component (one source, reused by every kit's own `/about`
+  page too) — this page now only supplies `Nav`/`Footer` and the CTA.
+- `@merqo/ui` bumped to `v0.25.0`: a pre-lawyer-review legal-wording pass
+  (no em dashes, PDPA-accurate rights language, added missing
+  no-warranty/IP clauses to the standard Terms), and a "← Back" button
+  on every `/legal/*` page.
+
 ## [0.6.0] - 2026-09-06
 
 ### Changed
