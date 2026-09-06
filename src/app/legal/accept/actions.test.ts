@@ -22,10 +22,9 @@ vi.mock("next/headers", () => ({ headers: headersMock }));
 
 import { acceptLegalTerms } from "./actions";
 
-function formData(next?: string, legalName = "Vendor Name"): FormData {
+function formData(next?: string): FormData {
   const fd = new FormData();
   if (next) fd.set("next", next);
-  if (legalName) fd.set("legal_name", legalName);
   return fd;
 }
 
@@ -68,7 +67,6 @@ describe("acceptLegalTerms", () => {
         doc_type: "terms",
         doc_version: "2026-09-04",
         kit_slug: "merqo",
-        legal_name: "Vendor Name",
         ip: "203.0.113.9",
         user_agent: "test-agent/1.0",
       }),
@@ -81,24 +79,11 @@ describe("acceptLegalTerms", () => {
         doc_type: "privacy",
         doc_version: "2026-09-04",
         kit_slug: "merqo",
-        legal_name: "Vendor Name",
         ip: "203.0.113.9",
         user_agent: "test-agent/1.0",
       }),
     );
     expect(redirectMock).toHaveBeenCalledWith("/dashboard/settings");
-  });
-
-  it("throws when legal_name is missing from the submitted form (no insert attempted)", async () => {
-    getUserMock.mockResolvedValue({
-      data: { user: { id: "u1", email: "vendor@business.sg" } },
-    });
-
-    await expect(acceptLegalTerms(formData("/dashboard", ""))).rejects.toThrow(
-      /legal_name/i,
-    );
-    expect(insertMock).not.toHaveBeenCalled();
-    expect(redirectMock).not.toHaveBeenCalled();
   });
 
   it("redirects to /dashboard when no next param is given", async () => {

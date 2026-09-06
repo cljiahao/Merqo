@@ -38,11 +38,6 @@ export async function acceptLegalTerms(formData: FormData): Promise<void> {
     return;
   }
 
-  const legalName = String(formData.get("legal_name") || "").trim();
-  if (!legalName) {
-    throw new Error("legal_name is required");
-  }
-
   const hdrs = await headers();
   const ip = clientIp(hdrs);
   const userAgent = hdrs.get("user-agent");
@@ -59,7 +54,6 @@ export async function acceptLegalTerms(formData: FormData): Promise<void> {
       doc_version: LEGAL_VERSIONS[docType],
       doc_sha256: sha256(getLegalDocSource(docType)),
       kit_slug: "merqo",
-      legal_name: legalName,
       ip,
       user_agent: userAgent,
     });

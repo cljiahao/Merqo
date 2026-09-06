@@ -12,7 +12,6 @@ const bodySchema = z.object({
   doc_version: z.string().min(1),
   doc_sha256: z.string().length(64),
   kit_slug: z.string().min(1),
-  legal_name: z.string().min(1),
   ip: z.string().optional(),
   user_agent: z.string().optional(),
 });
@@ -55,7 +54,6 @@ export async function POST(request: Request): Promise<Response> {
     doc_version: parsed.data.doc_version,
     doc_sha256: parsed.data.doc_sha256,
     kit_slug: parsed.data.kit_slug,
-    legal_name: parsed.data.legal_name,
     ip: parsed.data.ip ?? request.headers.get("x-forwarded-for"),
     user_agent: parsed.data.user_agent ?? request.headers.get("user-agent"),
   });

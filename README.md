@@ -49,9 +49,13 @@ badge actually looks like — see
 (workspace root, cross-kit spec). The landing footer matches qkit's exactly
 (single-row wordmark/tagline/credit-line/sign-in link, no CTA band above it).
 
-Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.20.0`), the shared
+Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.24.0`), the shared
 component package for the kit family (see qkit/loopkit/paykit/stockkit for
-the same dependency). `useAsyncAction`, `InfoTooltip`, `Section`,
+the same dependency). As of `v0.24.0`, `TermsAcceptanceCheckbox` no longer
+collects a typed legal name — just the agree checkbox — since a plain
+ToS/Privacy clickwrap doesn't need a signatory name for evidentiary
+strength beyond the existing acceptance record (see `/legal/accept`'s
+own README). `useAsyncAction`, `InfoTooltip`, `Section`,
 `TwoColumnSections`, `ImageUploader`, and `DashboardTour` are used directly
 or through a thin per-app adapter (`src/hooks/use-async-action.ts`,
 `src/lib/image-upload-adapter.ts`, `src/components/dashboard-tour.tsx`).
