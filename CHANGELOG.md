@@ -4,6 +4,18 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-09-06
+
+### Changed
+
+- Dropped the required typed legal-name field from terms/privacy
+  acceptance — a plain ToS/Privacy clickwrap doesn't need a signatory
+  name for evidentiary strength beyond the existing (vendor_email,
+  auth_uid, doc_type, doc_version, ip, user_agent, timestamp) record;
+  `legal_acceptances.legal_name` (added `0027`) is dropped again in
+  `0028`. `@merqo/ui` bumped to `v0.24.0` (`TermsAcceptanceCheckbox` no
+  longer takes `legalName`/`onLegalNameChange`).
+
 ## [0.5.0] - 2026-09-06
 
 ### Added

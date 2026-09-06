@@ -31,20 +31,6 @@ describe("POST /api/merqo/legal-accept", () => {
     expect(res.status).toBe(400);
   });
 
-  it("rejects a body missing legal_name", async () => {
-    const res = await POST(
-      req({
-        vendor_email: "vendor@example.com",
-        auth_uid: "11111111-1111-1111-1111-111111111111",
-        doc_type: "terms",
-        doc_version: "2026-09-04",
-        doc_sha256: "a".repeat(64),
-        kit_slug: "qkit",
-      }),
-    );
-    expect(res.status).toBe(400);
-  });
-
   it("inserts a valid acceptance and returns ok", async () => {
     const insert = vi.fn().mockResolvedValue({ error: null });
     vi.mocked(createServiceClient).mockResolvedValue({
@@ -59,14 +45,13 @@ describe("POST /api/merqo/legal-accept", () => {
         doc_version: "2026-09-04",
         doc_sha256: "a".repeat(64),
         kit_slug: "qkit",
-        legal_name: "Vendor Name",
       }),
     );
     expect(res.status).toBe(200);
     expect(insert).toHaveBeenCalled();
   });
 
-  it("inserts the provided legal_name/ip/user_agent verbatim when the kit forwards its own real values", async () => {
+  it("inserts the provided ip/user_agent verbatim when the kit forwards its own real values", async () => {
     const insert = vi.fn().mockResolvedValue({ error: null });
     vi.mocked(createServiceClient).mockResolvedValue({
       from: () => ({ insert }),
@@ -81,7 +66,6 @@ describe("POST /api/merqo/legal-accept", () => {
           doc_version: "2026-09-04",
           doc_sha256: "a".repeat(64),
           kit_slug: "qkit",
-          legal_name: "Vendor Name",
           ip: "203.0.113.9",
           user_agent: "kit-forwarded-agent/1.0",
         },
@@ -91,7 +75,6 @@ describe("POST /api/merqo/legal-accept", () => {
     expect(res.status).toBe(200);
     expect(insert).toHaveBeenCalledWith(
       expect.objectContaining({
-        legal_name: "Vendor Name",
         ip: "203.0.113.9",
         user_agent: "kit-forwarded-agent/1.0",
       }),
@@ -119,7 +102,6 @@ describe("POST /api/merqo/legal-accept", () => {
         doc_version: "2026-09-04",
         doc_sha256: "a".repeat(64),
         kit_slug: "qkit",
-        legal_name: "Vendor Name",
       }),
     });
     const res = await POST(request);
@@ -161,7 +143,6 @@ describe("POST /api/merqo/legal-accept", () => {
         doc_version: "2026-09-04",
         doc_sha256: "a".repeat(64),
         kit_slug: "qkit",
-        legal_name: "Vendor Name",
       }),
     );
     expect(res.status).toBe(500);
@@ -183,7 +164,6 @@ describe("POST /api/merqo/legal-accept", () => {
         doc_version: "2026-09-04",
         doc_sha256: "a".repeat(64),
         kit_slug: "qkit",
-        legal_name: "Vendor Name",
       }),
     );
     expect(res.status).toBe(200);

@@ -127,11 +127,16 @@ landing — a later migration corrects an earlier one.
   `pending_notify_ref` and this function never checked the former. Same
   `security definer` / `set search_path = ''` / service-role grant + PUBLIC
   revoke as the `0019` original.
-- `0027_legal_acceptances_legal_name.sql` — adds
-  `legal_acceptances.legal_name` (`not null` — safe, since no real vendor has
-  accepted anything on any kit yet): the accepting vendor's typed name,
-  already collected by `TermsAcceptanceCheckbox` but previously discarded on
-  both write paths.
+- `0027_legal_acceptances_legal_name.sql` — added
+  `legal_acceptances.legal_name` (`not null`): the accepting vendor's typed
+  name, already collected by `TermsAcceptanceCheckbox` but previously
+  discarded on both write paths.
+- `0028_legal_acceptances_drop_legal_name.sql` — drops that same column
+  again: a typed legal name added friction to a plain ToS/Privacy
+  clickwrap for no real evidentiary gain over the existing (vendor_email,
+  auth_uid, doc_type, doc_version, ip, user_agent, timestamp) record.
+  Safe to drop outright (not just nullable) — no real vendor has accepted
+  anything on any kit yet.
 
 ## Connectivity
 

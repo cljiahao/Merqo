@@ -12,8 +12,9 @@ pgTAP RLS isolation suite, run via `supabase test db`.
   checks (`authenticated`/`anon` denial where the table is service-role
   only), and unique-constraint / idempotency assertions on tables that
   need them (e.g. `legal_acceptances`). Includes coverage for
-  `merqo.legal_acceptances` (migration `0024`, `legal_name` column added
-  in `0027`) and the `clear_customer_consent_by_telegram` /
+  `merqo.legal_acceptances` (migration `0024`; `legal_name` was added in
+  `0027` then dropped again in `0028`) and the
+  `clear_customer_consent_by_telegram` /
   `find_customer_telegram_by_phone` RPCs (migrations `0025`, `0026`).
 
 ## Connectivity

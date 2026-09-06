@@ -626,18 +626,18 @@ select ok(
 set local role service_role;
 select lives_ok(
   $$ insert into merqo.legal_acceptances
-       (vendor_email, auth_uid, doc_type, doc_version, doc_sha256, kit_slug, legal_name, ip, user_agent)
+       (vendor_email, auth_uid, doc_type, doc_version, doc_sha256, kit_slug, ip, user_agent)
      values
        ('vendor-b@test.local', '00000000-0000-0000-0000-00000000000b', 'terms', 'v1',
         'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', 'qkit',
-        'Test Vendor', '127.0.0.1', 'pgTAP') $$,
+        '127.0.0.1', 'pgTAP') $$,
   'service_role inserts a legal_acceptances row');
 select throws_ok(
   $$ insert into merqo.legal_acceptances
-       (vendor_email, auth_uid, doc_type, doc_version, doc_sha256, kit_slug, legal_name)
+       (vendor_email, auth_uid, doc_type, doc_version, doc_sha256, kit_slug)
      values
        ('vendor-b@test.local', '00000000-0000-0000-0000-00000000000b', 'terms', 'v1',
-        'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', 'qkit', 'Test Vendor') $$,
+        'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', 'qkit') $$,
   '23505', null,
   'a duplicate (vendor_email, doc_type, doc_version) insert violates the unique constraint');
 reset role;
