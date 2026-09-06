@@ -10,7 +10,9 @@ and the vendor activity-alert flow (Phase A2 of
 which consolidated each kit's own separate per-kit vendor-alert bot onto
 this same shared bot). The first kit → merqo HTTP direction in this
 codebase — every existing cross-kit call (metrics pull, vendor-provision)
-flows merqo → kit; this is the reverse.
+flows merqo → kit; this is the reverse. `legal-accept`/`legal-status`
+extend this same kit → merqo direction to all 5 kits (not just
+qkit/loopkit), for the legal-acceptance gate rather than Telegram.
 
 ## Contents
 
@@ -24,6 +26,12 @@ flows merqo → kit; this is the reverse.
 - `notify-vendor/` — fires a Telegram notification for a vendor who's
   already connected, once the underlying event happens; see its own
   README.
+- `legal-accept/` — records a vendor's legal-acceptance in
+  `merqo.legal_acceptances`, called by each kit's own accept flow; see
+  its own README.
+- `legal-status/` — returns the latest accepted version per doc type for
+  an email, so a kit's own acceptance gate knows whether to fire; see its
+  own README.
 
 ## Connectivity
 
