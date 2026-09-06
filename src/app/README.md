@@ -13,6 +13,11 @@ console, auth, and shared account pages.
   webhook, and the bearer-secret endpoints qkit/loopkit call INTO merqo
   for the customer Telegram-connect flow — the first kit → merqo HTTP
   direction in this codebase; see its own README.
+- `about/` — `AboutPage`, the public "Why Merqo" page: the qkit origin
+  story (a messy coffee-cart queue at a wedding) and how the rest of the
+  kit family grew out of it, plus the founder/business-name line matching
+  the legal docs' phrasing. Wraps in the same `Nav`/`Footer` as the
+  landing page; linked from both.
 - `apple-icon.tsx` — `AppleIcon` route handler; renders a 180×180 PNG for iOS home-screen touch icons.
 - `auth/` — Supabase auth callback route (OAuth code exchange).
 - `dashboard/` — vendor dashboard: `(app)/` (the dashboard itself — overview + kit discovery, open to every signed-in user) and `profile/` (a redirect shim to `/profile` — `@merqo/ui`'s `AccountMenu` hardcodes its Profile link to `/dashboard/profile`, the convention every other kit follows, but Merqo's real shared account page lives at the top-level `/profile`).

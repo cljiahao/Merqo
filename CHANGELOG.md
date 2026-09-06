@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-09-06
+
+### Added
+
+- `/about` — a public "Why Merqo" page telling the qkit origin story (a
+  messy coffee-cart queue at a wedding) and how the rest of the kit family
+  grew out of it, plus a founder/business-name line matching the legal
+  docs' phrasing. Linked from the landing `Nav` and `Footer`.
+
 ## [0.4.0] - 2026-09-06
 
 ### Added

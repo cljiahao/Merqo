@@ -15,6 +15,9 @@ export function Footer() {
         </Link>
         <span>Simple tools for Singapore&rsquo;s small sellers.</span>
         <span className="text-xs">© 2026 Merqo</span>
+        <Link href="/about" className="hover:text-foreground">
+          About
+        </Link>
         <LegalFooterLinks />
         <Link href="/login" className="hover:text-foreground">
           Sign in →

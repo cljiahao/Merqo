@@ -9,10 +9,11 @@ per file. Presentational only — no data fetching, no client state beyond the
 ## Contents
 
 - `nav.tsx` — sticky top nav built on `@merqo/ui`'s shared `LandingNav` shell
-  (`wordmark`/`end` slots): `Wordmark` as the wordmark slot, a `#faq` anchor
-  link + a sign-in/dashboard link (`Sign in` when signed out, `Go to
-dashboard` when signed in) as the end slot. Header padding/logo size
-  (`px-5 py-4`, `text-3xl`) matches qkit's landing nav exactly.
+  (`wordmark`/`end` slots): `Wordmark` as the wordmark slot, a `#kits`
+  anchor, an `/about` link, a `#faq` button, and a sign-in/dashboard link
+  (`Sign in` when signed out, `Dashboard` when signed in) as the end slot.
+  Header padding/logo size (`px-5 py-4`, `text-3xl`) matches qkit's landing
+  nav exactly.
 - `hero.tsx` — headline, stat row, CTA.
 - `benefits.tsx` — the "why Merqo" feature grid.
 - `kit-stacker/` — the interactive kit-stacking demo.
@@ -21,11 +22,13 @@ dashboard` when signed in) as the end slot. Header padding/logo size
 - `footer.tsx` — single-row site footer matching qkit's landing footer
   exactly — `Wordmark`, tagline, `© <year> Merqo` credit line (no "· a
   Merqo kit" suffix — Merqo is the parent, per the landing-page standard),
-  `@merqo/ui`'s `LegalFooterLinks` (Terms/Privacy, linking to `/legal/terms`
-  and `/legal/privacy`), `Sign in →` link. No bottom call-to-action band
-  above it (removed to match qkit, which never had one).
+  an `/about` link, `@merqo/ui`'s `LegalFooterLinks` (Terms/Privacy,
+  linking to `/legal/terms` and `/legal/privacy`), `Sign in →` link. No
+  bottom call-to-action band above it (removed to match qkit, which never
+  had one).
 - `footer.test.tsx` — asserts the wordmark link, tagline, copyright line,
-  sign-in link, and the Terms/Privacy footer links all render.
+  sign-in link, the About link, and the Terms/Privacy footer links all
+  render.
 - `waitlist-form.tsx` — email capture for kits not yet live.
 - `wordmark.tsx` — the "Merqo" brand mark.
 - `back-to-top.tsx` — fixed-position scroll-to-top button (ported from
