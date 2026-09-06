@@ -87,6 +87,7 @@ pnpm test         # run test suite (vitest)
 pnpm test:e2e     # playwright public smoke
 pnpm check        # prettier --check + eslint + tsc --noEmit
 pnpm format       # prettier --write
+pnpm check:legal-versions  # assert merqo + all 5 kit repos pin the same @merqo/ui tag
 ```
 
 ## Dependencies
@@ -128,6 +129,8 @@ src/lib/schemas.ts          — Zod schemas for the profile page's forms
 src/lib/merqo-vendor-profile.ts — typed wrapper over the shared vendor_profile RPCs
 src/lib/supabase/           — browser / server (schema=merqo) / service-role clients
 supabase/migrations/        — SQL schema (merqo.* tables) + RLS + grants
+scripts/check-legal-version-skew.mjs — asserts merqo + all 5 kit repos pin
+                               the same @merqo/ui tag (same-day-rollout guard)
 ```
 
 ## Data model
