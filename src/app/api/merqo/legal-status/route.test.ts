@@ -73,4 +73,20 @@ describe("GET /api/merqo/legal-status", () => {
       pilot: null,
     });
   });
+
+  it("returns 500 when the read fails", async () => {
+    const select = vi.fn().mockReturnThis();
+    const eq = vi.fn().mockReturnThis();
+    const order = vi
+      .fn()
+      .mockResolvedValue({ data: null, error: { message: "db unreachable" } });
+    vi.mocked(createServiceClient).mockResolvedValue({
+      from: () => ({ select, eq, order }),
+    } as never);
+
+    const res = await GET(req("vendor@example.com"));
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body).toEqual({ error: "read failed" });
+  });
 });

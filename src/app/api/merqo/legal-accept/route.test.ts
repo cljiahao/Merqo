@@ -132,6 +132,43 @@ describe("POST /api/merqo/legal-accept", () => {
     );
   });
 
+  it("rejects a malformed JSON body", async () => {
+    const request = new Request("http://localhost/api/merqo/legal-accept", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer test-secret",
+        "content-type": "application/json",
+      },
+      body: "{not valid json",
+    });
+    const res = await POST(request);
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 500 on a non-duplicate insert error", async () => {
+    const insert = vi.fn().mockResolvedValue({
+      error: { code: "23503", message: "foreign key violation" },
+    });
+    vi.mocked(createServiceClient).mockResolvedValue({
+      from: () => ({ insert }),
+    } as never);
+
+    const res = await POST(
+      req({
+        vendor_email: "vendor@example.com",
+        auth_uid: "11111111-1111-1111-1111-111111111111",
+        doc_type: "terms",
+        doc_version: "2026-09-04",
+        doc_sha256: "a".repeat(64),
+        kit_slug: "qkit",
+        legal_name: "Vendor Name",
+      }),
+    );
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body).toEqual({ ok: false, error: "insert failed" });
+  });
+
   it("treats a duplicate-acceptance unique violation as success (idempotent)", async () => {
     const insert = vi.fn().mockResolvedValue({ error: { code: "23505" } });
     vi.mocked(createServiceClient).mockResolvedValue({
