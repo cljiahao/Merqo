@@ -23,6 +23,12 @@ export function Nav({ authed = false }: { authed?: boolean }) {
           >
             Kits
           </Link>
+          <Link
+            href="/about"
+            className="rounded-sm px-1 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          >
+            About
+          </Link>
           <Button
             asChild
             variant="ghost"

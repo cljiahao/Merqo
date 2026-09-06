@@ -13,6 +13,8 @@ This app is the public brand landing plus a role-gated operator console:
 - `/admin/products` — per-kit health from the metrics API
 - `/admin/feedback` — vendor NPS + comments per kit
 - `/admin/activity` — the admin-audit trail (every real mutating admin action)
+- `/about` — public "Why Merqo" page: the qkit origin story and a
+  founder/business-name line matching `/legal/terms`'s phrasing
 
 Each kit runs its own app on its own schema in a shared Supabase project.
 Merqo pulls per-kit metrics over an HTTP API (bearer secret) — it never
