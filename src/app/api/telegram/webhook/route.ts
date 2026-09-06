@@ -36,6 +36,21 @@ function privacyReply(origin: string): string {
 }
 
 /**
+ * Customer `/start` connect reply: unlike `privacyReply`, which is only
+ * ever requested explicitly via `/privacy`, this fires as soon as a
+ * customer connects — so it's the one place that must surface who Merqo
+ * is and how to opt out without the customer asking first.
+ */
+function customerConnectReply(origin: string): string {
+  return [
+    "You're connected! We'll notify you here about your order/reward activity.",
+    "",
+    `Merqo is the software your vendor uses to send you these updates. Read more: ${origin}/legal/end-customer-notice`,
+    "Reply /stop to stop these messages.",
+  ].join("\n");
+}
+
+/**
  * `/stop`: clears `consent_given_at` (and any queued `pending_notify_ref`)
  * for the `merqo.customers` row(s) linked to this Telegram chat. Both
  * notify-customer lookup modes then stop resolving the chat — the
@@ -113,7 +128,11 @@ const updateSchema = z.object({
  * failure here is caught by the caller and logged, never surfaced to
  * Telegram as a non-200.
  */
-async function handleStart(token: string, chatId: number): Promise<void> {
+async function handleStart(
+  token: string,
+  chatId: number,
+  origin: string,
+): Promise<void> {
   const supabase = await createServiceClient();
 
   const { data: linkToken } = await supabase
@@ -161,7 +180,7 @@ async function handleStart(token: string, chatId: number): Promise<void> {
     chatId,
     linkToken.kind === "vendor"
       ? "Your Telegram is connected! We'll alert you here about new activity for your shop."
-      : "You're connected! We'll notify you here about your order/reward activity.",
+      : customerConnectReply(origin),
   );
 }
 
@@ -185,7 +204,8 @@ export async function POST(request: Request): Promise<Response> {
   if (message?.text?.startsWith(START_PREFIX)) {
     const token = message.text.slice(START_PREFIX.length).trim();
     try {
-      if (token) await handleStart(token, message.chat.id);
+      if (token)
+        await handleStart(token, message.chat.id, new URL(request.url).origin);
     } catch (err) {
       // Internal failure resolving/linking — log it, but Telegram retries
       // aggressively on any non-2xx, so this must never surface as one.

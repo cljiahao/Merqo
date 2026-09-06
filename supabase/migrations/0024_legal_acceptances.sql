@@ -2,7 +2,7 @@
 -- Append-only acceptance record. One row per (vendor, doc, version) they
 -- accepted — never updated in place, so the full history of what a vendor
 -- agreed to is always reconstructable (a lawyer-review / dispute-evidence
--- requirement, see docs/superpowers/specs/2026-09-04-merqo-legal-docs-design.md).
+-- requirement, see ../docs/superpowers/specs/2026-09-04-merqo-legal-docs-design.md).
 -- doc_sha256 is the hash of the exact rendered content the kit showed at
 -- acceptance time (computed kit-side from @merqo/ui's getLegalDocSource),
 -- so a row proves what was actually shown, not just a version label.

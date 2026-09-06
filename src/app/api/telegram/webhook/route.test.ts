@@ -122,7 +122,13 @@ describe("POST /api/telegram/webhook", () => {
     });
     expect(deleteEq).toHaveBeenCalledWith("token", "abc123");
     expect(vendorUpsert).not.toHaveBeenCalled();
-    expect(sendTelegramMessage).toHaveBeenCalledWith(999, expect.any(String));
+    const [chatId, text] = sendTelegramMessage.mock.calls[0];
+    expect(chatId).toBe(999);
+    expect(text).toContain("Merqo is the software your vendor uses");
+    expect(text).toContain(
+      "https://merqo.example.com/legal/end-customer-notice",
+    );
+    expect(text).toMatch(/\/stop/);
   });
 
   it("upserts merqo.vendor_telegram (not the customer RPC) and deletes the token on a valid /start (kind='vendor')", async () => {

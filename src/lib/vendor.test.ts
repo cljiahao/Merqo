@@ -22,9 +22,17 @@ function mockMerqoTeamTable() {
 }
 
 function mockLegalAcceptancesTable(
-  rows: { doc_type: string; doc_version: string }[],
+  rows: { doc_type: string; doc_version: string; accepted_at?: string }[],
 ) {
-  const order = async () => ({ data: rows, error: null });
+  const order = vi.fn((column: string, opts: { ascending: boolean }) => {
+    const sorted = [...rows].sort((a, b) => {
+      const av = String(a[column as keyof typeof a] ?? "");
+      const bv = String(b[column as keyof typeof b] ?? "");
+      const cmp = av.localeCompare(bv);
+      return opts.ascending ? cmp : -cmp;
+    });
+    return Promise.resolve({ data: sorted, error: null });
+  });
   return { select: () => ({ eq: () => ({ order }) }) };
 }
 
@@ -38,7 +46,11 @@ function mockVendorLinksTable() {
 // legal_acceptances (the new gate). Route each by table name so a test only
 // has to override the row it cares about.
 function mockFrom(overrides: {
-  legalAcceptances?: { doc_type: string; doc_version: string }[];
+  legalAcceptances?: {
+    doc_type: string;
+    doc_version: string;
+    accepted_at?: string;
+  }[];
 }) {
   fromMock.mockImplementation((table: string) => {
     if (table === "merqo_team") return mockMerqoTeamTable();
@@ -68,8 +80,16 @@ describe("requireVendorSession", () => {
     });
     mockFrom({
       legalAcceptances: [
-        { doc_type: "terms", doc_version: LEGAL_VERSIONS.terms },
-        { doc_type: "privacy", doc_version: LEGAL_VERSIONS.privacy },
+        {
+          doc_type: "terms",
+          doc_version: LEGAL_VERSIONS.terms,
+          accepted_at: "2026-09-05T00:00:00Z",
+        },
+        {
+          doc_type: "privacy",
+          doc_version: LEGAL_VERSIONS.privacy,
+          accepted_at: "2026-09-05T00:00:00Z",
+        },
       ],
     });
 
@@ -98,8 +118,52 @@ describe("requireVendorSession", () => {
     });
     mockFrom({
       legalAcceptances: [
-        { doc_type: "terms", doc_version: "2020-01-01" },
-        { doc_type: "privacy", doc_version: LEGAL_VERSIONS.privacy },
+        {
+          doc_type: "terms",
+          doc_version: "2020-01-01",
+          accepted_at: "2020-01-01T00:00:00Z",
+        },
+        {
+          doc_type: "privacy",
+          doc_version: LEGAL_VERSIONS.privacy,
+          accepted_at: "2026-09-05T00:00:00Z",
+        },
+      ],
+    });
+
+    await requireVendorSession();
+
+    expect(redirectMock).toHaveBeenCalledWith("/legal/accept");
+  });
+
+  it("redirects when the vendor's most-recently-accepted (by accepted_at) terms version is stale, even though an earlier acceptance of the current version has a higher doc_version string", async () => {
+    // Row order here deliberately disagrees between doc_version's string
+    // sort and accepted_at's real order: the vendor accepted the CURRENT
+    // version long ago, then most recently (re-)accepted an OLDER, stale
+    // version. Sorting by doc_version desc would pick the current-version
+    // row (its string sorts highest) and wrongly conclude "current" — this
+    // only redirects if the gate orders by accepted_at descending instead,
+    // reflecting the vendor's actual latest action.
+    getUserMock.mockResolvedValue({
+      data: { user: { id: "u1", email: "vendor@business.sg" } },
+    });
+    mockFrom({
+      legalAcceptances: [
+        {
+          doc_type: "terms",
+          doc_version: LEGAL_VERSIONS.terms,
+          accepted_at: "2020-01-01T00:00:00Z",
+        },
+        {
+          doc_type: "terms",
+          doc_version: "2020-01-01",
+          accepted_at: "2026-09-05T00:00:00Z",
+        },
+        {
+          doc_type: "privacy",
+          doc_version: LEGAL_VERSIONS.privacy,
+          accepted_at: "2026-09-05T00:00:00Z",
+        },
       ],
     });
 

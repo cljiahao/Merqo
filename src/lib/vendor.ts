@@ -191,9 +191,9 @@ async function hasCurrentLegalAcceptance(email: string): Promise<boolean> {
   const supabase = await createServerClient();
   const { data } = await supabase
     .from("legal_acceptances")
-    .select("doc_type, doc_version")
+    .select("doc_type, doc_version, accepted_at")
     .eq("vendor_email", email.toLowerCase())
-    .order("doc_version", { ascending: false });
+    .order("accepted_at", { ascending: false });
   const accepted: Partial<Record<LegalDocType, string>> = {};
   for (const row of data ?? []) {
     const docType = row.doc_type as LegalDocType;

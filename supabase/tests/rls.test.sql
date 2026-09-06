@@ -611,7 +611,7 @@ reset role;
 
 -- ── legal_acceptances (0024) ──────────────────────────────────────────────
 -- Append-only vendor Terms/Privacy/Pilot acceptance record — see
--- docs/superpowers/specs/2026-09-04-merqo-legal-docs-design.md.
+-- ../docs/superpowers/specs/2026-09-04-merqo-legal-docs-design.md.
 -- legal_acceptances_own_select mirrors vendor_links_own_select's exact
 -- shape: `is_merqo_team(...) OR lower(vendor_email) = lower(jwt email)`, so
 -- a team member sees every row and a vendor sees only rows matching their
@@ -626,18 +626,18 @@ select ok(
 set local role service_role;
 select lives_ok(
   $$ insert into merqo.legal_acceptances
-       (vendor_email, auth_uid, doc_type, doc_version, doc_sha256, kit_slug, ip, user_agent)
+       (vendor_email, auth_uid, doc_type, doc_version, doc_sha256, kit_slug, legal_name, ip, user_agent)
      values
        ('vendor-b@test.local', '00000000-0000-0000-0000-00000000000b', 'terms', 'v1',
         'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', 'qkit',
-        '127.0.0.1', 'pgTAP') $$,
+        'Test Vendor', '127.0.0.1', 'pgTAP') $$,
   'service_role inserts a legal_acceptances row');
 select throws_ok(
   $$ insert into merqo.legal_acceptances
-       (vendor_email, auth_uid, doc_type, doc_version, doc_sha256, kit_slug)
+       (vendor_email, auth_uid, doc_type, doc_version, doc_sha256, kit_slug, legal_name)
      values
        ('vendor-b@test.local', '00000000-0000-0000-0000-00000000000b', 'terms', 'v1',
-        'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', 'qkit') $$,
+        'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', 'qkit', 'Test Vendor') $$,
   '23505', null,
   'a duplicate (vendor_email, doc_type, doc_version) insert violates the unique constraint');
 reset role;

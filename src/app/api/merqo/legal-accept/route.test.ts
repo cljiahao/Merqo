@@ -31,6 +31,20 @@ describe("POST /api/merqo/legal-accept", () => {
     expect(res.status).toBe(400);
   });
 
+  it("rejects a body missing legal_name", async () => {
+    const res = await POST(
+      req({
+        vendor_email: "vendor@example.com",
+        auth_uid: "11111111-1111-1111-1111-111111111111",
+        doc_type: "terms",
+        doc_version: "2026-09-04",
+        doc_sha256: "a".repeat(64),
+        kit_slug: "qkit",
+      }),
+    );
+    expect(res.status).toBe(400);
+  });
+
   it("inserts a valid acceptance and returns ok", async () => {
     const insert = vi.fn().mockResolvedValue({ error: null });
     vi.mocked(createServiceClient).mockResolvedValue({
@@ -45,10 +59,77 @@ describe("POST /api/merqo/legal-accept", () => {
         doc_version: "2026-09-04",
         doc_sha256: "a".repeat(64),
         kit_slug: "qkit",
+        legal_name: "Vendor Name",
       }),
     );
     expect(res.status).toBe(200);
     expect(insert).toHaveBeenCalled();
+  });
+
+  it("inserts the provided legal_name/ip/user_agent verbatim when the kit forwards its own real values", async () => {
+    const insert = vi.fn().mockResolvedValue({ error: null });
+    vi.mocked(createServiceClient).mockResolvedValue({
+      from: () => ({ insert }),
+    } as never);
+
+    const res = await POST(
+      req(
+        {
+          vendor_email: "vendor@example.com",
+          auth_uid: "11111111-1111-1111-1111-111111111111",
+          doc_type: "terms",
+          doc_version: "2026-09-04",
+          doc_sha256: "a".repeat(64),
+          kit_slug: "qkit",
+          legal_name: "Vendor Name",
+          ip: "203.0.113.9",
+          user_agent: "kit-forwarded-agent/1.0",
+        },
+        "Bearer test-secret",
+      ),
+    );
+    expect(res.status).toBe(200);
+    expect(insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        legal_name: "Vendor Name",
+        ip: "203.0.113.9",
+        user_agent: "kit-forwarded-agent/1.0",
+      }),
+    );
+  });
+
+  it("falls back to its own request headers for ip/user_agent when the kit doesn't forward them", async () => {
+    const insert = vi.fn().mockResolvedValue({ error: null });
+    vi.mocked(createServiceClient).mockResolvedValue({
+      from: () => ({ insert }),
+    } as never);
+
+    const request = new Request("http://localhost/api/merqo/legal-accept", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer test-secret",
+        "content-type": "application/json",
+        "x-forwarded-for": "198.51.100.7",
+        "user-agent": "kit-server-fetch/1.0",
+      },
+      body: JSON.stringify({
+        vendor_email: "vendor@example.com",
+        auth_uid: "11111111-1111-1111-1111-111111111111",
+        doc_type: "terms",
+        doc_version: "2026-09-04",
+        doc_sha256: "a".repeat(64),
+        kit_slug: "qkit",
+        legal_name: "Vendor Name",
+      }),
+    });
+    const res = await POST(request);
+    expect(res.status).toBe(200);
+    expect(insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        ip: "198.51.100.7",
+        user_agent: "kit-server-fetch/1.0",
+      }),
+    );
   });
 
   it("treats a duplicate-acceptance unique violation as success (idempotent)", async () => {
@@ -65,6 +146,7 @@ describe("POST /api/merqo/legal-accept", () => {
         doc_version: "2026-09-04",
         doc_sha256: "a".repeat(64),
         kit_slug: "qkit",
+        legal_name: "Vendor Name",
       }),
     );
     expect(res.status).toBe(200);

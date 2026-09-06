@@ -127,6 +127,11 @@ landing — a later migration corrects an earlier one.
   `pending_notify_ref` and this function never checked the former. Same
   `security definer` / `set search_path = ''` / service-role grant + PUBLIC
   revoke as the `0019` original.
+- `0027_legal_acceptances_legal_name.sql` — adds
+  `legal_acceptances.legal_name` (`not null` — safe, since no real vendor has
+  accepted anything on any kit yet): the accepting vendor's typed name,
+  already collected by `TermsAcceptanceCheckbox` but previously discarded on
+  both write paths.
 
 ## Connectivity
 

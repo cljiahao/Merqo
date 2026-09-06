@@ -12,6 +12,9 @@ const bodySchema = z.object({
   doc_version: z.string().min(1),
   doc_sha256: z.string().length(64),
   kit_slug: z.string().min(1),
+  legal_name: z.string().min(1),
+  ip: z.string().optional(),
+  user_agent: z.string().optional(),
 });
 
 /**
@@ -19,7 +22,10 @@ const bodySchema = z.object({
  * vendor just ticked the acceptance checkbox on its /legal/accept
  * interstitial. Idempotent: a duplicate (vendor_email, doc_type,
  * doc_version) is a unique-constraint violation (Postgres code 23505),
- * treated as success rather than an error.
+ * treated as success rather than an error. `ip`/`user_agent` are optional —
+ * a well-behaved kit forwards its own server action's real incoming
+ * headers; if omitted, this falls back to the request's own headers, which
+ * only reflect the kit's server-to-server call, not the vendor's browser.
  */
 export async function POST(request: Request): Promise<Response> {
   if (!customerNotifySecretOk(request)) {
@@ -49,8 +55,9 @@ export async function POST(request: Request): Promise<Response> {
     doc_version: parsed.data.doc_version,
     doc_sha256: parsed.data.doc_sha256,
     kit_slug: parsed.data.kit_slug,
-    ip: request.headers.get("x-forwarded-for"),
-    user_agent: request.headers.get("user-agent"),
+    legal_name: parsed.data.legal_name,
+    ip: parsed.data.ip ?? request.headers.get("x-forwarded-for"),
+    user_agent: parsed.data.user_agent ?? request.headers.get("user-agent"),
   });
 
   if (error && error.code !== "23505") {

@@ -1,6 +1,7 @@
 "use server";
 
 import { createHash } from "node:crypto";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createServerClient, createServiceClient } from "@/lib/supabase/server";
 import { safeRedirectPath } from "@/lib/safe-redirect";
@@ -29,6 +30,15 @@ export async function acceptLegalTerms(formData: FormData): Promise<void> {
     return;
   }
 
+  const legalName = String(formData.get("legal_name") || "").trim();
+  if (!legalName) {
+    throw new Error("legal_name is required");
+  }
+
+  const hdrs = await headers();
+  const ip = hdrs.get("x-forwarded-for");
+  const userAgent = hdrs.get("user-agent");
+
   const service = await createServiceClient();
   const email = user.email.toLowerCase();
   const docTypes = ["terms", "privacy"] as const;
@@ -41,6 +51,9 @@ export async function acceptLegalTerms(formData: FormData): Promise<void> {
       doc_version: LEGAL_VERSIONS[docType],
       doc_sha256: sha256(getLegalDocSource(docType)),
       kit_slug: "merqo",
+      legal_name: legalName,
+      ip,
+      user_agent: userAgent,
     });
     if (error && error.code !== "23505") {
       throw new Error(`legal acceptance insert failed: ${error.message}`);
