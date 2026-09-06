@@ -1,6 +1,6 @@
 {
   "name": "merqo",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "packageManager": "pnpm@11.10.0",
   "scripts": {
@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "check": "prettier --check . && eslint . && tsc --noEmit",
+    "check:legal-versions": "node scripts/check-legal-version-skew.mjs",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -18,7 +19,7 @@
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "^13.13.0",
-    "@merqo/ui": "github:cljiahao/merqo-ui#v0.22.1",
+    "@merqo/ui": "github:cljiahao/merqo-ui#v0.23.2",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.110.0",
     "class-variance-authority": "^0.7.1",

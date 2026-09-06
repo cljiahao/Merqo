@@ -4,6 +4,31 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-09-06
+
+### Added
+
+- Legal documents: `/legal/{terms,privacy,pilot-agreement,end-customer-notice}`
+  pages rendering `@merqo/ui`'s shared Terms of Service, Privacy Policy,
+  Pilot/UAT Agreement, and end-customer notice content, linked from the
+  landing footer. A new `merqo.legal_acceptances` table (append-only —
+  vendor email, auth uid, doc type/version/hash, legal name, IP, user
+  agent, timestamp) records who accepted what; `POST
+/api/merqo/legal-accept` and `GET /api/merqo/legal-status` are
+  bearer-secret endpoints every kit calls to record and check acceptance.
+  A session-level gate (`requireVendorSession`) redirects a signed-in
+  vendor with stale or missing acceptance to `/legal/accept` before they
+  can continue — fails closed on any error, and does not gate the accept
+  flow itself. merqo's own Telegram bot gained `/privacy` and `/stop`
+  commands on its customer-facing `/start` flow; `/stop` clears consent
+  for both the qkit notify-ref path and the loopkit phone-reuse notify
+  path. Companion changes ship in the same-day `qkit`/`loopkit`/`paykit`/
+  `stockkit`/`printkit` PRs. Not yet legally binding for public self-serve
+  signup — see `@merqo/ui`'s own CHANGELOG and the design spec's "Launch
+  gate" section for what's still pending (ACRA registration, a lawyer
+  pass on 3 clauses). Full design:
+  `docs/superpowers/specs/2026-09-04-merqo-legal-docs-design.md`.
+
 ## [0.3.0] - 2026-08-31
 
 ### Changed

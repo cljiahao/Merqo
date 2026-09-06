@@ -21,10 +21,11 @@ dashboard` when signed in) as the end slot. Header padding/logo size
 - `footer.tsx` — single-row site footer matching qkit's landing footer
   exactly — `Wordmark`, tagline, `© <year> Merqo` credit line (no "· a
   Merqo kit" suffix — Merqo is the parent, per the landing-page standard),
-  `Sign in →` link. No bottom call-to-action band above it (removed to
-  match qkit, which never had one).
+  `@merqo/ui`'s `LegalFooterLinks` (Terms/Privacy, linking to `/legal/terms`
+  and `/legal/privacy`), `Sign in →` link. No bottom call-to-action band
+  above it (removed to match qkit, which never had one).
 - `footer.test.tsx` — asserts the wordmark link, tagline, copyright line,
-  and sign-in link all render.
+  sign-in link, and the Terms/Privacy footer links all render.
 - `waitlist-form.tsx` — email capture for kits not yet live.
 - `wordmark.tsx` — the "Merqo" brand mark.
 - `back-to-top.tsx` — fixed-position scroll-to-top button (ported from

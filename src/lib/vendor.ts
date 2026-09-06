@@ -3,6 +3,7 @@ import type { User } from "@supabase/supabase-js";
 import { KITS, type Kit } from "@/lib/kits";
 import type { GrantStatus } from "@/lib/admin";
 import { createServerClient } from "@/lib/supabase/server";
+import { isLegalCurrent, LEGAL_VERSIONS, type LegalDocType } from "@merqo/ui";
 
 export type HomeDestination = "/admin" | "/dashboard";
 
@@ -182,17 +183,47 @@ export async function loadVendorContext(): Promise<{
   };
 }
 
-/** Gate a /dashboard page on being signed in — nothing more. The dashboard is
- *  open to every authenticated user and adapts to how many kits they have (a
- *  seller with none gets a "pick a kit" surface). Returns isTeam so the
- *  dashboard layout can offer a switch link to /admin for dual-role accounts. */
+/** True when this vendor's most-recent terms + privacy acceptances both match
+ *  the versions @merqo/ui's LEGAL_VERSIONS currently requires. Read directly
+ *  from Postgres — merqo owns legal_acceptances locally, unlike the kits in
+ *  Phase 3, which go through /api/merqo/legal-status instead. */
+async function hasCurrentLegalAcceptance(email: string): Promise<boolean> {
+  const supabase = await createServerClient();
+  const { data } = await supabase
+    .from("legal_acceptances")
+    .select("doc_type, doc_version, accepted_at")
+    .eq("vendor_email", email.toLowerCase())
+    .order("accepted_at", { ascending: false });
+  const accepted: Partial<Record<LegalDocType, string>> = {};
+  for (const row of data ?? []) {
+    const docType = row.doc_type as LegalDocType;
+    if ((docType === "terms" || docType === "privacy") && !accepted[docType]) {
+      accepted[docType] = row.doc_version as string;
+    }
+  }
+  return isLegalCurrent(accepted, LEGAL_VERSIONS);
+}
+
+/** Gate a /dashboard page on being signed in, with a current legal
+ *  acceptance on file. The dashboard is open to every authenticated user and
+ *  adapts to how many kits they have (a seller with none gets a "pick a kit"
+ *  surface); a stale or missing acceptance bounces to the /legal/accept
+ *  interstitial instead. The legal check is nested inside the signed-in
+ *  branch (not a second top-level `if`) so it never runs — and never
+ *  dereferences `user` — once the no-session redirect has already fired.
+ *  Returns isTeam so the dashboard layout can offer a switch link to /admin
+ *  for dual-role accounts. */
 export async function requireVendorSession(): Promise<{
   user: User;
   links: VendorLink[];
   isTeam: boolean;
 }> {
   const { user, isTeam, links } = await loadVendorContext();
-  if (!user) redirect("/login");
+  if (!user) {
+    redirect("/login");
+  } else if (user.email && !(await hasCurrentLegalAcceptance(user.email))) {
+    redirect("/legal/accept");
+  }
   return { user, links, isTeam };
 }
 

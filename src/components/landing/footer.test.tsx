@@ -20,4 +20,16 @@ describe("Footer", () => {
       "/login",
     );
   });
+
+  it("links to the Terms and Privacy pages", () => {
+    render(<Footer />);
+    expect(screen.getByRole("link", { name: "Terms" })).toHaveAttribute(
+      "href",
+      "/legal/terms",
+    );
+    expect(screen.getByRole("link", { name: "Privacy" })).toHaveAttribute(
+      "href",
+      "/legal/privacy",
+    );
+  });
 });

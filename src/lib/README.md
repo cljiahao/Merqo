@@ -33,6 +33,8 @@ that isn't a route or a component.
 - `products.ts` — the kit registry (`RegistryRow`) read/cache from `merqo.products`, including each kit's `metrics_secret`.
 - `qr.ts` — `qrSvg(text)`: renders `text` (a Telegram deep link) as an inline SVG markup string via the `qrcode` package, for `@merqo/ui`'s `VendorTelegramSection` to render via `dangerouslySetInnerHTML`. Same shape/library as loopkit's and qkit's own (now-retired, Phase A2) per-kit `qrSvg` helpers.
 - `qr.test.ts` — asserts the rendered string is real SVG markup.
+- `safe-redirect.ts` — `safeRedirectPath(next, fallback)`: guards against an open redirect by accepting only a same-origin relative path — leading `/`, not literally `//`/`/\` (both browser-normalize to a protocol-relative URL), and no embedded ASCII control character (TAB/LF/CR etc., which `URL`'s own parser strips, turning e.g. `/\t/evil.example` into `//evil.example`) — else returns `fallback`. Used by `/legal/accept`'s `page.tsx`/`actions.ts` to sanitize the `next` query param before rendering or redirecting.
+- `safe-redirect.test.ts` — legitimate-path pass-through, literal absolute/protocol-relative rejection, embedded-control-character rejection (TAB/LF/CR), and a `new URL(...)` check proving the fallback itself never resolves off-origin.
 - `schemas.ts` — Zod schemas for the shared `merqo.vendor_profile` social/website links.
 - `support.ts` — reads open cross-kit support messages for the admin console.
 - `team.ts` — gates an operator page on Merqo-team membership, redirecting a non-member.
@@ -48,7 +50,7 @@ that isn't a route or a component.
 - `vendor-activity-client.ts` / `vendor-activity-schema.ts` — fetch + Zod-validate a single vendor's per-kit triage status/metrics/last-activity from a live kit's `/api/merqo/vendor-activity`, for the admin `/admin/vendors/[email]` detail page. Never throws — a kit that hasn't implemented the endpoint, 404s, or is briefly down all collapse to `ok: false`.
 - `vendor-activity-client.test.ts` — 200/404/missing-config/schema-mismatch/network-failure cases for `getVendorActivity`.
 - `vendor-sync.ts` — provisions/syncs a vendor's `vendor_links` rows against the live kit registry; the kit-status sync is throttled per email via `merqo.vendor_sync_state` (`0023`), bypassed on fresh login (`force`).
-- `vendor.ts` — loads vendor/team context and gates the dashboard on an authenticated session only (`requireVendorSession`); `resolveHome` routes team members to `/admin`, everyone else to `/dashboard`.
+- `vendor.ts` — loads vendor/team context and gates the dashboard (`requireVendorSession`) on both an authenticated session and a current legal acceptance — `hasCurrentLegalAcceptance` reads `legal_acceptances` directly (merqo owns that table locally, no HTTP round trip) and compares against `@merqo/ui`'s `LEGAL_VERSIONS` via `isLegalCurrent`, redirecting a stale/missing acceptance to `/legal/accept`; `resolveHome` routes team members to `/admin`, everyone else to `/dashboard`.
 - `waitlist.ts` — adds an email to a kit's waitlist, from either the public landing form or the signed-in dashboard.
 - `savings.ts` / `savings.test.ts` — the "hours/cost saved" estimate shown on the vendor dashboard.
 - `vendor-feedback.test.ts`, `vendor-sync.test.ts`, `vendor.test.ts` — co-located unit tests for the same-named modules above.

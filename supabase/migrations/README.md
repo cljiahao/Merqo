@@ -105,6 +105,33 @@ landing — a later migration corrects an earlier one.
   its per-kit HTTP fan-out within a 60s window, now that `/dashboard` is open
   to every signed-in user and re-syncs on every render. Service-role only,
   RLS-on with zero client policies (same shape as `telegram_link_tokens`).
+- `0024_legal_acceptances.sql` — `merqo.legal_acceptances`: append-only
+  vendor Terms/Privacy/Pilot acceptance record, unique on
+  `(vendor_email, doc_type, doc_version)`, with `doc_sha256` proving what
+  was actually rendered at acceptance time. Own-email select via
+  `legal_acceptances_own_select` (same `is_merqo_team(...)` +
+  lower-email-match shape as `vendor_links_own_select`); service_role gets
+  the only client-reachable insert grant.
+- `0025_clear_customer_consent.sql` — `merqo.clear_customer_consent_by_telegram(bigint)`:
+  SECURITY DEFINER RPC the Telegram bot's `/stop` command calls to clear
+  `consent_given_at` + any queued `pending_notify_ref` for every
+  `merqo.customers` row linked to a chat id (one chat can be linked under
+  several vendors; `/stop` opts out of all of them). service_role EXECUTE,
+  revoked from PUBLIC — same gate class as the three `0019` functions. A
+  no-op for a chat that was never connected.
+- `0026_notify_phone_requires_consent.sql` — redefines `0019`'s
+  `find_customer_telegram_by_phone` with a `consent_given_at is not null`
+  guard on its WHERE clause. Without it, `notify-customer`'s phone lookup
+  mode (loopkit's reward path) still resolved a chat id after the customer
+  had `/stop`'d, since `/stop` (`0025`) only nulls `consent_given_at` /
+  `pending_notify_ref` and this function never checked the former. Same
+  `security definer` / `set search_path = ''` / service-role grant + PUBLIC
+  revoke as the `0019` original.
+- `0027_legal_acceptances_legal_name.sql` — adds
+  `legal_acceptances.legal_name` (`not null` — safe, since no real vendor has
+  accepted anything on any kit yet): the accepting vendor's typed name,
+  already collected by `TermsAcceptanceCheckbox` but previously discarded on
+  both write paths.
 
 ## Connectivity
 
