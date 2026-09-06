@@ -11,6 +11,14 @@ function sha256(input: string): string {
   return createHash("sha256").update(input).digest("hex");
 }
 
+function clientIp(hdrs: Headers): string {
+  return (
+    hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    hdrs.get("x-real-ip") ||
+    "unknown"
+  );
+}
+
 /**
  * Records terms + privacy acceptance rows for the signed-in vendor and sends
  * them on to `next`. Each doc type is inserted independently: a duplicate
@@ -36,7 +44,7 @@ export async function acceptLegalTerms(formData: FormData): Promise<void> {
   }
 
   const hdrs = await headers();
-  const ip = hdrs.get("x-forwarded-for");
+  const ip = clientIp(hdrs);
   const userAgent = hdrs.get("user-agent");
 
   const service = await createServiceClient();

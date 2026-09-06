@@ -1,11 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { redirectMock, getUserMock, insertMock, fromMock } = vi.hoisted(() => ({
-  redirectMock: vi.fn(),
-  getUserMock: vi.fn(),
-  insertMock: vi.fn(),
-  fromMock: vi.fn(),
-}));
+const { redirectMock, getUserMock, insertMock, fromMock, headersMock } =
+  vi.hoisted(() => ({
+    redirectMock: vi.fn(),
+    getUserMock: vi.fn(),
+    insertMock: vi.fn(),
+    fromMock: vi.fn(),
+    headersMock: vi.fn(),
+  }));
 vi.mock("next/navigation", () => ({ redirect: redirectMock }));
 vi.mock("@/lib/supabase/server", () => ({
   createServerClient: async () => ({ auth: { getUser: getUserMock } }),
@@ -16,13 +18,7 @@ vi.mock("@merqo/ui", () => ({
   LEGAL_VERSIONS: { terms: "2026-09-04", privacy: "2026-09-04" },
 }));
 
-vi.mock("next/headers", () => ({
-  headers: async () =>
-    new Headers({
-      "x-forwarded-for": "203.0.113.9",
-      "user-agent": "test-agent/1.0",
-    }),
-}));
+vi.mock("next/headers", () => ({ headers: headersMock }));
 
 import { acceptLegalTerms } from "./actions";
 
@@ -37,6 +33,12 @@ describe("acceptLegalTerms", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     fromMock.mockImplementation(() => ({ insert: insertMock }));
+    headersMock.mockResolvedValue(
+      new Headers({
+        "x-forwarded-for": "203.0.113.9",
+        "user-agent": "test-agent/1.0",
+      }),
+    );
   });
 
   it("redirects to /login when there is no signed-in user", async () => {
@@ -177,5 +179,50 @@ describe("acceptLegalTerms", () => {
     await acceptLegalTerms(formData("/admin"));
 
     expect(redirectMock).toHaveBeenCalledWith("/admin");
+  });
+
+  describe("client IP resolution", () => {
+    beforeEach(() => {
+      getUserMock.mockResolvedValue({
+        data: { user: { id: "u1", email: "vendor@business.sg" } },
+      });
+      insertMock.mockResolvedValue({ error: null });
+    });
+
+    it("takes the first hop of a multi-value x-forwarded-for", async () => {
+      headersMock.mockResolvedValue(
+        new Headers({
+          "x-forwarded-for": "203.0.113.9, 10.0.0.1, 10.0.0.2",
+        }),
+      );
+
+      await acceptLegalTerms(formData());
+
+      expect(insertMock).toHaveBeenCalledWith(
+        expect.objectContaining({ ip: "203.0.113.9" }),
+      );
+    });
+
+    it("falls back to x-real-ip when x-forwarded-for is absent", async () => {
+      headersMock.mockResolvedValue(
+        new Headers({ "x-real-ip": "198.51.100.7" }),
+      );
+
+      await acceptLegalTerms(formData());
+
+      expect(insertMock).toHaveBeenCalledWith(
+        expect.objectContaining({ ip: "198.51.100.7" }),
+      );
+    });
+
+    it('falls back to "unknown" when neither header is present', async () => {
+      headersMock.mockResolvedValue(new Headers());
+
+      await acceptLegalTerms(formData());
+
+      expect(insertMock).toHaveBeenCalledWith(
+        expect.objectContaining({ ip: "unknown" }),
+      );
+    });
   });
 });
