@@ -18,7 +18,9 @@ line matching the legal docs' phrasing, linked from the landing `Nav` and
   `/about` page too) — this page supplies only the `Nav`/`Footer` and
   the "See the kits" CTA as `AboutMerqo`'s `children`.
 - `page.test.tsx` — covers the founder-note copy, the `#kits` CTA link,
-  and the signed-in-vendor Dashboard CTA.
+  and that the signed-in-vendor Dashboard CTA links to `/post-login`
+  (never straight to `/admin`, which would bounce a non-team vendor to
+  `/no-access`).
 
 ## Connectivity
 
