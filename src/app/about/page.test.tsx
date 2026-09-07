@@ -37,7 +37,7 @@ describe("AboutPage", () => {
 
     expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute(
       "href",
-      "/admin",
+      "/post-login",
     );
   });
 });

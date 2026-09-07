@@ -38,7 +38,7 @@ export function Nav({ authed = false }: { authed?: boolean }) {
             <a href="#faq">FAQ</a>
           </Button>
           <Button asChild size="sm">
-            <Link href={authed ? "/admin" : "/login"}>
+            <Link href={authed ? "/post-login" : "/login"}>
               {authed ? "Dashboard" : "Sign in"}
             </Link>
           </Button>
