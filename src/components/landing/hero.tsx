@@ -63,7 +63,7 @@ export function Hero({ authed = false }: { authed?: boolean }) {
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button asChild size="lg">
-            <Link href={authed ? "/admin" : "/login"}>
+            <Link href={authed ? "/post-login" : "/login"}>
               {authed ? "Go to dashboard" : "Get started"}
               <ArrowRight className="size-4" />
             </Link>

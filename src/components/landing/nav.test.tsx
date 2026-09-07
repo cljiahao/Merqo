@@ -19,4 +19,20 @@ describe("Nav", () => {
       "/about",
     );
   });
+
+  it("sends a signed-in vendor through /post-login, not straight to /admin", () => {
+    render(<Nav authed />);
+    expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute(
+      "href",
+      "/post-login",
+    );
+  });
+
+  it("sends a signed-out visitor to /login", () => {
+    render(<Nav authed={false} />);
+    expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute(
+      "href",
+      "/login",
+    );
+  });
 });

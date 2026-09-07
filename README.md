@@ -170,7 +170,8 @@ service-role client only, so `metrics_secret` never reaches a browser.
 - Changelog: `CHANGELOG.md` (includes the new admin-audit trail, plus a fix
   restoring card/background contrast in both modes after the Harbour
   Control rebrand had accidentally collapsed them to the same color and a
-  follow-up dark-mode brightness bump)
+  follow-up dark-mode brightness bump, and a fix routing every signed-in
+  landing CTA through `/post-login` instead of straight to `/admin`)
 - Deploy runbook: `docs/DEPLOY.md`
 - Plans/specs: `docs/superpowers/`
 - AI harness/hooks/skills map: `.claude/README.md`

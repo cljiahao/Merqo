@@ -4,6 +4,18 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.1] - 2026-09-07
+
+### Fixed
+
+- Landing page CTAs (`Nav`, `Hero`, and the sticky mobile CTA) hardcoded
+  `href={authed ? "/admin" : "/login"}`. `/admin` is gated by
+  `requireMerqoTeam()`, so any signed-in vendor who isn't Merqo team
+  (i.e. every real vendor) clicking their own homepage's main CTA got
+  bounced to `/no-access` ("You're not on the team yet") instead of
+  their dashboard. All three now route through `/post-login`, the
+  existing single role-routing funnel, instead.
+
 ## [0.7.0] - 2026-09-07
 
 ### Changed
