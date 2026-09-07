@@ -17,4 +17,7 @@
 
 `DEPLOY.md`'s "Founder Telegram alerts" section covers the one-time Supabase
 Vault setup (bot token + chat id) migration `0029` needs before it actually
-sends anything — the migration itself no-ops safely without it.
+sends anything — the migration itself no-ops safely without it. That
+section now also spells out messaging the bot first (`/start`), since
+Telegram silently refuses to message a chat id the bot's never heard from —
+an easy step to miss since nothing in the app surfaces that failure.

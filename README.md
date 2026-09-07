@@ -171,8 +171,10 @@ service-role client only, so `metrics_secret` never reaches a browser.
   restoring card/background contrast in both modes after the Harbour
   Control rebrand had accidentally collapsed them to the same color and a
   follow-up dark-mode brightness bump, a fix routing every signed-in
-  landing CTA through `/post-login` instead of straight to `/admin`, and
-  founder Telegram alerts on any kit's help/feedback submission)
+  landing CTA through `/post-login` instead of straight to `/admin`,
+  founder Telegram alerts on any kit's help/feedback submission, and a
+  fix to that alert's own setup runbook — it was missing the step where
+  you message the bot first)
 - Deploy runbook: `docs/DEPLOY.md`
 - Plans/specs: `docs/superpowers/`
 - AI harness/hooks/skills map: `.claude/README.md`
