@@ -14,3 +14,7 @@
   recent: `2026-08-16-customer-telegram-connect-design.md` — merqo's own
   third Telegram bot plus the first kit → merqo HTTP direction in this
   codebase.
+
+`DEPLOY.md`'s "Founder Telegram alerts" section covers the one-time Supabase
+Vault setup (bot token + chat id) migration `0029` needs before it actually
+sends anything — the migration itself no-ops safely without it.

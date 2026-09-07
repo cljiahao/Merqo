@@ -26,6 +26,10 @@ own `supabase/tests/rls.test.sql`.
   widening and the new `telegram_link_tokens` table.
 - `0022_stockkit_live.test.ts` — asserts the `status = 'live'` flip for
   `stockkit`.
+- `0029_founder_telegram_alerts.test.ts` — asserts `pg_net`/`supabase_vault`
+  are enabled, the bot token/chat id are read from `vault.decrypted_secrets`
+  by name (never a literal secret checked in), the no-Vault-secret path
+  returns rather than raising, and all three AFTER INSERT triggers exist.
 - `consolidation.test.ts` — covers `0004_kit_consolidation.sql`'s
   product-registry upsert and tapkit→paykit waitlist carry-over.
 - `cross-kit-support-messages-schema.test.ts` — covers

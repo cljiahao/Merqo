@@ -123,3 +123,33 @@ of git — it lives only in Vercel env + the DB row.
      None of the above can be done by an agent — no real BotFather bot
      registration, Vercel env write, or outbound `setWebhook` call is
      available in this repo's tooling.
+- **Founder Telegram alerts (migration `0029`) — real manual setup, not
+  automated by this repo:**
+  1. Apply `supabase/migrations/0029_founder_telegram_alerts.sql`
+     (`pnpm dlx supabase db push`) — enables `pg_net` + `supabase_vault`
+     and adds the three AFTER INSERT triggers. Safe to deploy before the
+     Vault secrets below are set: `merqo.notify_founder_telegram()` reads
+     `vault.decrypted_secrets` and simply no-ops if either row is missing.
+  2. In the Supabase SQL editor, store the **same** bot token already set
+     as merqo's `TELEGRAM_BOT_TOKEN` Vercel env var (reuse the existing
+     bot from the Customer Telegram connect section above — no new bot
+     registration needed), plus your own numeric Telegram chat id (message
+     [@userinfobot](https://t.me/userinfobot) to get it):
+     ```sql
+     select vault.create_secret('<TELEGRAM_BOT_TOKEN value>', 'telegram_bot_token');
+     select vault.create_secret('<your numeric chat id>', 'merqo_founder_telegram_chat_id');
+     ```
+     No app-side env var or Vercel deploy is needed for this feature — the
+     trigger runs entirely inside Postgres via `pg_net`.
+  3. Verify by submitting any kit's Feedback or Get-help sheet, or running:
+     ```sql
+     select merqo.notify_founder_telegram('test alert');
+     ```
+     A missing Telegram message means the secret names/values above don't
+     match — `pg_net` requests can be inspected in `net._http_response`
+     for the actual HTTP status.
+  4. Rotate either value later with
+     `select vault.update_secret(id, '<new value>')` (find `id` via
+     `select id, name from vault.secrets where name = '...'`) — never by
+     re-running `create_secret` with the same name, which errors on the
+     unique name constraint.
