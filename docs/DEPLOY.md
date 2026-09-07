@@ -130,25 +130,36 @@ of git — it lives only in Vercel env + the DB row.
      and adds the three AFTER INSERT triggers. Safe to deploy before the
      Vault secrets below are set: `merqo.notify_founder_telegram()` reads
      `vault.decrypted_secrets` and simply no-ops if either row is missing.
-  2. In the Supabase SQL editor, store the **same** bot token already set
-     as merqo's `TELEGRAM_BOT_TOKEN` Vercel env var (reuse the existing
-     bot from the Customer Telegram connect section above — no new bot
-     registration needed), plus your own numeric Telegram chat id (message
-     [@userinfobot](https://t.me/userinfobot) to get it):
+  2. **Message merqo's own bot first, from your own Telegram account:**
+     open `https://t.me/<TELEGRAM_BOT_USERNAME>` and send `/start` (or any
+     message). This step is not optional — Telegram's Bot API refuses to
+     deliver a message to any chat id the bot has never been messaged by
+     (`Forbidden: bot can't initiate conversation with a user`), and
+     `merqo.notify_founder_telegram()` has no way to surface that failure
+     back to you. Getting a chat id from a different bot (the next step)
+     does not satisfy this — it has to be _this_ bot, messaged by you.
+  3. Get your own numeric Telegram chat id — message
+     [@userinfobot](https://t.me/userinfobot) (a separate, unrelated bot;
+     this step is just how you look up the number, it doesn't connect
+     anything) — then, in the Supabase SQL editor, store it plus the
+     **same** bot token already set as merqo's `TELEGRAM_BOT_TOKEN` Vercel
+     env var (reuse the existing bot from the Customer Telegram connect
+     section above — no new bot registration needed):
      ```sql
      select vault.create_secret('<TELEGRAM_BOT_TOKEN value>', 'telegram_bot_token');
      select vault.create_secret('<your numeric chat id>', 'merqo_founder_telegram_chat_id');
      ```
      No app-side env var or Vercel deploy is needed for this feature — the
      trigger runs entirely inside Postgres via `pg_net`.
-  3. Verify by submitting any kit's Feedback or Get-help sheet, or running:
+  4. Verify by submitting any kit's Feedback or Get-help sheet, or running:
      ```sql
      select merqo.notify_founder_telegram('test alert');
      ```
-     A missing Telegram message means the secret names/values above don't
-     match — `pg_net` requests can be inspected in `net._http_response`
-     for the actual HTTP status.
-  4. Rotate either value later with
+     A missing Telegram message despite completing step 2 means the
+     secret names/values in step 3 don't match — `pg_net` requests can be
+     inspected in `net._http_response` for the actual HTTP status
+     (`403`/`Forbidden` specifically means step 2 wasn't actually done).
+  5. Rotate either value later with
      `select vault.update_secret(id, '<new value>')` (find `id` via
      `select id, name from vault.secrets where name = '...'`) — never by
      re-running `create_secret` with the same name, which errors on the

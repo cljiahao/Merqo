@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.3] - 2026-09-07
+
+### Fixed
+
+- `docs/DEPLOY.md`'s founder-Telegram-alerts setup was missing the one
+  step that actually makes it work: Telegram refuses to deliver a message
+  to a chat id the bot has never been messaged by, so the runbook now
+  says to message merqo's own bot first, before storing the chat id in
+  Vault. As written before this fix, the feature would silently do
+  nothing.
+
 ## [0.7.2] - 2026-09-07
 
 ### Added
