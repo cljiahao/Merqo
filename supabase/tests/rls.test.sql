@@ -29,10 +29,14 @@
 -- `lower(vendor_email) = lower(jwt email)` plus a team-sees-all branch —
 -- same own-row-vs-team-select shape as vendor_links, service-role gets the
 -- only client-reachable write grant).
+-- 0029 adds an AFTER INSERT trigger to support_messages/vendor_feedback/
+-- feedback that pings a founder Telegram chat via pg_net + Vault secrets;
+-- covered below by has_trigger() + a lives_ok() proving the no-Vault-secret
+-- no-op path doesn't raise.
 -- Runs in ONE rolled-back transaction with inline fixed-UUID fixtures.
 
 begin;
-select plan(99);
+select plan(103);
 
 -- ── Fixtures (created under the default/superuser test role → RLS + grants
 -- are bypassed here) ─────────────────────────────────────────────────────────
@@ -64,6 +68,16 @@ values ('00000000-0000-0000-0000-00000000000b', 'Vendor B Stall');
 
 insert into merqo.vendor_feedback (id, kit_slug, vendor_id, nps, message)
 values ('00000000-0000-0000-0000-000000100001', 'qkit-rlstest', '00000000-0000-0000-0000-00000000000b', 8, 'great kit');
+
+-- support_messages/feedback (0007) and the vendor_feedback insert above each
+-- fire a 0029 AFTER INSERT trigger calling merqo.notify_founder_telegram();
+-- with no Vault secrets set in this test project, that function no-ops
+-- rather than raising — these fixture inserts are themselves the proof.
+insert into merqo.support_messages (id, user_id, category, body)
+values ('00000000-0000-0000-0000-000000110001', '00000000-0000-0000-0000-00000000000b', 'other', 'test help request');
+
+insert into merqo.feedback (id, user_id, nps, message)
+values ('00000000-0000-0000-0000-000000120001', '00000000-0000-0000-0000-00000000000b', 9, 'test hub feedback');
 
 -- A third user with no dashboard_prefs row at all — used only to prove a
 -- non-owner insert is rejected without also tripping a primary-key conflict.
@@ -673,6 +687,18 @@ select isnt_empty(
   'a team member can select any vendor''s legal_acceptances row');
 
 reset role;
+
+-- ── Founder Telegram alert triggers (0029) ───────────────────────────────────
+select has_trigger('merqo', 'support_messages', 'support_messages_notify_founder',
+  'support_messages has its founder-alert trigger');
+select has_trigger('merqo', 'vendor_feedback', 'vendor_feedback_notify_founder',
+  'vendor_feedback has its founder-alert trigger');
+select has_trigger('merqo', 'feedback', 'feedback_notify_founder',
+  'feedback has its founder-alert trigger');
+select lives_ok(
+  $$ insert into merqo.support_messages (user_id, category, body)
+     values ('00000000-0000-0000-0000-00000000000b', 'other', 'another test request') $$,
+  'inserting a support_messages row does not raise when Vault secrets are unset');
 
 select * from finish();
 rollback;

@@ -137,6 +137,18 @@ landing — a later migration corrects an earlier one.
   auth_uid, doc_type, doc_version, ip, user_agent, timestamp) record.
   Safe to drop outright (not just nullable) — no real vendor has accepted
   anything on any kit yet.
+- `0029_founder_telegram_alerts.sql` — an AFTER INSERT trigger on
+  `support_messages`/`vendor_feedback`/`feedback` that pings a single
+  fixed founder Telegram chat via `pg_net` (`net.http_post` to the Bot
+  API) on every new row, regardless of which of the 6 kits' write paths
+  (direct RPC or merqo's own RLS-gated insert) landed it — the one
+  central place all of them funnel through. The bot token and chat id are
+  read from Supabase Vault (`vault.decrypted_secrets`, enabled here for
+  the first time in this codebase) rather than this file or an env var,
+  so no secret is ever checked into git; `merqo.notify_founder_telegram()`
+  no-ops (never raises) when either secret is unset, same convention as
+  `src/lib/telegram.ts`'s own missing-token no-op. See `../../docs/DEPLOY.md`
+  for the one-time Vault setup this migration alone doesn't perform.
 
 ## Connectivity
 

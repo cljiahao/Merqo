@@ -15,7 +15,10 @@ pgTAP RLS isolation suite, run via `supabase test db`.
   `merqo.legal_acceptances` (migration `0024`; `legal_name` was added in
   `0027` then dropped again in `0028`) and the
   `clear_customer_consent_by_telegram` /
-  `find_customer_telegram_by_phone` RPCs (migrations `0025`, `0026`).
+  `find_customer_telegram_by_phone` RPCs (migrations `0025`, `0026`), and
+  migration `0029`'s founder-Telegram-alert triggers (`has_trigger()` on
+  all three tables plus a `lives_ok()` proving the no-Vault-secret no-op
+  path doesn't raise).
 
 ## Connectivity
 

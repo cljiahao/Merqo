@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.2] - 2026-09-07
+
+### Added
+
+- Founder Telegram alerts: a help request or feedback submission from any
+  of the 6 kits now pings a single fixed Telegram chat, via a Postgres
+  trigger (migration `0029`) on `merqo.support_messages`/`vendor_feedback`/
+  `feedback` rather than any app-code change, since every kit's write
+  already funnels into these three tables. Requires a one-time Vault
+  secret setup — see `docs/DEPLOY.md`.
+
 ## [0.7.1] - 2026-09-07
 
 ### Fixed
