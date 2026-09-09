@@ -174,8 +174,8 @@ service-role client only, so `metrics_secret` never reaches a browser.
   landing CTA through `/post-login` instead of straight to `/admin`,
   founder Telegram alerts on any kit's help/feedback submission, a
   fix to that alert's own setup runbook (it was missing the step where
-  you message the bot first), and a security bump of `next` to `16.3.4`
-  plus `browserslist` to `4.28.9`)
+  you message the bot first), and security bumps of `next` to `16.3.4`,
+  `browserslist` to `4.28.9`, and `vitest` to `4.1.11`)
 - Deploy runbook: `docs/DEPLOY.md`
 - Plans/specs: `docs/superpowers/`
 - AI harness/hooks/skills map: `.claude/README.md`
