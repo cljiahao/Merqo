@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.4] - 2026-09-09
+
+### Security
+
+- Bumped `next` to `16.3.4` (`eslint-config-next` to match) and refreshed
+  `browserslist` to `4.28.9`. Clears two critical Next.js RCE advisories
+  (GHSA-p293-qw3h-jr36, GHSA-2xp9-vwfh-vxw4) and two high `browserslist`
+  advisories (GHSA-73wf-gq98-2v4g and its sibling). merqo already builds
+  without `output: "standalone"`, so no config change was needed.
+
 ## [0.7.3] - 2026-09-07
 
 ### Fixed
