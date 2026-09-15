@@ -49,9 +49,12 @@ badge actually looks like — see
 (workspace root, cross-kit spec). The landing footer matches qkit's exactly
 (single-row wordmark/tagline/credit-line/sign-in link, no CTA band above it).
 
-Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.25.0`), the shared
-component package for the kit family (see qkit/loopkit/paykit/stockkit for
-the same dependency). `/about`'s own story is now `@merqo/ui`'s shared
+Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.27.0`, bumped
+2026-09-15 for `DashboardTours` — a route-matched multi-tour router for kits
+with more than one dashboard-page tour, qkit's first consumer; purely
+additive here), the shared component package for the kit family (see
+qkit/loopkit/paykit/stockkit for the same dependency). `/about`'s own story
+is now `@merqo/ui`'s shared
 `AboutMerqo` component (`v0.25.0`), the same content every kit's own
 `/about` page renders. `LegalDocument` (every `/legal/*` page) gained a
 "← Back" button in the same release. As of `v0.24.0`, `TermsAcceptanceCheckbox` no longer
