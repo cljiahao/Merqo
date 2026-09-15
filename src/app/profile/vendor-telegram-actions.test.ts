@@ -14,7 +14,7 @@ vi.mock("@/lib/telegram", () => ({
 }));
 
 const qrSvg = vi.fn().mockResolvedValue("<svg data-testid='qr' />");
-vi.mock("@/lib/qr", () => ({
+vi.mock("@merqo/ui", () => ({
   qrSvg: (text: string) => qrSvg(text),
 }));
 

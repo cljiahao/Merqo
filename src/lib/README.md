@@ -31,7 +31,6 @@ that isn't a route or a component.
 - `nps.ts` — Net Promoter Score bucketing/scoring, ported from qkit's own `nps.ts`.
 - `overview.ts` — aggregates per-kit metrics into the admin overview's platform totals.
 - `products.ts` — the kit registry (`RegistryRow`) read/cache from `merqo.products`, including each kit's `metrics_secret`.
-- `qr.ts` — `qrSvg(text)`: renders `text` (a Telegram deep link) as an inline SVG markup string via the `qrcode` package, for `@merqo/ui`'s `VendorTelegramSection` to render via `dangerouslySetInnerHTML`. Same shape/library as loopkit's and qkit's own (now-retired, Phase A2) per-kit `qrSvg` helpers.
 - `qr.test.ts` — asserts the rendered string is real SVG markup.
 - `safe-redirect.ts` — `safeRedirectPath(next, fallback)`: guards against an open redirect by accepting only a same-origin relative path — leading `/`, not literally `//`/`/\` (both browser-normalize to a protocol-relative URL), and no embedded ASCII control character (TAB/LF/CR etc., which `URL`'s own parser strips, turning e.g. `/\t/evil.example` into `//evil.example`) — else returns `fallback`. Used by `/legal/accept`'s `page.tsx`/`actions.ts` to sanitize the `next` query param before rendering or redirecting.
 - `safe-redirect.test.ts` — legitimate-path pass-through, literal absolute/protocol-relative rejection, embedded-control-character rejection (TAB/LF/CR), and a `new URL(...)` check proving the fallback itself never resolves off-origin.

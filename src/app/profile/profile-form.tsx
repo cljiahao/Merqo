@@ -4,11 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Store, IdCard, KeyRound, UserRound, Share2 } from "lucide-react";
-import { ImageUploader, Section, TwoColumnSections } from "@merqo/ui";
+import {
+  ImageUploader,
+  Section,
+  SocialLinksFields,
+  TwoColumnSections,
+} from "@merqo/ui";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SocialLinksFields } from "@/components/social-links-fields";
 import { createClient } from "@/lib/supabase/client";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { uploadVendorAvatar } from "@/lib/image-upload-adapter";

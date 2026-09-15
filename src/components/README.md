@@ -50,17 +50,10 @@ or scoped to `dashboard/`/`landing/`.
   `../../../docs/superpowers/specs/2026-08-25-tour-example-badge-drift-fix-design.md`
   (workspace root, cross-kit).
 - `tour-steps.test.ts` — unit tests asserting the step list.
-- `elevated-card.tsx` — `ElevatedCard({ as, className, children })`: the
-  shared raised-card container (rounded, bordered, soft shadow) used by the
-  login page and other kits' matching cards.
 - `nps-card.tsx` — `NpsCard({ title, scores })`: renders an NPS score plus
   breakdown for the admin feedback page.
 - `providers.tsx` — `Providers`: app-wide client providers (Radix
   `TooltipProvider`, `sonner` `Toaster`).
-- `social-icons.tsx` — `SOCIAL_LINK_FIELDS`: shared vendor social-link field
-  list with real brand marks.
-- `social-links-fields.tsx` — `SocialLinksFields`: edit-form inputs for the
-  social fields, labeled with `social-icons.tsx`'s marks.
 - `dashboard/` — components specific to the vendor dashboard. See its own
   README.
 - `landing/` — components specific to the marketing landing page. See its
@@ -70,18 +63,19 @@ or scoped to `dashboard/`/`landing/`.
 
 ## Connectivity
 
-`elevated-card.tsx` is used by `src/app/login/page.tsx`. `account-menu.tsx`
-and `dashboard-tour.tsx` are thin wiring layers over `@merqo/ui`'s shared
-`AccountMenu`/`DashboardTour` — see the root [README.md](../../README.md)
-for what else `@merqo/ui` provides and where each piece is used.
-`social-links-fields.tsx` composes `social-icons.tsx`. `InfoTooltip` and
-`Section` (formerly local `info-tooltip.tsx`/`section.tsx`) and
-`ImageUploader` (formerly local `image-uploader.tsx`) are now imported
-directly from `@merqo/ui` at their call sites instead of living here — see
-`src/app/profile/README.md` and `src/lib/README.md`'s
-`image-upload-adapter.ts` entry. `FeedbackForm`/`SupportForm` (formerly
-local, opened from `account-menu.tsx`'s Sheets) are gone entirely —
-`@merqo/ui`'s `AccountMenu` owns that Sheet chrome directly now.
+`account-menu.tsx` and `dashboard-tour.tsx` are thin wiring layers over
+`@merqo/ui`'s shared `AccountMenu`/`DashboardTour` — see the root
+[README.md](../../README.md) for what else `@merqo/ui` provides and where
+each piece is used. `InfoTooltip` and `Section` (formerly local
+`info-tooltip.tsx`/`section.tsx`), `ImageUploader` (formerly local
+`image-uploader.tsx`), and — since 2026-09-16 — `ElevatedCard`,
+`SOCIAL_LINK_FIELDS`, and `SocialLinksFields` (formerly local
+`elevated-card.tsx`, `social-icons.tsx`, `social-links-fields.tsx`) are now
+imported directly from `@merqo/ui` at their call sites instead of living
+here — see `src/app/login/README.md` and `src/app/profile/README.md` for
+where each is used. `FeedbackForm`/`SupportForm` (formerly local, opened
+from `account-menu.tsx`'s Sheets) are gone entirely — `@merqo/ui`'s
+`AccountMenu` owns that Sheet chrome directly now.
 `account-menu.test.tsx`'s menu-order test now expects a "Theme · System"
 entry, matching `@merqo/ui` v0.19.0's collapsed theme submenu.
 

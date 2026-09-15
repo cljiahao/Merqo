@@ -19,7 +19,7 @@ Merqo kit.
 
 ## Connectivity
 
-Uses `ElevatedCard` (`@/components/elevated-card`) for the card container.
+Uses `ElevatedCard` (`@merqo/ui`) for the card container.
 Successful sign-in/sign-up navigates to `/dashboard`.
 
 ## Parent
