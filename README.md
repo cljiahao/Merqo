@@ -131,7 +131,6 @@ src/components/landing/     — landing sections (nav, hero, kit-stacker, back-t
 src/components/dashboard/   — dashboard widgets (stat cards, kit discovery/preview cards)
 src/components/section.tsx  — field-group card shell for account-settings-style pages
 src/components/image-uploader.tsx — vendor-avatars Storage upload (resize-to-WebP client-side)
-src/components/social-icons.tsx / social-links-fields.tsx — shared social-link field list + form
 src/hooks/use-async-action.ts — shared pending/error state for server-action buttons
 src/lib/kits.ts             — kit family config (landing roadmap source of truth)
 src/lib/metrics-client.ts   — fetch of a kit's HTTP metrics endpoint
@@ -178,7 +177,9 @@ service-role client only, so `metrics_secret` never reaches a browser.
   founder Telegram alerts on any kit's help/feedback submission, a
   fix to that alert's own setup runbook (it was missing the step where
   you message the bot first), and security bumps of `next` to `16.3.4`,
-  `browserslist` to `4.28.9`, and `vitest` to `4.1.11`)
+  `browserslist` to `4.28.9`, and `vitest` to `4.1.11`, and a `vitest.config.ts`
+  `testTimeout` bump from 10s to 30s fixing a real test-isolation leak where a
+  timed-out test skipped its cleanup and bled a stale render into the next test)
 - Deploy runbook: `docs/DEPLOY.md`
 - Plans/specs: `docs/superpowers/`
 - AI harness/hooks/skills map: `.claude/README.md`

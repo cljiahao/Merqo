@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createServerClient, createServiceClient } from "@/lib/supabase/server";
 import { generateLinkToken } from "@/lib/telegram";
-import { qrSvg } from "@/lib/qr";
+import { qrSvg } from "@merqo/ui";
 import type { ActionResult } from "@/lib/action-result";
 
 const LINK_TOKEN_TTL_MS = 30 * 60 * 1000;

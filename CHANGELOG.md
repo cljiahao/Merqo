@@ -4,6 +4,18 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.6] - 2026-09-16
+
+### Changed
+
+- `ElevatedCard`, `SOCIAL_LINK_FIELDS`/`SocialLinksFields`, and `qrSvg` now
+  come from `@merqo/ui` (bumped to v0.29.1) instead of a merqo-local copy —
+  each was confirmed duplicated across 2 or more sibling kits before
+  promoting. `landing/footer.tsx` was left untouched: its copy ("© 2026
+  Merqo", "Sign in →") genuinely differs from the shared `Footer`
+  component's fixed kit-oriented strings, so it isn't a blind-mergeable
+  case.
+
 ## [0.7.5] - 2026-09-09
 
 ### Security
