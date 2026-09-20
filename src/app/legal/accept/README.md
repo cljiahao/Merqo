@@ -30,6 +30,10 @@ page it exists to satisfy, an infinite loop.
   in the insert call; a `23505` on one doc doesn't block the other;
   unsafe `next` values fall back to `/dashboard`.
 
+## Shared package note
+
+`safeRedirectPath` now comes from `@merqo/ui` (v0.31.0) rather than `@/lib/safe-redirect`.
+
 ## Parent
 
 [legal](../README.md)

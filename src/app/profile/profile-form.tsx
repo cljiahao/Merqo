@@ -16,7 +16,7 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 import { useAsyncAction } from "@/hooks/use-async-action";
 import { uploadVendorAvatar } from "@/lib/image-upload-adapter";
-import { resizeToWebp } from "@/lib/image-resize";
+import { resizeToWebp } from "@merqo/ui";
 import {
   profileNameSchema,
   displayNameSchema,

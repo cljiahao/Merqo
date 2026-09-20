@@ -22,6 +22,10 @@ Merqo kit.
 Uses `ElevatedCard` (`@merqo/ui`) for the card container.
 Successful sign-in/sign-up navigates to `/dashboard`.
 
+## Shared package note
+
+`google-mark.tsx` moved to `@merqo/ui` (v0.31.0) as `GoogleMark` — it was byte-identical in all five repos.
+
 ## Parent
 
 See the repo root [README.md](../../../README.md) for the full `src/app/`
