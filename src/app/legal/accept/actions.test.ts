@@ -13,7 +13,12 @@ vi.mock("@/lib/supabase/server", () => ({
   createServerClient: async () => ({ auth: { getUser: getUserMock } }),
   createServiceClient: async () => ({ from: fromMock }),
 }));
-vi.mock("@merqo/ui", () => ({
+// Partial mock: the legal doc source/versions are stubbed, but
+// safeRedirectPath is kept real. It moved into @merqo/ui in v0.31.0, and
+// these tests assert the actual redirect target, so stubbing it would make
+// them pass regardless of the open-redirect guard's behaviour.
+vi.mock("@merqo/ui", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@merqo/ui")>()),
   getLegalDocSource: (doc: string) => `${doc}-source`,
   LEGAL_VERSIONS: { terms: "2026-09-04", privacy: "2026-09-04" },
 }));

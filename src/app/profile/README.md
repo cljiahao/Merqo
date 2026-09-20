@@ -23,6 +23,10 @@ pattern qkit/loopkit/paykit's `dashboard/profile/` implement.
 
 Reachable from `account-menu.tsx`'s "Profile" item (both `/dashboard` and `/admin` headers) — that link is `@merqo/ui`'s `AccountMenu` hardcoded route, `/dashboard/profile`, which `src/app/dashboard/profile/page.tsx` redirects here. `page.tsx` calls the server Supabase client directly (no `requireMerqoTeam()` gate — deliberately signed-in-only, see the comment in `page.tsx`) and renders `profile-form.tsx`, which calls the server actions `updateStallName`/`updateSocialLinks` in `actions.ts` for stall name/social links and the browser Supabase client (`@/lib/supabase/client`) directly for avatar/display-name/password, all validated against schemas in `@/lib/schemas`. Profile-icon uploads go through `@/lib/image-upload-adapter` to the `vendor-avatars` Storage bucket (`supabase/migrations/0015_vendor_avatars_bucket.sql`). `vendor-telegram-connect.tsx` renders `@merqo/ui`'s `VendorTelegramSection`, calling `vendor-telegram-actions.ts`'s two server actions, which write/read `merqo.telegram_link_tokens`/`merqo.vendor_telegram` (`supabase/migrations/0020_vendor_telegram.sql`) — the same tables `../api/telegram/webhook/route.ts`'s `/start` handler and `../api/merqo/{vendor-connect-token,notify-vendor}/route.ts` operate on for qkit/loopkit's own equivalent flow.
 
+## Shared package note
+
+The avatar upload's resize step now calls `@merqo/ui`'s `resizeToWebp` (v0.31.0). v0.31.1 also fixes a latent bug there: a filename with no dot used to yield the whole name as its extension.
+
 ## Parent
 
 See the repo root [README.md](../../../README.md) for the full `src/app/`

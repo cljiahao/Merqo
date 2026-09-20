@@ -4,6 +4,33 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Bumped `@merqo/ui` from `v0.29.3` to `v0.31.2`. v0.31.0 replaced the
+  package-wide `"use client"` banner with per-module directives, so a
+  plain-data export is a real value inside a Server Component rather than
+  an opaque client-reference stub — the root cause of the 2026-09-18 RSC
+  crashes across the kits.
+- Adopted four primitives promoted into `@merqo/ui` v0.31.0, deleting the
+  merqo copies: `safeRedirectPath` and `resizeToWebp` (were
+  `src/lib/safe-redirect.ts` / `image-resize.ts`), `BackToTop` (was
+  `src/components/landing/back-to-top.tsx`) and `GoogleMark` (was
+  `src/app/login/google-mark.tsx`).
+- The landing `Footer` is now a thin adapter over the shared `Footer`
+  rather than a second copy of the same layout. merqo is the hub, not a
+  kit, so it passes `copyright` and `signInLabel` overrides to keep
+  "© 2026 Merqo" and "Sign in →" instead of the kit-oriented defaults.
+  Both props were added upstream for this; rendered output is unchanged
+  and `footer.test.tsx` passes untouched.
+
+### Fixed
+
+- `resizeToWebp` on a filename with no dot returned the whole name as the
+  extension (a file called `photo` gave `ext: "photo"`). Fixed upstream in
+  v0.31.1 and picked up here.
+
 ## [0.7.6] - 2026-09-16
 
 ### Changed

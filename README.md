@@ -84,6 +84,20 @@ shell (`wordmark`/`end` slots), added in v0.9.0. v0.10.0 added an optional
 opt their internal nav links out of a plain `<a>`'s full page reload;
 `account-menu.tsx` passes `LinkComponent={Link}` (`next/link`).
 
+`@merqo/ui` bumped to v0.31.2 (2026-09-19), from v0.29.3. v0.31.0 replaced
+the package-wide `"use client"` banner with per-module directives, so a
+plain-data export is a real value inside a Server Component rather than an
+opaque client-reference stub — the root cause of the 2026-09-18 RSC crashes
+across the kits. It also promoted four modules merqo had its own copy of:
+`safeRedirectPath`, `resizeToWebp`, `BackToTop` and `GoogleMark`. The
+landing `Footer` is now a thin adapter over the shared one, passing
+`copyright` and `signInLabel` overrides so the hub keeps saying
+"© 2026 Merqo" and "Sign in →" rather than a kit's "a Merqo kit" /
+"Vendor sign in →"; rendered output is unchanged. v0.31.1 fixes a latent
+`resizeToWebp` bug where a dotless filename yielded the whole name as its
+extension. Which repo uses which shared export is tracked in
+`../merqo-ui/docs/usage-matrix.md`.
+
 ## Stack
 
 Next.js 16 · App Router · Turbopack · TypeScript strict · Tailwind v4 ·

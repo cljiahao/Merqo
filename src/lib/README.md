@@ -55,6 +55,10 @@ that isn't a route or a component.
 - `vendor-feedback.test.ts`, `vendor-sync.test.ts`, `vendor.test.ts` — co-located unit tests for the same-named modules above.
 - `supabase/` — browser / server (schema=merqo) / service-role Supabase clients + the session-refresh middleware helper.
 
+## Shared package note
+
+`safe-redirect.ts` and `image-resize.ts` moved to `@merqo/ui` (v0.31.0) — both were duplicated across all five repos. Import `safeRedirectPath` and `resizeToWebp` from `@merqo/ui` instead. The image-upload adapter stays local: the Storage bucket and object path are merqo's own.
+
 ## Parent
 
 See the repo root [README.md](../../README.md) for the full `src/` layout.

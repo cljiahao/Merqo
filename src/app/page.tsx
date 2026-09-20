@@ -5,7 +5,7 @@ import { KitStacker } from "@/components/landing/kit-stacker/kit-stacker";
 import { HowItWorks } from "@/components/landing/how-it-works";
 import { Faq } from "@/components/landing/faq";
 import { Footer } from "@/components/landing/footer";
-import { BackToTop } from "@/components/landing/back-to-top";
+import { BackToTop } from "@merqo/ui";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { createServerClient } from "@/lib/supabase/server";

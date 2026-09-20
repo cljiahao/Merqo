@@ -42,6 +42,10 @@ Assembled by `src/app/page.tsx` in the order listed above (nav → hero →
 benefits → kit-stacker → how-it-works → faq → footer →
 back-to-top), plus a sticky mobile CTA bar rendered directly in `page.tsx`.
 
+## Shared package note
+
+`back-to-top.tsx` moved to `@merqo/ui` (v0.31.0) as `BackToTop`. `footer.tsx` is now a thin adapter over the shared `Footer`, passing merqo's wordmark plus `copyright` and `signInLabel` overrides — merqo is the hub rather than a kit, so it says "© 2026 Merqo" and "Sign in →" where a kit says "a Merqo kit" and "Vendor sign in →". Both props exist for this; the rendered output is unchanged, and `footer.test.tsx` passes untouched.
+
 ## Parent
 
 [components](../README.md)
