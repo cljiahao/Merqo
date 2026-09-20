@@ -3,11 +3,10 @@ import { Footer as SharedFooter } from "@merqo/ui";
 import { Wordmark } from "./wordmark";
 
 /**
- * Thin adapter over `@merqo/ui`'s shared `Footer`. merqo is the hub rather
- * than a kit, so it overrides the copyright line — the shared default ends
- * in "a Merqo kit", which would be wrong here. That `copyright` prop was
- * added in v0.31.0 so this file could stop being a second copy of the same
- * layout.
+ * merqo's landing footer: `@merqo/ui`'s shared `Footer` plus this app's own
+ * wordmark and strings. merqo is the hub rather than a kit, so it overrides
+ * the copyright line and the sign-in label, which otherwise read
+ * "a Merqo kit" and "Vendor sign in".
  */
 export function Footer() {
   return (
