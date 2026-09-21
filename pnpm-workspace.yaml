@@ -1,6 +1,6 @@
 allowBuilds:
   "@merqo/ui": true
-  "@merqo/ui@https://codeload.github.com/cljiahao/merqo-ui/tar.gz/be06676966e3acfce51e51ad35b1c323a56bdecb": true
+  "@merqo/ui@https://codeload.github.com/cljiahao/merqo-ui/tar.gz/11c43a7a06b9c510fc3384dbdeac8d00ed5256bb": true
   "@merqo/ui@https://codeload.github.com/cljiahao/merqo-ui/tar.gz/e88ea5dfb080c9bee78247aa4fc6e54c5add4ef0": true
   "@merqo/ui@https://codeload.github.com/cljiahao/merqo-ui/tar.gz/600d2241b4b2ea9325eb5985da818387c6e975af": true
   esbuild: true
@@ -20,6 +20,7 @@ allowBuilds:
   "@merqo/ui@https://codeload.github.com/cljiahao/merqo-ui/tar.gz/33af6ad9b86b032e38240d2289c10cf7fa1729b7": true
   "@merqo/ui@https://codeload.github.com/cljiahao/merqo-ui/tar.gz/389d9b012f626bdf6932720f809d16f84057621c": true
   "@merqo/ui@https://codeload.github.com/cljiahao/merqo-ui/tar.gz/f04f254a9c1cfcdd066913864e84a951e7df50db": set this to true or false
+  "@merqo/ui@https://codeload.github.com/cljiahao/merqo-ui/tar.gz/be06676966e3acfce51e51ad35b1c323a56bdecb": set this to true or false
 onlyBuiltDependencies:
   - esbuild
   - unrs-resolver

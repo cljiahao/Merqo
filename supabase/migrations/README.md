@@ -138,6 +138,7 @@ landing — a later migration corrects an earlier one.
   Safe to drop outright (not just nullable) — no real vendor has accepted
   anything on any kit yet.
 - `0029_founder_telegram_alerts.sql` — an AFTER INSERT trigger on
+- `0030_vendor_avatars_bucket_limits.sql` — gives the public `vendor-avatars` bucket a 5 MB `file_size_limit` and JPEG/PNG/WebP `allowed_mime_types`. It had neither, so the browser-side resize was the only guard and a signed-in JWT could upload an arbitrary file (including HTML) for the public bucket to serve. Matches the kits' image buckets; pinned by two pgTAP assertions.
   `support_messages`/`vendor_feedback`/`feedback` that pings a single
   fixed founder Telegram chat via `pg_net` (`net.http_post` to the Bot
   API) on every new row, regardless of which of the 6 kits' write paths

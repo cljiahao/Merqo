@@ -28,3 +28,5 @@ migration in `../migrations/` first via `supabase start`.
 ## Parent
 
 [merqo](../../README.md)
+
+It also pins the `vendor-avatars` bucket's own limits from migration `0030` (5 MB `file_size_limit`, JPEG/PNG/WebP `allowed_mime_types`), so a later migration cannot quietly loosen them on a public bucket.

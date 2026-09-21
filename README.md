@@ -84,7 +84,10 @@ shell (`wordmark`/`end` slots), added in v0.9.0. v0.10.0 added an optional
 opt their internal nav links out of a plain `<a>`'s full page reload;
 `account-menu.tsx` passes `LinkComponent={Link}` (`next/link`).
 
-`@merqo/ui` bumped to v0.31.2 (2026-09-19), from v0.29.3. v0.31.0 replaced
+`@merqo/ui` bumped to v0.31.3 (2026-09-22), which also stops `resizeToWebp`
+mislabelling a PNG as WebP on browsers that cannot encode WebP; the public
+`vendor-avatars` bucket now enforces 5 MB and JPEG/PNG/WebP itself (migration
+`0030`). Before that, v0.31.2 (2026-09-19), from v0.29.3. v0.31.0 replaced
 the package-wide `"use client"` banner with per-module directives, so a
 plain-data export is a real value inside a Server Component rather than an
 opaque client-reference stub — the root cause of the 2026-09-18 RSC crashes

@@ -6,6 +6,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Security
+
+- The public `vendor-avatars` bucket had no size or MIME limit, so the
+  browser-side resize in `ImageUploader` was its only guard. A direct storage
+  call with a signed-in JWT could upload an arbitrarily large file, or a
+  non-image such as HTML that the public bucket would then serve. Migration
+  `0030` sets 5 MB and JPEG/PNG/WebP only, matching the kits' image buckets,
+  pinned by two new pgTAP assertions.
+
+### Fixed
+
+- Bumped `@merqo/ui` to `v0.31.3`: where a browser cannot encode WebP,
+  `canvas.toBlob` silently returns a PNG, which `resizeToWebp` had
+  mislabelled `image/webp`. It now falls back to JPEG.
+
 ### Changed
 
 - Bumped `@merqo/ui` from `v0.29.3` to `v0.31.2`. v0.31.0 replaced the
