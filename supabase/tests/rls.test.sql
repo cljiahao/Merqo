@@ -36,7 +36,7 @@
 -- Runs in ONE rolled-back transaction with inline fixed-UUID fixtures.
 
 begin;
-select plan(103);
+select plan(105);
 
 -- ── Fixtures (created under the default/superuser test role → RLS + grants
 -- are bypassed here) ─────────────────────────────────────────────────────────
@@ -699,6 +699,20 @@ select lives_ok(
   $$ insert into merqo.support_messages (user_id, category, body)
      values ('00000000-0000-0000-0000-00000000000b', 'other', 'another test request') $$,
   'inserting a support_messages row does not raise when Vault secrets are unset');
+
+-- storage: vendor-avatars is public-read, so it must enforce its own size and
+-- MIME limits (migration 0030), or a signed-in JWT could upload an arbitrary
+-- file, including HTML, that the public bucket would then serve.
+select is(
+  (select file_size_limit from storage.buckets where id = 'vendor-avatars'),
+  5242880::bigint,
+  'vendor-avatars caps objects at 5 MB'
+);
+select is(
+  (select allowed_mime_types from storage.buckets where id = 'vendor-avatars'),
+  array['image/jpeg', 'image/png', 'image/webp']::text[],
+  'vendor-avatars accepts only JPEG, PNG and WebP'
+);
 
 select * from finish();
 rollback;
