@@ -84,6 +84,12 @@ shell (`wordmark`/`end` slots), added in v0.9.0. v0.10.0 added an optional
 opt their internal nav links out of a plain `<a>`'s full page reload;
 `account-menu.tsx` passes `LinkComponent={Link}` (`next/link`).
 
+`@merqo/ui` bumped to v0.31.4 (2026-09-22), for its new
+`storagePathFromPublicUrl`. Replacing or removing a profile icon now deletes the
+old image from storage (`removeReplacedAvatar` in
+`src/lib/image-upload-adapter.ts`); before this, every avatar change orphaned one
+file, because `ImageUploader` names each upload randomly.
+
 `@merqo/ui` bumped to v0.31.3 (2026-09-22), which also stops `resizeToWebp`
 mislabelling a PNG as WebP on browsers that cannot encode WebP; the public
 `vendor-avatars` bucket now enforces 5 MB and JPEG/PNG/WebP itself (migration

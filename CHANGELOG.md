@@ -17,9 +17,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Replacing or removing a profile icon no longer leaves the old image in storage.
+  `ImageUploader` names every upload randomly and nothing ever deleted the object
+  it replaced, so each change orphaned one file. The save handler now deletes the
+  previous avatar after a successful save, and deletes the fresh upload after a
+  failed one, via a new best-effort `removeReplacedAvatar` in
+  `src/lib/image-upload-adapter.ts`. It checks all three public avatar buckets,
+  since all five apps share one signed-in user and one `avatar_url`, and ignores
+  OAuth provider pictures. A failed save also now restores the previous avatar
+  instead of showing one that was never saved.
+- Bumped `@merqo/ui` to `v0.31.4`, which adds `storagePathFromPublicUrl`.
+- Removed `set this to true or false` placeholder lines from
+  `pnpm-workspace.yaml`'s `allowBuilds`. pnpm inserts one for each previous
+  `@merqo/ui` tarball URL on a version bump, and earlier bumps committed them.
+  pnpm tolerated them, so CI stayed green, but they were junk in a build-script
+  allowlist.
 - Bumped `@merqo/ui` to `v0.31.3`: where a browser cannot encode WebP,
   `canvas.toBlob` silently returns a PNG, which `resizeToWebp` had
   mislabelled `image/webp`. It now falls back to JPEG.
+- `resizeToWebp` on a filename with no dot returned the whole name as the
+  extension (a file called `photo` gave `ext: "photo"`). Fixed upstream in
+  v0.31.1 and picked up here.
 
 ### Changed
 
@@ -39,12 +57,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   "© 2026 Merqo" and "Sign in →" instead of the kit-oriented defaults.
   Both props were added upstream for this; rendered output is unchanged
   and `footer.test.tsx` passes untouched.
-
-### Fixed
-
-- `resizeToWebp` on a filename with no dot returned the whole name as the
-  extension (a file called `photo` gave `ext: "photo"`). Fixed upstream in
-  v0.31.1 and picked up here.
 
 ## [0.7.6] - 2026-09-16
 
