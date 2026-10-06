@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // sharp is only next's optional peer; Vercel optimizes images itself, so keep its binary out of every function.
+  outputFileTracingExcludes: {
+    "*": ["node_modules/@img/**", "node_modules/sharp/**"],
+  },
+
   async headers() {
     // Client-side Supabase calls (auth, storage) go straight from the browser
     // to Supabase, so connect-src must allow it. In dev that's local Supabase
