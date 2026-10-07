@@ -8,6 +8,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- The repository moved from the `cljiahao` GitHub account to the `merqo-io` organization. `@merqo/ui` now installs from `github:merqo-io/merqo-ui` at the same tag, with the lockfile and tarball URLs updated to match.
 - Bumped `@merqo/ui` to `v0.32.0`, which adds `ImageUploader`'s
   `deferUpload` mode and `commitPendingImages` (upload an image only when
   its form is saved). Nothing here adopts it: this app's only uploader is
