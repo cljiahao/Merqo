@@ -38,7 +38,7 @@ of git — it lives only in Vercel env + the DB row.
 
 ## B. qkit (attach the metrics endpoint)
 
-1. Review + merge PR **cljiahao/Qkit#11** (`feat: GET /api/merqo/metrics`).
+1. Review + merge PR **merqo-io/Qkit#11** (`feat: GET /api/merqo/metrics`).
 2. qkit Vercel → Environment Variables → add `MERQO_METRICS_SECRET = <same secret>` → redeploy.
 3. Verify:
    ```bash
@@ -48,7 +48,7 @@ of git — it lives only in Vercel env + the DB row.
 
 ## C. merqo (Vercel)
 
-1. Vercel → New Project → import `cljiahao/merqo`.
+1. Vercel → New Project → import `merqo-io/merqo`.
 2. Environment Variables (Production + Preview) — **same Supabase project as qkit**:
    - `NEXT_PUBLIC_SUPABASE_URL` = shared project URL
    - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` = anon key

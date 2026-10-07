@@ -1,6 +1,6 @@
 # docs
 
-- `DEPLOY.md` — Supabase/Vercel deployment runbook.
+- `DEPLOY.md` — Supabase/Vercel deployment runbook. Repo links point at the `merqo-io` GitHub organization.
 - `meta/` — standing backlog / cross-cutting project-management docs.
 - `superpowers/` — per-feature specs (`specs/`) and implementation plans
   (`plans/`). 22 plan+spec pairs shipped 2026-07-08 through 2026-07-28

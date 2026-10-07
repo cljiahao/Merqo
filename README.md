@@ -49,7 +49,7 @@ badge actually looks like — see
 (workspace root, cross-kit spec). The landing footer matches qkit's exactly
 (single-row wordmark/tagline/credit-line/sign-in link, no CTA band above it).
 
-Merqo runs on `@merqo/ui` (`github:cljiahao/merqo-ui#v0.27.0`, bumped
+Merqo runs on `@merqo/ui` (`github:merqo-io/merqo-ui#v0.27.0`, bumped
 2026-09-15 for `DashboardTours` — a route-matched multi-tour router for kits
 with more than one dashboard-page tour, qkit's first consumer; purely
 additive here), the shared component package for the kit family (see
