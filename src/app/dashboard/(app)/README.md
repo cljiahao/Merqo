@@ -72,3 +72,7 @@ for `AccountMenu`/`DashboardTour`'s `@merqo/ui` wiring.
 
 See the repo root [README.md](../../../../README.md) for the full `src/app/`
 layout.
+
+## Boundary and coverage
+
+The layout reads preferences with the authenticated user ID and uses the session client for the initial tour stamp. The write is best-effort cosmetic state, not a guaranteed durable record: database errors are logged without breaking the page. Tests assert authenticated ownership and first-visit behavior.

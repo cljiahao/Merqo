@@ -29,3 +29,7 @@ alone.
 
 See the repo root [README.md](../../../README.md) for the full `src/app/`
 layout.
+
+## Boundary and coverage
+
+markTourSeen resolves the authenticated user through the session client and delegates to stampTourSeen. Both the browser action and layout supplement the same cosmetic preference write; rejected authentication and database errors must not interrupt navigation.

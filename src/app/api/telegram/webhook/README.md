@@ -72,3 +72,7 @@ later sends to.
 ## Parent
 
 [telegram](../README.md)
+
+## Boundary and coverage
+
+Link redemption deletes and returns the token before applying the connection, so competing deliveries cannot both redeem it. Invalid or expired tokens do not link an account. Most authenticated malformed or unsupported updates are acknowledged, but a failed /stop consent write returns 503 so Telegram can retry the idempotent withdrawal; tests cover this distinction.

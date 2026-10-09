@@ -34,3 +34,7 @@ request. Reads `merqo.legal_acceptances` (migration `0024`).
 ## Parent
 
 [merqo](../README.md)
+
+## Boundary and coverage
+
+Authenticate the calling kit before creating the service client. Validate and normalize the email, then resolve acceptance versions through latestLegalVersions, ordered by accepted_at. Database failures return 500; missing versions return null. Tests cover malformed emails, authorization and read failures.
