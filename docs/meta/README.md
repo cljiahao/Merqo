@@ -8,6 +8,9 @@ individual feature specs, with nothing tying them together.
 
 ## Contents
 
+- [Component reuse specification](2026-10-10-component-reuse-spec.md): confirmed cleanup scope, acceptance and intentional exclusions.
+- [Component reuse verification](2026-10-10-component-reuse-verification.md): finished-work review, regressions and validation evidence.
+
 - `2026-08-15-merqo-hub-task-registry.md` — refresh of the 07-17 registry
   against current code/git history: the domain-placeholder item shipped
   (PR #11) and is now Done; the admin pricing panel and real billing/

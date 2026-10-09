@@ -14,11 +14,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-/** Replaces the Pro-tier kit tile with a "Cancel Pro" action: flips the
- *  vendor back to free instantly, no admin confirmation. The backend has no
- *  confirmation gate of its own, so this dialog is the one place a vendor
- *  is protected from a stray click. No toast (Merqo has none mounted) —
- *  inline text feedback, matching UpgradeButton's convention. */
+/** Confirm an immediate move to Free and show the result inline. */
 export function DowngradeButton({ slug }: { slug: string }) {
   const [pending, startTransition] = useTransition();
   const [state, setState] = useState<"idle" | "done" | "error">("idle");

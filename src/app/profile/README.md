@@ -13,7 +13,7 @@ concurrent edits to the other column survive. Missing shared rows are provisione
 atomically. Empty social links clear links; omitted fields remain unchanged.
 The page reads the shared profile through `getOrCreateVendorProfile`.
 
-`profile-form.tsx` uses the browser Supabase auth client for display name,
+`profile-form.tsx` composes five route-local sections. Each section owns its pending and validation state, so one save does not block another. The avatar, display-name and password sections use the browser Supabase auth client for display name,
 avatar metadata and password. These fields are shared by the Supabase account,
 not kit-local records. Shared sections/social fields/image uploader come from
 `@merqo/ui`; `lib/image-upload-adapter.ts` owns Storage uploads and best-effort

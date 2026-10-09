@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { toast } from "sonner";
 
 const updateStallName = vi.fn();
 const updateSocialLinks = vi.fn();
@@ -143,3 +144,81 @@ describe("ProfileForm — social links", () => {
     });
   });
 });
+
+it("keeps display-name saves independent while a stall-name save is pending", async () => {
+  let finish!: (result: { success: true }) => void;
+  updateStallName.mockImplementation(
+    () =>
+      new Promise<{ success: true }>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const user = userEvent.setup();
+  render(<ProfileForm {...baseProps} />);
+  await user.clear(screen.getByLabelText("Stall name"));
+  await user.type(screen.getByLabelText("Stall name"), "Changed stall");
+  await user.click(screen.getByRole("button", { name: "Save stall name" }));
+  expect(screen.getByRole("button", { name: "Saving…" })).toBeDisabled();
+  await user.type(screen.getByLabelText("Display name"), "Alice");
+  await user.click(screen.getByRole("button", { name: "Save display name" }));
+  expect(updateUser).toHaveBeenCalledWith({ data: { display_name: "Alice" } });
+  expect(screen.getByRole("button", { name: "Saving…" })).toBeDisabled();
+  await act(async () => finish({ success: true }));
+});
+
+it.each([
+  {
+    label: "stall name",
+    button: "Save stall name",
+    fields: [["Stall name", "Changed stall"]],
+    operation: updateStallName,
+    result: { success: true },
+  },
+  {
+    label: "social links",
+    button: "Save links",
+    fields: [],
+    operation: updateSocialLinks,
+    result: { success: true },
+  },
+  {
+    label: "display name",
+    button: "Save display name",
+    fields: [["Display name", "Alice"]],
+    operation: updateUser,
+    result: { error: null },
+  },
+  {
+    label: "password",
+    button: "Update password",
+    fields: [
+      ["New password", "longpassword"],
+      ["Confirm new password", "longpassword"],
+    ],
+    operation: updateUser,
+    result: { error: null },
+  },
+])(
+  "recovers a rejected $label save and preserves values for retry",
+  async ({ button, fields, operation, result }) => {
+    vi.mocked(toast.error).mockClear();
+    operation
+      .mockRejectedValueOnce(new Error("Transport failed"))
+      .mockResolvedValueOnce(result);
+    const user = userEvent.setup();
+    render(<ProfileForm {...baseProps} />);
+    for (const [label, value] of fields) {
+      await user.clear(screen.getByLabelText(label));
+      await user.type(screen.getByLabelText(label), value);
+    }
+    await user.click(screen.getByRole("button", { name: button }));
+    expect(toast.error).toHaveBeenCalledWith(
+      "Couldn't save your changes. Please try again.",
+    );
+    expect(screen.getByRole("button", { name: button })).toBeEnabled();
+    for (const [label, value] of fields)
+      expect(screen.getByLabelText(label)).toHaveValue(value);
+    await user.click(screen.getByRole("button", { name: button }));
+    expect(operation).toHaveBeenCalledTimes(2);
+  },
+);

@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { toast } from "sonner";
 
 const { updateUserMock, removeReplacedAvatarMock } = vi.hoisted(() => ({
   updateUserMock: vi.fn(),
@@ -25,8 +26,15 @@ vi.mock("@merqo/ui", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@merqo/ui")>()),
   // Stands in for a finished upload (or a Remove click) by calling onChange
   // directly, which is all the avatar save handler sees.
-  ImageUploader: ({ onChange }: { onChange: (url: string | null) => void }) => (
+  ImageUploader: ({
+    onChange,
+    value,
+  }: {
+    onChange: (url: string | null) => void;
+    value: string | null;
+  }) => (
     <div>
+      <output data-testid="current-avatar">{value}</output>
       <button type="button" onClick={() => onChange(NEW_AVATAR)}>
         finish upload
       </button>
@@ -101,4 +109,28 @@ describe("ProfileForm avatar storage cleanup", () => {
     await waitFor(() => expect(updateUserMock).toHaveBeenCalled());
     expect(removeReplacedAvatarMock).not.toHaveBeenCalled();
   });
+});
+
+it("rolls back the displayed avatar on rejection without deleting uncertain uploads", async () => {
+  updateUserMock
+    .mockReset()
+    .mockRejectedValueOnce(new Error("Transport failed"))
+    .mockResolvedValueOnce({ error: null });
+  removeReplacedAvatarMock.mockReset().mockResolvedValue(undefined);
+  vi.mocked(toast.error).mockClear();
+  const user = userEvent.setup();
+  renderForm(OLD_AVATAR);
+  await user.click(screen.getByRole("button", { name: "finish upload" }));
+  await waitFor(() =>
+    expect(toast.error).toHaveBeenCalledWith(
+      "Couldn't save your profile icon. Please try again.",
+    ),
+  );
+  expect(screen.getByTestId("current-avatar")).toHaveTextContent(OLD_AVATAR);
+  expect(removeReplacedAvatarMock).not.toHaveBeenCalled();
+  await user.click(screen.getByRole("button", { name: "finish upload" }));
+  await waitFor(() =>
+    expect(removeReplacedAvatarMock).toHaveBeenCalledWith(OLD_AVATAR),
+  );
+  expect(screen.getByTestId("current-avatar")).toHaveTextContent(NEW_AVATAR);
 });

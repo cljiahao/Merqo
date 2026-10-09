@@ -3,7 +3,7 @@ import { requireVendorSession } from "@/lib/vendor";
 import { getAvatarUrl } from "@/lib/account";
 import { AccountMenu } from "@/components/account-menu";
 import { DashboardTour } from "@/components/dashboard-tour";
-import { Wordmark } from "@/components/landing/wordmark";
+import { Wordmark } from "@/components/brand/wordmark";
 import { createServerClient } from "@/lib/supabase/server";
 import { stampTourSeen } from "@/lib/tour-prefs";
 

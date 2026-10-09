@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LandingNav } from "@merqo/ui";
 import { Button } from "@/components/ui/button";
-import { Wordmark } from "./wordmark";
+import { Wordmark } from "@/components/brand/wordmark";
 
 export function Nav({ authed = false }: { authed?: boolean }) {
   return (

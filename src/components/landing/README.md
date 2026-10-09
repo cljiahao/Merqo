@@ -32,7 +32,7 @@ per file. Presentational only — no data fetching, no client state beyond the
   sign-in link, the About link, and the Terms/Privacy footer links all
   render.
 - `waitlist-form.tsx` — email capture for kits not yet live.
-- `wordmark.tsx` — the "Merqo" brand mark.
+- `@/components/brand/wordmark` — the shared Merqo brand mark.
 - `BackToTop` — shared scroll-to-top control imported from `@merqo/ui`.
 
 ## Connectivity

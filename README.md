@@ -68,10 +68,7 @@ structure (unlike a single-persona kit) means neither header uses the
 shared package's composed `DashboardNav` (burger + inline nav links): the
 vendor dashboard has no nav links to show, and the admin console's own
 tab-row-below-header nav (`admin-nav.tsx`) is visually distinct enough to
-keep hand-rolled. `@merqo/ui`'s `ProfileForm` (an all-in-one form) is not
-used either — `src/app/profile/profile-form.tsx` needs a password-change
-section the shared component doesn't have, so it composes `Section`/
-`TwoColumnSections`/`ImageUploader` individually instead, same as qkit.
+keep hand-rolled. The profile page composes shared Section, TwoColumnSections, ImageUploader and SocialLinksFields in route-local sections. Each section owns its save state and retains its distinct server-action or Supabase Auth contract.
 `@merqo/ui`'s `AccountMenu` hardcodes its Profile link to
 `/dashboard/profile`; `src/app/dashboard/profile/page.tsx` redirects that
 to Merqo's real, persona-shared `/profile` route. The landing nav
@@ -141,7 +138,7 @@ release ships within the allowed range.
 
 ```
 src/app/                    — app router (landing, dashboard, admin console, server actions)
-src/app/page.tsx            — public brand landing (static-prerendered)
+src/app/page.tsx            — public brand landing with session-aware CTAs
 src/app/dashboard/          — vendor dashboard: (app)/ (overview + kit discovery,
                                open to every signed-in user)
 src/app/admin/              — Merqo-team console: overview (page.tsx) + vendors/, team/,
@@ -152,10 +149,9 @@ src/app/login/              — email/password sign-in
 src/app/api/telegram/webhook/ — merqo's own Telegram bot's webhook (customer connect)
 src/app/api/merqo/          — bearer-secret endpoints qkit/loopkit call INTO merqo
 src/proxy.ts                — Supabase session refresh + route guard (Next 16)
-src/components/landing/     — landing sections (nav, hero, kit-stacker, back-to-top, …)
+src/components/landing/     — landing sections (nav, hero, kit-stacker, …)
 src/components/dashboard/   — dashboard widgets (stat cards, kit discovery/preview cards)
-src/components/section.tsx  — field-group card shell for account-settings-style pages
-src/components/image-uploader.tsx — vendor-avatars Storage upload (resize-to-WebP client-side)
+src/components/brand/       — shared Merqo wordmark
 src/hooks/use-async-action.ts — shared pending/error state for server-action buttons
 src/lib/kits.ts             — kit family config (landing roadmap source of truth)
 src/lib/metrics-client.ts   — fetch of a kit's HTTP metrics endpoint

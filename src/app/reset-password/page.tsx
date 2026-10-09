@@ -7,7 +7,7 @@ import { passwordChangeSchema } from "@/lib/schemas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Wordmark } from "@/components/landing/wordmark";
+import { Wordmark } from "@/components/brand/wordmark";
 
 // Reached from the password-reset email → /auth/callback establishes a recovery
 // session and forwards here. We update the password on that session, then land

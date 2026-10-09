@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { TrendIndicator } from "./trend-indicator";
 import { StatTile } from "@merqo/ui";
 import { cn } from "@/lib/utils";
 import type { Trend } from "@/lib/format";
@@ -35,18 +35,7 @@ export function StatCard({
         }
         valueTrailing={
           trend && trend.pct !== null ? (
-            <span
-              className={cn(
-                "flex items-center gap-0.5 text-xs font-medium",
-                trend.direction === "up" && "text-primary",
-                trend.direction === "down" && "text-destructive",
-                trend.direction === "flat" && "text-muted-foreground",
-              )}
-            >
-              {trend.direction === "up" && <ArrowUp className="size-3" />}
-              {trend.direction === "down" && <ArrowDown className="size-3" />}
-              {trend.pct}%
-            </span>
+            <TrendIndicator trend={trend} className="text-xs font-medium" />
           ) : undefined
         }
       />

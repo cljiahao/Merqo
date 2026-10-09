@@ -1,16 +1,7 @@
+import { ProductHealthBadge } from "../product-health-badge";
 import type { MetricsResult } from "@/lib/metrics-client";
-import { classifyHealth, type HealthStatus } from "@/lib/health";
+import { classifyHealth } from "@/lib/health";
 import { money } from "@/lib/format";
-import { Badge } from "@/components/ui/badge";
-
-const HEALTH: Record<
-  HealthStatus,
-  { label: string; variant: "success" | "gold" | "destructive" }
-> = {
-  reporting: { label: "Reporting", variant: "success" },
-  lagging: { label: "Lagging", variant: "gold" },
-  down: { label: "Down", variant: "destructive" },
-};
 
 export function ProductHealthCard({
   name,
@@ -22,7 +13,6 @@ export function ProductHealthCard({
   now: number;
 }) {
   const status = classifyHealth(result, now);
-  const badge = HEALTH[status];
   const lastSeen = result.ok
     ? result.data.generated_at.slice(0, 16).replace("T", " ")
     : "—";
@@ -32,7 +22,7 @@ export function ProductHealthCard({
     <div className="rounded-xl border bg-secondary/30 p-5">
       <div className="flex items-center justify-between gap-3">
         <h3 className="font-display text-lg font-bold">{name}</h3>
-        <Badge variant={badge.variant}>{badge.label}</Badge>
+        <ProductHealthBadge status={status} />
       </div>
       <dl className="mt-4 grid grid-cols-2 gap-x-5 gap-y-0 text-sm">
         {(

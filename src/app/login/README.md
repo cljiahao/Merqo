@@ -8,9 +8,9 @@ Merqo kit.
 
 ## Contents
 
-- `page.tsx` — `LoginPage`/`LoginForm`: `ElevatedCard`-wrapped form with
+- `page.tsx` — `LoginPage`: `ElevatedCard`-wrapped form with
   Google OAuth (`signInWithOAuth`, forced `hl=en`), email/password
-  sign-in/sign-up via `react-hook-form` + `loginSchema` (`@/lib/schemas`),
+  sign-in/sign-up via controlled fields and Supabase Auth,
   a "check your email" state for signup confirmation, and forgot-password
   via `resetPasswordForEmail`.
 
@@ -20,7 +20,7 @@ Uses `ElevatedCard` (`@merqo/ui`) for the card container.
 Successful sign-in/sign-up navigates to `/post-login`, which selects the
 account's vendor or team destination.
 
-Google branding uses `GoogleMark` from `@merqo/ui`; no local copy remains.
+Google branding uses `GoogleMark` from `@merqo/ui`; Merqo branding uses the single `components/brand/Wordmark`.
 
 ## Parent
 

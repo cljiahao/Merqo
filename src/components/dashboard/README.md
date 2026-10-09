@@ -44,3 +44,5 @@ See the repo root [README.md](../../../README.md) for the full `src/` layout.
 ## Boundary and coverage
 
 Activation and waitlist buttons prevent overlapping submissions and recover their pending state when an action rejects. StatCard keeps status text readable through semantic theme tokens; DOM tests cover its value, trend and accessibility behavior.
+
+The local TrendIndicator is used by StatCard and the admin ProductTile. It preserves signed percentages, explicit flat state, and null suppression; the shared DeltaPill has a different two-state presentation contract.

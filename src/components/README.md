@@ -52,6 +52,7 @@ or scoped to `dashboard/`/`landing/`.
 - `tour-steps.test.ts` — unit tests asserting the step list.
 - `nps-card.tsx` — `NpsCard({ title, scores })`: renders an NPS score plus
   breakdown for the admin feedback page.
+- `brand/wordmark.tsx` — the single Merqo wordmark used by landing, account, admin and error surfaces.
 - `providers.tsx` — `Providers`: app-wide client providers (Radix
   `TooltipProvider`, `sonner` `Toaster`).
 - `dashboard/` — components specific to the vendor dashboard. See its own
