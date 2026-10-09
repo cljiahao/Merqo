@@ -1,23 +1,8 @@
-# docs
+# Documentation
 
-- `DEPLOY.md` — Supabase/Vercel deployment runbook. Repo links point at the `merqo-io` GitHub organization.
-- `meta/` — standing backlog / cross-cutting project-management docs.
-- `superpowers/` — per-feature specs (`specs/`) and implementation plans
-  (`plans/`). 22 plan+spec pairs shipped 2026-07-08 through 2026-07-28
-  (admin console, vendor portal, self-serve kit toggle, kit discovery,
-  feedback/support, cross-kit support messages, cross-kit vendor feedback,
-  shared vendor profile, dashboard savings estimate, paykit provisioning,
-  vendor push provisioning, etc.), plus 2 earlier unpaired specs
-  (`2026-07-06-merqo-home-landing-design.md`,
-  `2026-07-06-merqo-kit-stacker-design.md`) predating the plan-file
-  convention — implemented directly without a separate plan doc. Most
-  recent: `2026-08-16-customer-telegram-connect-design.md` — merqo's own
-  third Telegram bot plus the first kit → merqo HTTP direction in this
-  codebase.
+- DEPLOY.md describes Supabase/Vercel setup and the shared Telegram bot. Users must initiate contact with that bot before it can message them; private chat IDs identify the same user across bots.
+- audit-checkpoint-2026-10-09.md records the product review and validation limits.
+- meta/ holds standing operational and product notes.
+- superpowers/plans/ and superpowers/specs/ retain dated implementation and design evidence. They describe the decisions at that time; current source, migrations and root documentation establish present behavior.
 
-`DEPLOY.md`'s "Founder Telegram alerts" section covers the one-time Supabase
-Vault setup (bot token + chat id) migration `0029` needs before it actually
-sends anything — the migration itself no-ops safely without it. That
-section now also spells out messaging the bot first (`/start`), since
-Telegram silently refuses to message a chat id the bot's never heard from —
-an easy step to miss since nothing in the app surfaces that failure.
+Founder Telegram alerts use the Vault setup described in DEPLOY.md. The migration does not send messages until its required configuration exists. Do not add tokens or private contact details to documentation.
