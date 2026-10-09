@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 export default defineConfig({
   envDir: false,
   test: {
+    maxWorkers: 2,
     environment: "node",
     globals: true,
     testTimeout: 30000,
