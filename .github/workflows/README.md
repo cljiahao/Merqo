@@ -12,7 +12,7 @@ this private repo's free tier).
 ## Contents
 
 - `ci.yml` — triggers on push to `main` and on every PR. Jobs: `test`
-  ("check + unit" — harness-integrity check, `pnpm check`, `pnpm test`,
+  ("check + unit" — harness-integrity check, `pnpm check`, `pnpm exec vitest --run --coverage`,
   changed-line coverage via `diff-cover` ≥80%); `build` ("build (next
   build)"); `e2e` ("e2e (public smoke)" — Playwright against the public
   landing/login flow); `e2e-admin` ("e2e (admin interaction)" — Playwright
@@ -31,3 +31,5 @@ not a floating version tag.
 ## Parent
 
 [.github](../README.md)
+
+The unit suite runs once with coverage. Vitest enforces at least 80% statements, branches, functions and lines over production source; any existing changed-line coverage gate remains in place.

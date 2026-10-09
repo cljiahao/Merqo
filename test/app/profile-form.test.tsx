@@ -110,6 +110,8 @@ describe("ProfileForm — change password", () => {
 
     // eslint-disable-next-line sonarjs/no-hardcoded-passwords -- test fixture literal, not a real credential.
     expect(updateUser).toHaveBeenCalledWith({ password: "password123" });
+    expect(screen.getByLabelText("New password")).toHaveValue("");
+    expect(screen.getByLabelText("Confirm new password")).toHaveValue("");
   });
 });
 

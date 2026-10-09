@@ -10,9 +10,13 @@ export function ResolveSupportMessageButton({ id }: { id: string }) {
 
   function onClick() {
     start(async () => {
-      const res = await resolveSupportMessageAction(id);
-      if (!res.success) {
-        toast.error(res.error);
+      try {
+        const res = await resolveSupportMessageAction(id);
+        if (!res.success) {
+          toast.error(res.error);
+        }
+      } catch {
+        toast.error("Unable to resolve this message. Please try again.");
       }
     });
   }

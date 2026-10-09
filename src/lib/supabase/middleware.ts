@@ -96,8 +96,8 @@ export async function updateSession(request: NextRequest) {
   // apply the login gate only for protected paths.
   let user: User | null = null;
   try {
-    const { data } = await supabase.auth.getUser();
-    user = data.user;
+    const { data, error } = await supabase.auth.getUser();
+    user = error ? null : data.user;
   } catch {
     // Auth unreachable — degrade to unauthenticated.
     user = null;

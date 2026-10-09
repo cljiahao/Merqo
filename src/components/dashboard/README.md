@@ -40,3 +40,7 @@ discovery cards, and stat tiles — as distinct from `src/components/landing/`
 ## Parent
 
 See the repo root [README.md](../../../README.md) for the full `src/` layout.
+
+## Boundary and coverage
+
+Activation and waitlist buttons prevent overlapping submissions and recover their pending state when an action rejects. StatCard keeps status text readable through semantic theme tokens; DOM tests cover its value, trend and accessibility behavior.

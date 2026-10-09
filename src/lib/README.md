@@ -1,68 +1,64 @@
 # lib
 
-## Purpose
+Shared domain logic, validated HTTP boundaries, database adapters and display
+helpers. Session clients enforce vendor RLS; service clients are server-only and
+require the caller to establish the relevant authorization first.
 
-Shared server/client logic: Supabase clients, domain types, Zod schemas, and
-the pure functions the app router pages/components call into — everything
-that isn't a route or a component.
+## Authorization and persistence
 
-## Contents
+`team.ts` and `admin.ts` establish team access and support the operator console.
+`vendor.ts` establishes signed-in vendor context and current legal acceptance.
+`merqo-vendor-profile.ts` reads/provisions the shared profile and applies
+owner-scoped field patches. `schemas.ts` validates profile input, including
+HTTP(S)-only social links. `feedback-support-schemas.ts` validates dialog input.
+`types.ts` mirrors the migration contracts; `action-result.ts` defines
+serializable action results.
 
-- `account.ts` — reads `display_name`/`avatar_url` defensively off the auth user's untyped `user_metadata`.
-- `action-result.ts` — `ActionResult<T>`, the discriminated success/error return type every Server Action uses.
-- `billing-settings.ts` — `getBillingSettings()`: reads the singleton `merqo.billing_settings` row (currently just `bundle_discount_enabled`), falling back to `DEFAULT_BILLING_SETTINGS` (`false`) if the row can't be read. Backs the admin overview page's bundle-discount toggle; no kit consumes this flag yet.
-- `billing-settings.test.ts` — mocked `createServiceClient` coverage: returns the live row's value, falls back to the default on a read error, and falls back when no row exists.
-- `admin.ts` — Merqo-team admin gate (`requireTeamMember`-style helpers) and vendor-grant status queries used by `/admin`. Also owns the admin-audit trail: `recordAudit(adminId, action, targetId, detail)` (best-effort insert into `merqo.admin_audit`, called by every real mutating admin action) and `listAdminAuditEntries(limit)` (recent rows, most recent first, `admin_id` resolved to an email — backs `/admin/activity`).
-- `brand-icon.tsx` — Merqo's mark as concrete hex constants, for `ImageResponse`-based icon routes (`icon.tsx`/`apple-icon.tsx`); tracks the "Harbour Control" theme (as of 2026-08-19).
-- `customer-notify-auth.ts` — `customerNotifySecretOk(request)`: constant-time check of `Authorization: Bearer <MERQO_CUSTOMER_SECRET>`, mirroring qkit's own `provisionBearerOk` shape — the first time merqo is the RECEIVING side of a bearer-authenticated call. Gates the two `/api/merqo/*` customer-notify routes.
-- `customer-notify-auth.test.ts` — valid/missing/wrong-prefix/wrong-secret/wrong-length bearer cases, plus fails-closed when `MERQO_CUSTOMER_SECRET` is unset.
-- `downgrade-request.ts` — posts a vendor's Pro→Free downgrade request to a kit's metrics API.
-- `ecosystem.ts` — data for the landing "kit stacker" graph (node positions, edges); `status` per node is derived from `kits.ts` (the source of truth) at module load, not hand-duplicated, so the two can't drift out of sync.
-- `feedback-support-schemas.ts` — Zod schemas for the vendor feedback (NPS) and support-message forms.
-- `format.ts` — `money()`, relative-time, and other small display formatters shared across dashboard/team pages.
-- `funnel.ts` — onboarding funnel counts (waitlisted/needs-setup/granted) for the admin overview.
-- `health.ts` — classifies a kit's metrics-call latency into `reporting`/`lagging`/`down`.
-- `image-resize.ts` — client-side (Canvas) image downscale + WebP encode before an avatar upload.
-- `image-upload-adapter.ts` — `uploadVendorAvatar`, the `onUpload` backend @merqo/ui's `ImageUploader` is injected with: writes the already-resized blob to Supabase Storage and resolves its public URL. Keeps `ImageUploader` itself storage-backend-agnostic.
-- `kit-action-request.ts` — shared HTTP helpers for calling a kit's merqo-integration API: `fetchKitJson()` (timeout + JSON parse + Zod-validate, used by `metrics-client.ts`/`vendor-metrics-client.ts`/`vendor-sync.ts`) and `postKitAction()` (POST an email-keyed action, used by `upgrade-request.ts`/`downgrade-request.ts`).
-- `kits.ts` — the kit family config (status/tagline/description/href per kit) — the landing roadmap and dashboard discovery cards' source of truth.
-- `merqo-vendor-profile.ts` — typed wrapper over `merqo.get_or_create_vendor_profile`/`upsert_vendor_profile`.
-- `metrics-client.ts` / `metrics-schema.ts` — fetch + Zod-validate a kit's platform-wide metrics payload (admin overview).
-- `nps.ts` — Net Promoter Score bucketing/scoring, ported from qkit's own `nps.ts`.
-- `overview.ts` — aggregates per-kit metrics into the admin overview's platform totals.
-- `products.ts` — the kit registry (`RegistryRow`) read/cache from `merqo.products`, including each kit's `metrics_secret`.
-- `qr.test.ts` — asserts the rendered string is real SVG markup.
-- `safe-redirect.ts` — `safeRedirectPath(next, fallback)`: guards against an open redirect by accepting only a same-origin relative path — leading `/`, not literally `//`/`/\` (both browser-normalize to a protocol-relative URL), and no embedded ASCII control character (TAB/LF/CR etc., which `URL`'s own parser strips, turning e.g. `/\t/evil.example` into `//evil.example`) — else returns `fallback`. Used by `/legal/accept`'s `page.tsx`/`actions.ts` to sanitize the `next` query param before rendering or redirecting.
-- `safe-redirect.test.ts` — legitimate-path pass-through, literal absolute/protocol-relative rejection, embedded-control-character rejection (TAB/LF/CR), and a `new URL(...)` check proving the fallback itself never resolves off-origin.
-- `schemas.ts` — Zod schemas for the shared `merqo.vendor_profile` social/website links.
-- `support.ts` — reads open cross-kit support messages for the admin console.
-- `team.ts` — gates an operator page on Merqo-team membership, redirecting a non-member.
-- `telegram.ts` — `sendTelegramMessage(chatId, text)` (fire-and-forget POST to the Bot API's `sendMessage`, no-ops without `TELEGRAM_BOT_TOKEN`, catches+logs a fetch failure rather than throwing) and `generateLinkToken()` (a `[A-Za-z0-9_-]{1,64}`-safe token for the `t.me/<bot>?start=<token>` deep link — Telegram's own payload constraint). Same shape as every kit's own Phase A copy, deliberately not shared as a package.
-- `telegram.test.ts` — the send/no-op/catch/token-shape assertions above.
-- `tour-prefs.ts` — `stampTourSeen(supabase, userId)`: upserts `dashboard_prefs.tour_seen_at = now()`. A plain (non-`"use server"`) module so `src/app/dashboard/(app)/layout.tsx` can call it directly during its own server render — the durable half of the onboarding-tour "stamp on start" fix, since the client-fired path (`src/app/dashboard/tour-actions.ts`'s `markTourSeen`, which also delegates here) is fire-and-forget and can be aborted by a hard navigation before it lands.
-- `types.ts` — hand-maintained DB types mirroring `supabase/migrations` (`SocialLinks`, `Json`, `AdminAudit`, etc.).
-- `upgrade-request.ts` — posts a vendor's Free→Pro upgrade request to a kit's metrics API.
-- `utils.ts` — `cn()` (clsx + tailwind-merge), shared across every component.
-- `vendor-feedback.ts` — reads cross-kit `merqo.vendor_feedback` (NPS) rows for the admin feedback page.
-- `vendor-grants.ts` — pure `GrantStatus` (`active`/`waitlist`/`needs_setup`) helpers; client-safe (no `supabase/server` import) since `vendor-list.tsx` imports it directly.
-- `vendor-metrics-client.ts` / `vendor-metrics-schema.ts` — fetch + Zod-validate a single vendor's per-kit stats for the vendor dashboard.
-- `vendor-activity-client.ts` / `vendor-activity-schema.ts` — fetch + Zod-validate a single vendor's per-kit triage status/metrics/last-activity from a live kit's `/api/merqo/vendor-activity`, for the admin `/admin/vendors/[email]` detail page. Never throws — a kit that hasn't implemented the endpoint, 404s, or is briefly down all collapse to `ok: false`.
-- `vendor-activity-client.test.ts` — 200/404/missing-config/schema-mismatch/network-failure cases for `getVendorActivity`.
-- `vendor-sync.ts` — provisions/syncs a vendor's `vendor_links` rows against the live kit registry; the kit-status sync is throttled per email via `merqo.vendor_sync_state` (`0023`), bypassed on fresh login (`force`).
-- `vendor.ts` — loads vendor/team context and gates the dashboard (`requireVendorSession`) on both an authenticated session and a current legal acceptance — `hasCurrentLegalAcceptance` reads `legal_acceptances` directly (merqo owns that table locally, no HTTP round trip) and compares against `@merqo/ui`'s `LEGAL_VERSIONS` via `isLegalCurrent`, redirecting a stale/missing acceptance to `/legal/accept`; `resolveHome` routes team members to `/admin`, everyone else to `/dashboard`.
-- `waitlist.ts` — adds an email to a kit's waitlist, from either the public landing form or the signed-in dashboard.
-- `savings.ts` / `savings.test.ts` — the "hours/cost saved" estimate shown on the vendor dashboard.
-- `vendor-feedback.test.ts`, `vendor-sync.test.ts`, `vendor.test.ts` — co-located unit tests for the same-named modules above.
-- `supabase/` — browser / server (schema=merqo) / service-role Supabase clients + the session-refresh middleware helper.
+`billing-settings.ts`, `products.ts`, `support.ts` and `vendor-feedback.ts`
+read console data. Registry secrets remain server-side. `admin.ts` owns the
+best-effort audit writer and recent-entry read; an audit failure is not proof
+that the primary mutation failed.
 
-## Shared package note
+## Cross-kit calls
 
-`safe-redirect.ts` and `image-resize.ts` moved to `@merqo/ui` (v0.31.0) — both were duplicated across all five repos. Import `safeRedirectPath` and `resizeToWebp` from `@merqo/ui` instead. The image-upload adapter stays local: the Storage bucket and object path are merqo's own.
+`kit-action-request.ts` centralizes timeout, parse and Zod validation for peer
+HTTP calls. Metrics and vendor metrics/activities have separate response schemas
+and clients. `upgrade-request.ts` and `downgrade-request.ts` request plan changes;
+`vendor-sync.ts` refreshes grants against the live registry with an email-scoped
+throttle. `vendor-grants.ts` provides client-safe grant-state helpers.
 
-## Replaced-avatar cleanup
+`customer-notify-auth.ts` verifies the shared bearer secret for inbound Telegram
+and legal endpoints. It authenticates a participating server, not an end user.
+`telegram.ts` generates link tokens and sends notifications best-effort without
+logging credentials. Customer consent and token consumption are database/RPC
+contracts; mocked network tests do not establish those database guarantees.
 
-`image-upload-adapter.ts` also exports `removeReplacedAvatar(url)`, a best-effort delete of an avatar image that is no longer referenced. `ImageUploader` writes every upload under a fresh random name, so without it each avatar change left the previous image in storage forever. It checks every public avatar bucket (`booth-images`, `vendor-images`, `vendor-avatars`), because all five Merqo apps share one signed-in user and so one `avatar_url`, which may have been set from any of them. It uses `@merqo/ui`'s `storagePathFromPublicUrl`, so an OAuth provider picture (a Google profile photo) is never treated as ours to delete, and it never throws. Each bucket's owner-folder DELETE policy still bounds what a vendor can remove.
+## Pure logic and presentation
+
+`health.ts`, `overview.ts`, `funnel.ts`, `nps.ts` and `savings.ts` derive
+console and dashboard figures. Funnel counts are distinct populations, so do not
+report them as nested conversion stages. `kits.ts` is the family configuration;
+`ecosystem.ts` derives its diagram status from that configuration.
+`format.ts` and `utils.ts` provide display formatting and class composition.
+`brand-icon.tsx` supplies icon-route markup; `account.ts` safely reads metadata.
+
+`tour-prefs.ts` persists onboarding timestamps best-effort. Both server-render
+and client-action call sites exist; failed writes/navigation can still prevent
+persistence, and tour status is never authorization.
+
+## Shared UI and Storage
+
+Redirect validation and image resizing come from `@merqo/ui`; local
+`safe-redirect.ts` and `image-resize.ts` copies have been removed.
+`image-upload-adapter.ts` stays local because it owns bucket/object paths.
+Cleanup accepts only supported public avatar buckets and never external OAuth
+pictures; owner-folder Storage policies constrain deletion. An uncertain save
+outcome is not proof that an uploaded object is unused.
+
+See [supabase](supabase/README.md) for browser/session/service clients.
+Co-located tests cover boundary errors and pure behavior; live RLS and cross-kit
+integration are verified separately.
 
 ## Parent
 
-See the repo root [README.md](../../README.md) for the full `src/` layout.
+[src](../README.md)

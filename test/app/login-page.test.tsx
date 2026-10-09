@@ -44,3 +44,17 @@ describe("LoginPage — Google sign-in", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("boom");
   });
 });
+
+it("recovers after a rejected OAuth request", async () => {
+  signInWithOAuth.mockRejectedValueOnce(new Error("offline"));
+  render(<LoginPage />);
+  await userEvent
+    .setup()
+    .click(screen.getByRole("button", { name: /continue with google/i }));
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "Please try again",
+  );
+  expect(
+    screen.getByRole("button", { name: /continue with google/i }),
+  ).toBeEnabled();
+});

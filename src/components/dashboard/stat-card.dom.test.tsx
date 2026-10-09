@@ -52,6 +52,7 @@ describe("StatCard", () => {
     );
     const pill = screen.getByText("0%").closest("span");
     expect(pill).toHaveClass("text-muted-foreground");
+    expect(pill?.querySelector("svg")).toBeNull();
   });
 
   it("renders nothing trend-related when trend.pct is null", () => {

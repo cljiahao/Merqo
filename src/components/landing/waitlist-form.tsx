@@ -1,7 +1,8 @@
 "use client";
 import { useActionState } from "react";
 import { ArrowRight, Check } from "lucide-react";
-import { joinKitWaitlist, WAITLIST_IDLE } from "@/app/actions/waitlist";
+import { joinKitWaitlist } from "@/app/actions/waitlist";
+import { WAITLIST_IDLE } from "@/lib/waitlist-state";
 import { Button } from "@/components/ui/button";
 
 /** The only client component on the landing — a one-field email capture for a

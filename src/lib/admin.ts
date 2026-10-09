@@ -1,3 +1,4 @@
+import { readAdminRows, adminEmailsById } from "./admin-read";
 import { createServiceClient } from "@/lib/supabase/server";
 import {
   groupVendorGrants,
@@ -26,33 +27,46 @@ export { groupVendorGrants, findVendorGrant, filterVendorGrants };
 export async function getVendorGrant(
   email: string,
 ): Promise<VendorGrant | null> {
-  const grants = await listVendorGrants();
+  const grants = await loadVendorGrants(email.toLowerCase());
   return findVendorGrant(grants, email);
 }
 
 export async function listVendorGrants(): Promise<VendorGrant[]> {
+  return loadVendorGrants();
+}
+
+async function loadVendorGrants(email?: string): Promise<VendorGrant[]> {
   const supabase = await createServiceClient();
-  const [linksRes, productsRes] = await Promise.all([
-    supabase.from("vendor_links").select("email, product_slug, status"),
-    supabase.from("products").select("slug, name"),
+  const [links, products] = await Promise.all([
+    readAdminRows("links read", (from, to) => {
+      let query = supabase
+        .from("vendor_links")
+        .select("email, product_slug, status");
+      if (email !== undefined) query = query.eq("email", email);
+      return query.order("email").order("product_slug").range(from, to);
+    }),
+    readAdminRows("products read", (from, to) =>
+      supabase
+        .from("products")
+        .select("slug, name")
+        .order("slug")
+        .range(from, to),
+    ),
   ]);
-  if (linksRes.error) throw new Error(`links read: ${linksRes.error.message}`);
-  if (productsRes.error)
-    throw new Error(`products read: ${productsRes.error.message}`);
-  const nameBySlug = new Map(
-    (productsRes.data ?? []).map((p) => [p.slug, p.name]),
-  );
-  return groupVendorGrants((linksRes.data ?? []) as LinkRow[], nameBySlug);
+  const nameBySlug = new Map(products.map((p) => [p.slug, p.name]));
+  return groupVendorGrants(links as LinkRow[], nameBySlug);
 }
 
 export async function listProducts(): Promise<ProductOption[]> {
   const supabase = await createServiceClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select("slug, name")
-    .order("created_at");
-  if (error) throw new Error(`products read: ${error.message}`);
-  return (data ?? []) as ProductOption[];
+  return readAdminRows("products read", (from, to) =>
+    supabase
+      .from("products")
+      .select("slug, name")
+      .order("created_at")
+      .order("slug")
+      .range(from, to),
+  );
 }
 
 export type TeamMember = { user_id: string; email: string | null };
@@ -78,12 +92,18 @@ async function listAllAuthUsers(
 
 export async function listTeamMembers(): Promise<TeamMember[]> {
   const supabase = await createServiceClient();
-  const teamRes = await supabase.from("merqo_team").select("user_id");
-  if (teamRes.error) throw new Error(`team read: ${teamRes.error.message}`);
-  // Resolve emails via the admin API (merqo_team stores only auth user ids).
-  const users = await listAllAuthUsers(supabase);
-  const emailById = new Map(users.map((u) => [u.id, u.email ?? null]));
-  return (teamRes.data ?? [])
+  const team = await readAdminRows("team read", (from, to) =>
+    supabase
+      .from("merqo_team")
+      .select("user_id")
+      .order("user_id")
+      .range(from, to),
+  );
+  const emailById = await adminEmailsById(
+    supabase,
+    team.map((row) => row.user_id),
+  );
+  return team
     .map((r) => ({
       user_id: r.user_id,
       email: emailById.get(r.user_id) ?? null,
@@ -161,14 +181,18 @@ export async function recordAudit(
   targetId: string | null,
   detail: Json,
 ): Promise<void> {
-  const supabase = await createServiceClient();
-  const { error } = await supabase.from("admin_audit").insert({
-    admin_id: adminId,
-    action,
-    target_id: targetId,
-    detail,
-  });
-  if (error) console.error("admin_audit insert failed", error.message);
+  try {
+    const supabase = await createServiceClient();
+    const { error } = await supabase.from("admin_audit").insert({
+      admin_id: adminId,
+      action,
+      target_id: targetId,
+      detail,
+    });
+    if (error) console.error("admin_audit insert failed", error.message);
+  } catch {
+    console.error("admin_audit unavailable");
+  }
 }
 
 export type AdminAuditEntry = AdminAudit & { adminEmail: string };
@@ -189,8 +213,10 @@ export async function listAdminAuditEntries(
     .limit(limit);
   if (error) throw new Error(`admin_audit read: ${error.message}`);
   const rows = (data ?? []) as AdminAudit[];
-  const users = await listAllAuthUsers(supabase);
-  const emailById = new Map(users.map((u) => [u.id, u.email ?? null]));
+  const emailById = await adminEmailsById(
+    supabase,
+    rows.map((row) => row.admin_id),
+  );
   return rows.map((r) => ({
     ...r,
     adminEmail: emailById.get(r.admin_id) ?? r.admin_id,

@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import AdminActivityPage from "./page";
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
@@ -34,7 +35,6 @@ describe("AdminActivityPage", () => {
       },
     ]);
 
-    const { default: AdminActivityPage } = await import("./page");
     render(await AdminActivityPage());
 
     expect(screen.getByText("Granted kit access")).toBeInTheDocument();
@@ -57,7 +57,6 @@ describe("AdminActivityPage", () => {
       },
     ]);
 
-    const { default: AdminActivityPage } = await import("./page");
     render(await AdminActivityPage());
 
     expect(screen.getByText("some_future_action")).toBeInTheDocument();
@@ -67,7 +66,6 @@ describe("AdminActivityPage", () => {
   it("shows the empty state when there is no activity yet", async () => {
     listAdminAuditEntriesMock.mockResolvedValue([]);
 
-    const { default: AdminActivityPage } = await import("./page");
     render(await AdminActivityPage());
 
     expect(screen.getByText("No admin activity yet.")).toBeInTheDocument();
@@ -76,7 +74,6 @@ describe("AdminActivityPage", () => {
   it("gates on team membership before reading audit rows", async () => {
     requireMerqoTeamMock.mockRejectedValue(new Error("redirect"));
 
-    const { default: AdminActivityPage } = await import("./page");
     await expect(AdminActivityPage()).rejects.toThrow();
     expect(listAdminAuditEntriesMock).not.toHaveBeenCalled();
   });

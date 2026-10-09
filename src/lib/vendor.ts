@@ -3,7 +3,8 @@ import type { User } from "@supabase/supabase-js";
 import { KITS, type Kit } from "@/lib/kits";
 import type { GrantStatus } from "@/lib/admin";
 import { createServerClient } from "@/lib/supabase/server";
-import { isLegalCurrent, LEGAL_VERSIONS, type LegalDocType } from "@merqo/ui";
+import { isLegalCurrent, LEGAL_VERSIONS } from "@merqo/ui";
+import { latestLegalVersions } from "@/lib/legal-versions";
 
 export type HomeDestination = "/admin" | "/dashboard";
 
@@ -147,8 +148,8 @@ export async function loadVendorContext(): Promise<{
   const supabase = await createServerClient();
   let user: User | null = null;
   try {
-    const { data } = await supabase.auth.getUser();
-    user = data.user;
+    const { data, error } = await supabase.auth.getUser();
+    user = error ? null : data.user;
   } catch {
     return { user: null, isTeam: false, links: [] };
   }
@@ -189,17 +190,11 @@ export async function loadVendorContext(): Promise<{
  *  Phase 3, which go through /api/merqo/legal-status instead. */
 async function hasCurrentLegalAcceptance(email: string): Promise<boolean> {
   const supabase = await createServerClient();
-  const { data } = await supabase
-    .from("legal_acceptances")
-    .select("doc_type, doc_version, accepted_at")
-    .eq("vendor_email", email.toLowerCase())
-    .order("accepted_at", { ascending: false });
-  const accepted: Partial<Record<LegalDocType, string>> = {};
-  for (const row of data ?? []) {
-    const docType = row.doc_type as LegalDocType;
-    if ((docType === "terms" || docType === "privacy") && !accepted[docType]) {
-      accepted[docType] = row.doc_version as string;
-    }
+  let accepted = {};
+  try {
+    accepted = await latestLegalVersions(supabase, email, ["terms", "privacy"]);
+  } catch {
+    return false;
   }
   return isLegalCurrent(accepted, LEGAL_VERSIONS);
 }

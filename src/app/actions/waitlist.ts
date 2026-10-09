@@ -1,21 +1,15 @@
 "use server";
 import { z } from "zod";
+import type { WaitlistState } from "@/lib/waitlist-state";
 import { addToWaitlist } from "@/lib/waitlist";
 import { WAITLISTABLE_SLUGS } from "@/lib/kits";
 
 /** Public landing waitlist. Email comes from the form (no auth) — this is the
  *  only waitlist entry point now that vendors have no self-serve surface. */
 const schema = z.object({
-  email: z.string().trim().toLowerCase().email(),
+  email: z.string().trim().toLowerCase().max(254).email(),
   slug: z.enum(WAITLISTABLE_SLUGS as [string, ...string[]]),
 });
-
-export type WaitlistState = {
-  status: "idle" | "success" | "error";
-  message?: string;
-};
-
-export const WAITLIST_IDLE: WaitlistState = { status: "idle" };
 
 export async function joinKitWaitlist(
   _prev: WaitlistState,

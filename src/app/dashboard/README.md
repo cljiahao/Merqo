@@ -1,31 +1,7 @@
-# dashboard
+# Dashboard actions
 
-## Purpose
+Shared dashboard logic sits alongside the signed-in (app) route group and the profile redirect shim.
 
-Shared logic for `/dashboard` that doesn't belong to any one route group —
-sits alongside `(app)/` (the dashboard itself, open to every signed-in user)
-and `profile/` (the `AccountMenu`-link redirect shim).
+markTourSeen resolves the authenticated user through the session client and delegates to stampTourSeen. The browser action supplements the layout's initial stamp. Both use the same cosmetic preference write; rejected authentication and database errors must not interrupt navigation.
 
-## Contents
-
-- `tour-actions.ts` — `markTourSeen()`: a `"use server"` action, fired
-  client-side by `DashboardTour`'s `onFirstSeen` as soon as the onboarding
-  tour auto-runs. Best-effort and fire-and-forget (a failure is logged but
-  never surfaced), so it's not the only place the write happens — see
-  `src/lib/tour-prefs.ts` and `(app)/layout.tsx`'s own server render for the
-  durable, race-proof stamp this action alone can't guarantee.
-- `tour-actions.test.ts` — asserts the upsert shape and the no-op-when-
-  signed-out and swallowed-error paths.
-
-## Connectivity
-
-`tour-actions.ts` is called from `@merqo/ui`'s `DashboardTour` (mounted in
-`(app)/layout.tsx`) via `src/components/dashboard-tour.tsx`'s adapter. See
-the repo root README's onboarding-tour paragraph for why this client-fired
-path is paired with a synchronous server-render stamp rather than relied on
-alone.
-
-## Parent
-
-See the repo root [README.md](../../../README.md) for the full `src/app/`
-layout.
+The stamp is best-effort rather than guaranteed durable state. RLS restricts preference ownership, and tests assert the actor, write shape and failure paths. DashboardTour owns the browser interaction through its shared UI adapter.

@@ -62,3 +62,29 @@ describe("generateLinkToken", () => {
     expect(generateLinkToken()).not.toBe(generateLinkToken());
   });
 });
+
+it("does not log transport errors that can contain the bot credential", async () => {
+  vi.stubEnv("TELEGRAM_BOT_TOKEN", "test-token-123");
+  vi.stubGlobal(
+    "fetch",
+    vi
+      .fn()
+      .mockRejectedValue(
+        new Error("https://api.telegram.org/bottest-token-123/sendMessage"),
+      ),
+  );
+  const log = vi.spyOn(console, "error").mockImplementation(() => {});
+  await expect(sendTelegramMessage(555, "hello")).resolves.toBeUndefined();
+  expect(JSON.stringify(log.mock.calls)).not.toContain("test-token-123");
+  expect(log).toHaveBeenCalledWith("sendTelegramMessage failed");
+  vi.unstubAllEnvs();
+});
+
+it("bounds delivery attempts with an abort signal", async () => {
+  vi.stubEnv("TELEGRAM_BOT_TOKEN", "test-token-123");
+  const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+  vi.stubGlobal("fetch", fetchMock);
+  await sendTelegramMessage(555, "hello");
+  expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+  vi.unstubAllEnvs();
+});

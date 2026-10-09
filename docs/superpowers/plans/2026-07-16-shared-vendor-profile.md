@@ -1,5 +1,13 @@
 # Shared Vendor Profile (stall name + social links) Implementation Plan
 
+> Historical plan. The original RPC examples below are superseded by migrations
+> `0032_vendor_profile_partial_updates.sql` and
+> `0033_vendor_profile_reader_permissions.sql`: customer reads use server service
+> clients, profile creation is caller-scoped, and owner edits use the atomic
+> `patch_vendor_profile` RPC. Do not recreate the old unrestricted definer
+> examples or read-then-write whole-profile update flow. Use the current
+> `/supabase-migrate` safety gate for any database operation.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** One shared `stall_name` + `social_links` per vendor, owned by `merqo` schema, readable/writable from any kit over a same-DB Postgres function contract — no HTTP, no raw cross-schema table access — cutting qkit's existing local copy over and giving loopkit a fresh read.

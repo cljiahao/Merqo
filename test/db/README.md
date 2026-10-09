@@ -7,8 +7,8 @@ migration file as text and asserts it contains the SQL statements it's
 supposed to (a status flip, a constraint shape, a grant). Catches an
 obviously-wrong migration body (typo'd slug, wrong constraint values, a
 copy-paste that didn't get its literal updated) without needing a real
-Postgres instance — there's no pgTAP suite in this repo, unlike each kit's
-own `supabase/tests/rls.test.sql`.
+Postgres instance. These checks complement `supabase/tests/rls.test.sql` and
+the focused authorization regression files; they do not prove effective grants.
 
 ## Contents
 

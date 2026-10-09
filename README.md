@@ -49,10 +49,7 @@ badge actually looks like — see
 (workspace root, cross-kit spec). The landing footer matches qkit's exactly
 (single-row wordmark/tagline/credit-line/sign-in link, no CTA band above it).
 
-Merqo runs on `@merqo/ui` (`github:merqo-io/merqo-ui#v0.27.0`, bumped
-2026-09-15 for `DashboardTours` — a route-matched multi-tour router for kits
-with more than one dashboard-page tour, qkit's first consumer; purely
-additive here), the shared component package for the kit family (see
+Merqo uses `@merqo/ui`, the shared component package for the kit family (see
 qkit/loopkit/paykit/stockkit for the same dependency). `/about`'s own story
 is now `@merqo/ui`'s shared
 `AboutMerqo` component (`v0.25.0`), the same content every kit's own
@@ -106,7 +103,7 @@ across the kits. It also promoted four modules merqo had its own copy of:
 `safeRedirectPath`, `resizeToWebp`, `BackToTop` and `GoogleMark`. The
 landing `Footer` is now a thin adapter over the shared one, passing
 `copyright` and `signInLabel` overrides so the hub keeps saying
-"© 2026 Merqo" and "Sign in →" rather than a kit's "a Merqo kit" /
+the current-year Merqo copyright and "Sign in →" rather than a kit's "a Merqo kit" /
 "Vendor sign in →"; rendered output is unchanged. v0.31.1 fixes a latent
 `resizeToWebp` bug where a dotless filename yielded the whole name as its
 extension. Which repo uses which shared export is tracked in
@@ -127,7 +124,7 @@ pnpm test         # run test suite (vitest)
 pnpm test:e2e     # playwright public smoke
 pnpm check        # prettier --check + eslint + tsc --noEmit
 pnpm format       # prettier --write
-pnpm check:legal-versions  # assert merqo + all 5 kit repos pin the same @merqo/ui tag
+pnpm check:legal-versions  # compare actual legal versions at each product's locked UI commit
 ```
 
 ## Dependencies
@@ -169,7 +166,7 @@ src/lib/merqo-vendor-profile.ts — typed wrapper over the shared vendor_profile
 src/lib/supabase/           — browser / server (schema=merqo) / service-role clients
 supabase/migrations/        — SQL schema (merqo.* tables) + RLS + grants
 scripts/check-legal-version-skew.mjs — asserts merqo + all 5 kit repos pin
-                               the same @merqo/ui tag (same-day-rollout guard)
+                               matching terms/privacy/pilot versions from exact locked UI commits
 ```
 
 ## Data model
@@ -192,8 +189,9 @@ to any role; surfaced on `/admin/activity`). Merqo also hosts that
 bot's webhook plus two bearer-secret endpoints qkit/loopkit call into —
 the first kit → merqo HTTP direction in this codebase (see
 `docs/superpowers/specs/2026-08-16-customer-telegram-connect-design.md`).
-RLS default-deny; `products`/`vendor_links` are read/written via the
-service-role client only, so `metrics_secret` never reaches a browser.
+RLS defaults to deny. Vendors can read their own `vendor_links`; registry
+secrets and administrative writes use server-only service clients, so
+`metrics_secret` never reaches a browser.
 
 ## Docs
 
@@ -213,3 +211,21 @@ service-role client only, so `metrics_secret` never reaches a browser.
 - AI harness/hooks/skills map: `.claude/README.md`
 
 See `AGENTS.md` for full engineering rules, harness details, and skills.
+
+### Complete administrative reads
+
+Vendor grants, product options, team memberships and open support messages read
+all API pages in stable order. Incomplete reads fail rather than showing partial
+administrative data. Email resolution queries only referenced auth user IDs in
+batches of eight; adding a team member by email retains full directory pagination.
+Recent audit entries remain intentionally limited by the requested history size.
+These offset-based lists are operational views, not transactionally consistent
+accounting snapshots.
+
+The legal rollout check reads each product's lockfile and uses the sibling
+`merqo-ui` Git checkout to inspect its exact committed legal constants. Fetch
+any missing locked commit before running the check. Different UI releases are
+allowed when the legal document versions match. Git uses its standard installed
+path (Windows: `C:/Program Files/Git/cmd/git.exe`; Unix: `/usr/bin/git`).
+
+The shared UI dependency is pinned to immutable commit 989d934c1cc8d957ff383934debf8ef083b6b6a4, carrying the reviewed upload lifecycle, storage URL validation and safe money parsing fixes. pnpm 11.10 permits preparation only for that exact locked source URL; update the dependency and its build allowlist together.

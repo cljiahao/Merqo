@@ -5,17 +5,16 @@ vi.mock("@/lib/telegram", () => ({
   sendTelegramMessage: (...args: unknown[]) => sendTelegramMessage(...args),
 }));
 
-// Chainable Supabase query-builder mock. `telegram_link_tokens` covers the
-// token lookup (select) + burn (delete); the customer upsert itself goes
-// through the merqo.upsert_customer_telegram RPC (not a second .from() —
-// see supabase/migrations/0019_customer_telegram.sql's comment on why a
-// plain .upsert() can't target a partial unique index). `vendor_telegram`
-// (0020) grants service_role a plain table write — a vendor link is a
-// direct .upsert(), no RPC needed (unlike customers, which has zero grants
-// to anyone).
+// Customers use RPCs because their identity uses partial unique indexes.
+// Vendor links use the service-only vendor_telegram table.
 type QueryResult = { data: unknown; error: unknown };
 let maybeSingleQueue: QueryResult[] = [];
-const deleteEq = vi.fn().mockResolvedValue({ data: null, error: null });
+const claimSingle = vi
+  .fn()
+  .mockResolvedValue({ data: { token: "claimed" }, error: null });
+const deleteEq = vi.fn(() => ({
+  select: () => ({ maybeSingle: claimSingle }),
+}));
 const rpc = vi.fn().mockResolvedValue({ data: null, error: null });
 const vendorUpsert = vi.fn().mockResolvedValue({ data: null, error: null });
 const from = vi.fn((table: string) => {
@@ -65,6 +64,8 @@ beforeEach(() => {
   rpc.mockClear();
   rpc.mockResolvedValue({ data: null, error: null });
   deleteEq.mockClear();
+  claimSingle.mockReset();
+  claimSingle.mockResolvedValue({ data: { token: "claimed" }, error: null });
   vendorUpsert.mockClear();
   vendorUpsert.mockResolvedValue({ data: null, error: null });
   from.mockClear();
@@ -255,21 +256,22 @@ describe("POST /api/telegram/webhook", () => {
     expect(text).toMatch(/unsubscrib/i);
   });
 
-  it("still confirms /stop (and responds 200) when the consent-clear RPC errors", async () => {
+  it("requests retry without confirming /stop when the consent-clear RPC errors", async () => {
     rpc.mockResolvedValueOnce({ data: null, error: { message: "boom" } });
     const res = await POST(
       makeRequest({ message: { text: "/stop", chat: { id: 889 } } }),
     );
-    expect(res.status).toBe(200);
-    expect(sendTelegramMessage).toHaveBeenCalledWith(889, expect.any(String));
+    expect(res.status).toBe(503);
+    expect(sendTelegramMessage).not.toHaveBeenCalled();
   });
 
-  it("responds 200 (not 500) when the /stop RPC throws", async () => {
+  it("requests retry when the /stop RPC throws", async () => {
     rpc.mockRejectedValueOnce(new Error("db unreachable"));
     const res = await POST(
       makeRequest({ message: { text: "/stop", chat: { id: 890 } } }),
     );
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(503);
+    expect(sendTelegramMessage).not.toHaveBeenCalled();
   });
 
   it("responds 200 (not 500) on a malformed JSON body", async () => {
@@ -281,4 +283,25 @@ describe("POST /api/telegram/webhook", () => {
     const res = await POST(req);
     expect(res.status).toBe(200);
   });
+});
+
+it("does not link a token already claimed by another request", async () => {
+  maybeSingleQueue = [
+    {
+      data: {
+        vendor_id: "vendor-1",
+        kind: "vendor",
+        expires_at: new Date(Date.now() + 60000).toISOString(),
+      },
+      error: null,
+    },
+  ];
+  claimSingle.mockResolvedValueOnce({ data: null, error: null });
+  const response = await POST(
+    makeRequest({ message: { text: "/start raced-token", chat: { id: 9 } } }),
+  );
+  expect(response.status).toBe(200);
+  expect(vendorUpsert).not.toHaveBeenCalled();
+  expect(rpc).not.toHaveBeenCalled();
+  expect(sendTelegramMessage).not.toHaveBeenCalled();
 });

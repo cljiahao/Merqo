@@ -15,7 +15,7 @@
       "path": "CLAUDE.md"
     },
     ".claude/settings.json": {
-      "origin_hash": "79cfd60b366e8db6afd83ab03f87b05ef277fe84509c50d592881f4e027824fe",
+      "origin_hash": "4e2a21a5bfc659033a33a95246ebd50a3bf047f2665e6d885321f10d89006b17",
       "path": ".claude/settings.json"
     },
     ".claude/hooks/verify.sh": {
@@ -27,11 +27,11 @@
       "path": ".claude/hooks/block-no-verify.sh"
     },
     ".claude/hooks/protect-files.sh": {
-      "origin_hash": "cedefb778eee8a3b8c79bb1a4eb7b7680a0a5e1ef3c9b1a08d3cac6c8793d6b1",
+      "origin_hash": "281dabc9d452a8d00d0749d698a764fec355641723abd47ba6860f3941305048",
       "path": ".claude/hooks/protect-files.sh"
     },
     ".claude/hooks/user-prompt-guard.cjs": {
-      "origin_hash": "d1c376ffcbaba440838b52da3114b4671038042958126c4a316b4ef7de4056f6",
+      "origin_hash": "534a7cb2b825a73d23a8687bbd14c9e9161b24ac3c61ae3df2fcfca8fbddccfd",
       "path": ".claude/hooks/user-prompt-guard.cjs"
     },
     ".claude/hooks/post-edit-comment-check.sh": {
@@ -119,7 +119,7 @@
       "path": ".claude/regen-harness.sh"
     },
     ".github/workflows/ci.yml": {
-      "origin_hash": "533a9e54eff3864afb42a749ad6f573aee693099fe00d8e773dadc1536af5a28",
+      "origin_hash": "3d193a21feccbfb4a962ebbe000c04b26227abca7b144d8413075e82264dd1fa",
       "path": ".github/workflows/ci.yml"
     }
   }

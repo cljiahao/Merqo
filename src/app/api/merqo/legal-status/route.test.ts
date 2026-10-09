@@ -51,22 +51,40 @@ describe("GET /api/merqo/legal-status", () => {
         accepted_at: "2026-09-04T00:00:00Z",
       },
     ];
-    const select = vi.fn().mockReturnThis();
-    const eq = vi.fn().mockReturnThis();
-    const order = vi.fn((column: string, opts: { ascending: boolean }) => {
-      const sorted = [...rows].sort((a, b) => {
-        const cmp = a.accepted_at.localeCompare(b.accepted_at);
-        return opts.ascending ? cmp : -cmp;
-      });
-      return Promise.resolve({ data: sorted, error: null });
-    });
+    const order = vi.fn();
+    const limit = vi.fn();
     vi.mocked(createServiceClient).mockResolvedValue({
-      from: () => ({ select, eq, order }),
+      from: () => {
+        let document = "";
+        const query = {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn((column: string, value: string) => {
+            if (column === "doc_type") document = value;
+            return query;
+          }),
+          order: vi.fn((column: string, options: { ascending: boolean }) => {
+            order(column, options);
+            return query;
+          }),
+          limit: vi.fn(async (n: number) => {
+            limit(n);
+            return {
+              data: rows
+                .filter((row) => row.doc_type === document)
+                .sort((a, b) => b.accepted_at.localeCompare(a.accepted_at))
+                .slice(0, n),
+              error: null,
+            };
+          }),
+        };
+        return query;
+      },
     } as never);
-
     const res = await GET(req("vendor@example.com"));
     const body = await res.json();
     expect(order).toHaveBeenCalledWith("accepted_at", { ascending: false });
+    expect(limit).toHaveBeenCalledTimes(3);
+    expect(limit).toHaveBeenCalledWith(1);
     expect(body).toEqual({
       terms: "2026-09-04",
       privacy: "2026-09-04",
@@ -75,18 +93,38 @@ describe("GET /api/merqo/legal-status", () => {
   });
 
   it("returns 500 when the read fails", async () => {
-    const select = vi.fn().mockReturnThis();
-    const eq = vi.fn().mockReturnThis();
-    const order = vi
-      .fn()
-      .mockResolvedValue({ data: null, error: { message: "db unreachable" } });
+    const query = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      limit: vi.fn().mockResolvedValue({
+        data: null,
+        error: { message: "db unreachable" },
+      }),
+    };
     vi.mocked(createServiceClient).mockResolvedValue({
-      from: () => ({ select, eq, order }),
+      from: () => query,
     } as never);
-
     const res = await GET(req("vendor@example.com"));
     expect(res.status).toBe(500);
     const body = await res.json();
     expect(body).toEqual({ error: "read failed" });
   });
 });
+
+it.each(["not-an-email", "   ", "vendor@example.com\nother@example.com"])(
+  "rejects invalid legal-status email %j before opening the service client",
+  async (email) => {
+    const query = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      order: vi.fn().mockResolvedValue({ data: [], error: null }),
+    };
+    vi.mocked(createServiceClient).mockResolvedValue({
+      from: () => query,
+    } as never);
+    const response = await GET(req(email));
+    expect(response.status).toBe(400);
+    expect(createServiceClient).not.toHaveBeenCalled();
+  },
+);

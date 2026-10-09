@@ -32,11 +32,12 @@ must reconnect once" consequence, are decided there.
 - **`notify-vendor` is simpler than `notify-customer`** — one lookup key
   (`vendor_id`), no dual mode, nothing to clear (a vendor's link is a
   standing connection, not a single-use ref).
-- **No data migration path for already-linked vendors** — Telegram's
-  `chat_id` is scoped to a (bot, user) pair, so a vendor's old `chat_id`
-  under qkit's/loopkit's retired bots is meaningless under merqo's bot.
-  They see the connect flow again next time they visit their profile
-  settings, same first-time experience as a vendor who never linked.
+- **Already-linked vendors must initiate contact with merqo's bot** before
+  it can send private alerts. A private chat ID identifies the user, but an
+  existing connection to qkit's or loopkit's retired bot does not authorize
+  merqo's bot to message them. They reconnect through profile settings.
+  See [Telegram dialog IDs](https://core.telegram.org/api/bots/ids) and the
+  [bot tutorial](https://core.telegram.org/bots/tutorial).
 
 ## What changes
 

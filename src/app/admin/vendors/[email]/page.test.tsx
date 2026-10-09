@@ -31,6 +31,8 @@ vi.mock("@/lib/vendor-activity-client", () => ({
 }));
 vi.mock("next/navigation", () => ({ notFound: notFoundMock }));
 
+import VendorDetailPage from "./page";
+
 const GRANT = {
   email: "vendor@business.sg",
   kits: [
@@ -68,7 +70,6 @@ describe("VendorDetailPage", () => {
       },
     });
 
-    const { default: VendorDetailPage } = await import("./page");
     render(
       await VendorDetailPage({
         params: Promise.resolve({ email: "vendor@business.sg" }),
@@ -93,7 +94,6 @@ describe("VendorDetailPage", () => {
       kits: [{ slug: "qkit", name: "qkit", status: "waitlist" as const }],
     });
 
-    const { default: VendorDetailPage } = await import("./page");
     render(
       await VendorDetailPage({
         params: Promise.resolve({ email: "vendor@business.sg" }),
@@ -107,7 +107,6 @@ describe("VendorDetailPage", () => {
   it("calls notFound when the vendor has no grant at all", async () => {
     getVendorGrantMock.mockResolvedValue(null);
 
-    const { default: VendorDetailPage } = await import("./page");
     await expect(
       VendorDetailPage({
         params: Promise.resolve({ email: "ghost@business.sg" }),

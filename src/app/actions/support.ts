@@ -26,8 +26,10 @@ export async function submitSupportMessageAction(
   const supabase = await createServerClient();
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: "Please sign in first" };
+  if (authError || !user)
+    return { success: false, error: "Please sign in first" };
 
   const { error } = await supabase.from("support_messages").insert({
     user_id: user.id,

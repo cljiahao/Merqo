@@ -15,11 +15,15 @@ export function JoinWaitlistButton({
 
   function onClick() {
     startTransition(async () => {
-      const res = await joinWaitlistAction(slug);
-      if (res.success) {
-        toast.success(`You're on the waitlist for ${kitName}`);
-      } else {
-        toast.error(res.error);
+      try {
+        const res = await joinWaitlistAction(slug);
+        if (res.success) {
+          toast.success(`You're on the waitlist for ${kitName}`);
+        } else {
+          toast.error(res.error);
+        }
+      } catch {
+        toast.error("Unable to join the waitlist. Please try again.");
       }
     });
   }

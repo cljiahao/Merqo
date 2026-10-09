@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { LIVE_KITS } from "@/lib/kits";
+import DashboardPage from "./page";
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -85,7 +87,6 @@ describe("DashboardPage", () => {
       { product_slug: "paykit", status: "active", plan: "free" },
     ]);
 
-    const { default: DashboardPage } = await import("./page");
     render(<TooltipProvider>{await DashboardPage()}</TooltipProvider>);
 
     expect(syncVendorKitsMock).toHaveBeenCalledWith("vendor@business.sg");
@@ -102,7 +103,6 @@ describe("DashboardPage", () => {
       links: [{ product_slug: "qkit", status: "active", plan: "free" }],
     });
 
-    const { default: DashboardPage } = await import("./page");
     render(<TooltipProvider>{await DashboardPage()}</TooltipProvider>);
 
     expect(syncVendorKitsMock).not.toHaveBeenCalled();
@@ -124,7 +124,6 @@ describe("DashboardPage", () => {
       { product_slug: "paykit", status: "needs_setup", plan: null },
     ]);
 
-    const { default: DashboardPage } = await import("./page");
     render(<TooltipProvider>{await DashboardPage()}</TooltipProvider>);
 
     // The old standalone "Finish setup" section heading was merged into a
@@ -149,8 +148,6 @@ describe("DashboardPage", () => {
       { product_slug: "qkit", status: "active", plan: "free" },
     ]);
 
-    const { default: DashboardPage } = await import("./page");
-    const { LIVE_KITS } = await import("@/lib/kits");
     render(<TooltipProvider>{await DashboardPage()}</TooltipProvider>);
 
     expect(
@@ -188,7 +185,6 @@ describe("DashboardPage", () => {
       },
     });
 
-    const { default: DashboardPage } = await import("./page");
     render(<TooltipProvider>{await DashboardPage()}</TooltipProvider>);
 
     expect(fetchVendorMetricsMock).toHaveBeenCalledWith(
@@ -210,7 +206,6 @@ describe("DashboardPage", () => {
     });
     syncVendorKitsMock.mockResolvedValue([]);
 
-    const { default: DashboardPage } = await import("./page");
     render(<TooltipProvider>{await DashboardPage()}</TooltipProvider>);
 
     expect(

@@ -1,32 +1,13 @@
-# tests
+# Database tests
 
-## Purpose
+Run the rollback-only pgTAP suites with `supabase test db` against local Supabase. They check database authorization and integrity, which mocked application tests cannot establish. CI's database job applies migrations before running them.
 
-pgTAP RLS isolation suite, run via `supabase test db`.
+- `rls.test.sql`: table RLS, vendor/team isolation, restricted grants, uniqueness, Telegram consent RPCs, founder triggers, and avatar bucket limits.
+- `metric-emitter.test.sql`: service-only metric emission and trusted trigger access.
+- `vendor-profile-partial-updates.test.sql`: owner-scoped atomic partial profile writes.
+- `vendor-profile-reader-permissions.test.sql`: owner/service profile creation and permitted existing reads.
+- `private-helper-acl.test.sql`: private customer synchronization, owner-trigger continuity, billing service grants, and founder helper denial.
 
-## Contents
+The latest prepared migrations and fixtures still need local database execution; their presence is not a passing runtime result. Keep fixed pgTAP plans aligned with assertion counts; focused suites using `no_plan()` report their count automatically.
 
-- `rls.test.sql` — one rolled-back transaction covering every RLS-bearing
-  table in the `merqo` schema with inline fixed-UUID fixtures: RLS-enabled
-  checks, own-row-vs-team-select policy assertions, grant-restriction
-  checks (`authenticated`/`anon` denial where the table is service-role
-  only), and unique-constraint / idempotency assertions on tables that
-  need them (e.g. `legal_acceptances`). Includes coverage for
-  `merqo.legal_acceptances` (migration `0024`; `legal_name` was added in
-  `0027` then dropped again in `0028`) and the
-  `clear_customer_consent_by_telegram` /
-  `find_customer_telegram_by_phone` RPCs (migrations `0025`, `0026`), and
-  migration `0029`'s founder-Telegram-alert triggers (`has_trigger()` on
-  all three tables plus a `lives_ok()` proving the no-Vault-secret no-op
-  path doesn't raise).
-
-## Connectivity
-
-Run by `.github/workflows/ci.yml`'s `db` job on every PR; applies every
-migration in `../migrations/` first via `supabase start`.
-
-## Parent
-
-[merqo](../../README.md)
-
-It also pins the `vendor-avatars` bucket's own limits from migration `0030` (5 MB `file_size_limit`, JPEG/PNG/WebP `allowed_mime_types`), so a later migration cannot quietly loosen them on a public bucket.
+[Repository README](../../README.md)

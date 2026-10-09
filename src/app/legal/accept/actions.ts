@@ -32,8 +32,9 @@ export async function acceptLegalTerms(formData: FormData): Promise<void> {
   const supabase = await createServerClient();
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
-  if (!user?.email) {
+  if (authError || !user?.email) {
     redirect("/login");
     return;
   }

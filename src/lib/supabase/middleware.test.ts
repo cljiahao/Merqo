@@ -120,3 +120,18 @@ describe("updateSession — legacy host-only cookie cleanup", () => {
     expect(marker).toBeUndefined();
   });
 });
+
+it("redirects a protected request on returned auth errors with stale user data", async () => {
+  createServerClient.mockImplementation(() => ({
+    auth: {
+      getUser: vi.fn().mockResolvedValue({
+        data: { user: { id: "stale" } },
+        error: { message: "expired" },
+      }),
+    },
+  }));
+  const response = await updateSession(
+    new NextRequest("https://merqo.io/dashboard"),
+  );
+  expect(response.headers.get("location")).toBe("https://merqo.io/login");
+});

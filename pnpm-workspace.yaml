@@ -1,38 +1,19 @@
 allowBuilds:
-  "@merqo/ui": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/fc6bda4ac5c4d1d5cb209d79e602e2d311a8a048": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/e88ea5dfb080c9bee78247aa4fc6e54c5add4ef0": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/600d2241b4b2ea9325eb5985da818387c6e975af": true
+  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/989d934c1cc8d957ff383934debf8ef083b6b6a4": true
   esbuild: true
   sharp: true
   unrs-resolver: true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/982ab522ae058d9a65a219ced82d25b115b820a8": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/b2bbbf757444c4cffcb206ae118aba5e100407dd": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/963c7b6905dd69642edf08f10853c8e02207261c": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/5be3e7c7bd0a8d938fd8281946ecd9a36785726e": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/ee4ffef65084155d7ce85d71ed731f9ecaf734c7": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/f48cc2c34236f532d71eac2a469794270408e9f2": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/936bec1054f24f26e0f46c2e9a94aebda9dc0d1f": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/26bfc94233840c645771107bc152a0f545e53d9c": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/838139cc19fa0d9d6aa4fd763a3cc2db6db8d83b": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/fd8508efcc00b6d4d67f765a6b0533aab001ce1f": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/6968e5e1e3c80648ecb7dacfc7d65ba308943353": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/33af6ad9b86b032e38240d2289c10cf7fa1729b7": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/389d9b012f626bdf6932720f809d16f84057621c": true
-  "@merqo/ui@https://codeload.github.com/merqo-io/merqo-ui/tar.gz/d4f4f3c49e5426aa6c7cf276afdc19d0be36c17e": true
-onlyBuiltDependencies:
-  - esbuild
-  - unrs-resolver
-  - sharp
-  - "@merqo/ui"
-
 overrides:
   sharp@<0.35.0: ">=0.35.0"
   postcss@<8.5.23: ">=8.5.23"
   nanoid@<3.3.17: ">=3.3.17"
-  undici@<7.29.0: ">=7.29.0 <8"
-  fast-uri@<4.1.2: ">=4.1.2"
-  js-yaml@<4.3.1: ">=4.3.1"
-  brace-expansion@<1.1.17: ">=1.1.17 <2"
-  brace-expansion@>=2.0.0 <2.1.2: ">=2.1.2 <3"
-  brace-expansion@>=3.0.0 <5.0.9: ">=5.0.9"
+
+  undici@<7.29.1: ">=7.29.1 <8"
+  fast-uri@<4.1.5: ">=4.1.5 <5"
+  js-yaml@<4.3.1: ">=4.3.1 <5"
+  js-yaml@>=5.0.0 <5.4.1: ">=5.4.1 <6"
+  brace-expansion@<1.1.21: ">=1.1.21 <2"
+  brace-expansion@>=2.0.0 <2.1.4: ">=2.1.4 <3"
+  brace-expansion@>=3.0.0 <5.0.12: ">=5.0.12 <6"
+  source-map-js@<1.2.2: ">=1.2.2 <2"
+  postcss-selector-parser@<7.1.6: ">=7.1.6 <8"

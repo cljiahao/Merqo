@@ -39,6 +39,8 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
 }));
 
+import DashboardLayout from "./layout";
+
 describe("DashboardLayout", () => {
   beforeEach(() => {
     maybeSingleMock.mockReset().mockResolvedValue({ data: null });
@@ -52,7 +54,6 @@ describe("DashboardLayout", () => {
       links: [],
     });
 
-    const { default: DashboardLayout } = await import("./layout");
     render(await DashboardLayout({ children: <p>content</p> }));
 
     expect(
@@ -71,7 +72,6 @@ describe("DashboardLayout", () => {
       links: [],
     });
 
-    const { default: DashboardLayout } = await import("./layout");
     render(await DashboardLayout({ children: <p>content</p> }));
 
     fireEvent.pointerDown(screen.getByRole("button", { name: "Account menu" }));
@@ -90,7 +90,6 @@ describe("DashboardLayout", () => {
       data: { tour_seen_at: "2026-08-01T00:00:00.000Z" },
     });
 
-    const { default: DashboardLayout } = await import("./layout");
     render(await DashboardLayout({ children: <p>content</p> }));
 
     expect(
@@ -106,7 +105,6 @@ describe("DashboardLayout", () => {
     });
     maybeSingleMock.mockResolvedValue({ data: { tour_seen_at: null } });
 
-    const { default: DashboardLayout } = await import("./layout");
     render(await DashboardLayout({ children: <p>content</p> }));
 
     expect(stampTourSeenMock).toHaveBeenCalledWith(expect.anything(), "v1");
@@ -120,7 +118,6 @@ describe("DashboardLayout", () => {
     });
     maybeSingleMock.mockResolvedValue({ data: null });
 
-    const { default: DashboardLayout } = await import("./layout");
     render(await DashboardLayout({ children: <p>content</p> }));
 
     expect(stampTourSeenMock).toHaveBeenCalledWith(expect.anything(), "v1");
@@ -136,7 +133,6 @@ describe("DashboardLayout", () => {
       data: { tour_seen_at: "2026-08-01T00:00:00.000Z" },
     });
 
-    const { default: DashboardLayout } = await import("./layout");
     render(await DashboardLayout({ children: <p>content</p> }));
 
     expect(stampTourSeenMock).not.toHaveBeenCalled();

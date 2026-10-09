@@ -1,13 +1,8 @@
 import type { Kit } from "@/lib/kits";
 import { KIT_PREVIEWS } from "./kit-previews";
 
-/** One discovery-bucket card — used for all three of /dashboard's
- *  "Explore more kits" subsections (Ready to add / Coming soon / Planned).
- *  The `cta` slot is omitted entirely for planned kits (no real action
- *  exists for them yet).
- *  The feature-bullet line is always in the DOM (not conditionally
- *  rendered) — only its opacity is hover-gated, so it stays available to
- *  screen readers and to touch/keyboard users who never trigger :hover. */
+/** Shares discovery-card content across buckets; planned kits omit the CTA
+ * because they have no available action. */
 export function KitDiscoveryCard({
   kit,
   cta,
@@ -28,9 +23,7 @@ export function KitDiscoveryCard({
       )}
       <h3 className="font-display text-lg font-bold">{kit.name}</h3>
       <p className="mt-1.5 text-sm text-muted-foreground">{kit.description}</p>
-      <p className="mt-2 text-xs text-muted-foreground opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-        {kit.features[0]}
-      </p>
+      <p className="mt-2 text-xs text-muted-foreground">{kit.features[0]}</p>
       {cta && <div className="mt-4">{cta}</div>}
     </div>
   );

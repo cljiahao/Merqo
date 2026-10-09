@@ -1,12 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const { selectMock, listUsersMock, upsertMock, createServiceClientMock } =
-  vi.hoisted(() => ({
-    selectMock: vi.fn(),
-    listUsersMock: vi.fn(),
-    upsertMock: vi.fn(),
-    createServiceClientMock: vi.fn(),
-  }));
+const {
+  selectMock,
+  listUsersMock,
+  getUserByIdMock,
+  upsertMock,
+  createServiceClientMock,
+} = vi.hoisted(() => ({
+  selectMock: vi.fn(),
+  listUsersMock: vi.fn(),
+  getUserByIdMock: vi.fn(),
+  upsertMock: vi.fn(),
+  createServiceClientMock: vi.fn(),
+}));
 
 vi.mock("@/lib/supabase/server", () => ({
   createServiceClient: createServiceClientMock,
@@ -18,69 +24,16 @@ function fakeSupabase() {
       select: selectMock,
       upsert: upsertMock,
     }),
-    auth: { admin: { listUsers: listUsersMock } },
+    auth: { admin: { listUsers: listUsersMock, getUserById: getUserByIdMock } },
   };
 }
 
 beforeEach(() => {
   selectMock.mockReset();
   listUsersMock.mockReset();
+  getUserByIdMock.mockReset();
   upsertMock.mockReset();
   createServiceClientMock.mockReset().mockResolvedValue(fakeSupabase());
-});
-
-describe("listTeamMembers", () => {
-  it("paginates past a single page of auth users to resolve every email", async () => {
-    selectMock.mockResolvedValue({
-      data: [{ user_id: "u1" }, { user_id: "u2" }],
-      error: null,
-    });
-    const page1 = Array.from({ length: 1000 }, (_, i) => ({
-      id: `filler-${i}`,
-      email: `filler-${i}@example.com`,
-    }));
-    listUsersMock
-      .mockResolvedValueOnce({ data: { users: page1 }, error: null })
-      .mockResolvedValueOnce({
-        data: {
-          users: [
-            { id: "u1", email: "a@example.com" },
-            { id: "u2", email: "b@example.com" },
-          ],
-        },
-        error: null,
-      });
-
-    const { listTeamMembers } = await import("@/lib/admin");
-    const result = await listTeamMembers();
-
-    expect(listUsersMock).toHaveBeenCalledTimes(2);
-    expect(listUsersMock).toHaveBeenNthCalledWith(1, {
-      page: 1,
-      perPage: 1000,
-    });
-    expect(listUsersMock).toHaveBeenNthCalledWith(2, {
-      page: 2,
-      perPage: 1000,
-    });
-    expect(result).toEqual([
-      { user_id: "u1", email: "a@example.com" },
-      { user_id: "u2", email: "b@example.com" },
-    ]);
-  });
-
-  it("throws a wrapped error when the auth user list read fails", async () => {
-    selectMock.mockResolvedValue({ data: [{ user_id: "u1" }], error: null });
-    listUsersMock.mockResolvedValue({
-      data: null,
-      error: { message: "service unavailable" },
-    });
-
-    const { listTeamMembers } = await import("@/lib/admin");
-    await expect(listTeamMembers()).rejects.toThrow(
-      /list users: service unavailable/,
-    );
-  });
 });
 
 describe("addTeamMemberByEmail", () => {
@@ -231,6 +184,23 @@ describe("removeTeamMember", () => {
 });
 
 describe("recordAudit", () => {
+  it.each(["setup", "insert"])(
+    "contains a rejected %s after the primary admin change",
+    async (stage) => {
+      if (stage === "setup")
+        createServiceClientMock.mockRejectedValue(new Error("offline"));
+      else
+        createServiceClientMock.mockResolvedValue({
+          from: () => ({
+            insert: vi.fn().mockRejectedValue(new Error("offline")),
+          }),
+        });
+      const { recordAudit } = await import("@/lib/admin");
+      await expect(
+        recordAudit("admin-1", "grant_kit_access", null, null),
+      ).resolves.toBeUndefined();
+    },
+  );
   function fakeInsertClient(result: { error: { message: string } | null }) {
     const insertMock = vi.fn().mockResolvedValue(result);
     return { client: { from: () => ({ insert: insertMock }) }, insertMock };
@@ -303,12 +273,14 @@ describe("listAdminAuditEntries", () => {
     ];
     createServiceClientMock.mockResolvedValue({
       ...fakeReadClient(rows),
-      auth: { admin: { listUsers: listUsersMock } },
+      auth: {
+        admin: { listUsers: listUsersMock, getUserById: getUserByIdMock },
+      },
     });
-    listUsersMock.mockResolvedValue({
-      data: { users: [{ id: "u1", email: "team@merqo.io" }] },
+    getUserByIdMock.mockImplementation(async (id: string) => ({
+      data: { user: id === "u1" ? { email: "team@merqo.io" } : null },
       error: null,
-    });
+    }));
 
     const { listAdminAuditEntries } = await import("@/lib/admin");
     const result = await listAdminAuditEntries(50);

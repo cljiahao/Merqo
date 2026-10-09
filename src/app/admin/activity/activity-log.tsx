@@ -2,11 +2,8 @@
 
 import { AuditLogTable, type AuditLogEntry } from "@merqo/ui";
 
-// AuditLogTable is a Client Component (all of @merqo/ui is) — its
-// `formatAction` prop is a plain function, not a Server Action, so it can't
-// cross the server/client boundary as a prop from the (server) page. This
-// thin client wrapper owns the function locally instead; the page passes it
-// only serializable `entries` data.
+// Keep display-label callbacks in this client adapter; the server page passes
+// only serializable audit entries.
 const ACTION_LABELS: Record<string, string> = {
   grant_kit_access: "Granted kit access",
   revoke_kit_access: "Revoked kit access",

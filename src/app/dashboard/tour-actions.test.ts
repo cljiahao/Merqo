@@ -62,3 +62,24 @@ describe("markTourSeen", () => {
     consoleError.mockRestore();
   });
 });
+
+it("preserves navigation when tour persistence rejects", async () => {
+  getUserMock.mockResolvedValue({ data: { user: { id: "u1" } } });
+  upsertMock.mockRejectedValueOnce(new Error("offline"));
+  const { markTourSeen } = await import("./tour-actions");
+  await expect(markTourSeen()).resolves.toBeUndefined();
+});
+it("does not persist a tour stamp for an invalidated user", async () => {
+  getUserMock.mockResolvedValue({
+    data: { user: { id: "stale" } },
+    error: { message: "expired" },
+  });
+  const { markTourSeen } = await import("./tour-actions");
+  await markTourSeen();
+  expect(upsertMock).not.toHaveBeenCalled();
+});
+it("handles a rejected auth request as a cosmetic failure", async () => {
+  getUserMock.mockRejectedValueOnce(new Error("offline"));
+  const { markTourSeen } = await import("./tour-actions");
+  await expect(markTourSeen()).resolves.toBeUndefined();
+});

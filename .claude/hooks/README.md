@@ -10,17 +10,12 @@ behavioral description of each hook and the events they're wired to.
 
 ## Contents
 
-- `protect-files.sh` — PreToolUse(Edit|Write): hard-blocks secret/credential/
-  CI-pipeline files (exit 2), asks for human approval on governance files
-  (AGENTS.md/CLAUDE.md, `.claude/settings.json`, `.claude/hooks/*`,
-  `.husky/*`, `.gitleaks.toml`, Dockerfile, etc).
+- `protect-files.sh` — checks reads and writes, normalizes Windows paths, hard-blocks secret and credential files, and requires approval for governance and CI workflow writes.
 - `block-no-verify.sh` — PreToolUse(Bash): blocks `--no-verify`/`-n`,
   hook-layer bypasses (`HUSKY=0`, `HUSKY_SKIP_HOOKS`, `core.hooksPath=…`),
   direct commits to `main`, force-pushes to `main`, `checkout`/`restore` of
   guard-layer files, and recursive-forced `rm` on source directories.
-- `user-prompt-guard.cjs` — UserPromptSubmit: pattern-checks prompts for
-  injection phrases (OWASP LLM01) and embedded credentials (OWASP LLM02);
-  exit 2 blocks.
+- `user-prompt-guard.cjs` — reports injection phrases as advisory context and blocks embedded credentials (OWASP LLM02).
 - `post-edit-typecheck.sh` — PostToolUse(Edit|Write): runs
   `tsc --noEmit --incremental` on TS edits, feedback-only.
 - `post-edit-comment-check.sh` — PostToolUse(Edit|Write): flags
@@ -40,7 +35,7 @@ behavioral description of each hook and the events they're wired to.
 - `verify.sh` — manual verification gate (`pnpm build && pnpm check &&
 pnpm test`), not wired to a Claude Code hook event; run by hand after
   substantial changes. Distinct from `.claude/verify-harness.sh`, the
-  harness-manifest drift check wired into `.husky/pre-push` and CI.
+  harness integrity check of committed HEAD blobs, wired into `.husky/pre-push` and CI.
 
 ## Parent
 

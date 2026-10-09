@@ -46,5 +46,4 @@ page's `signInWithOAuth`/`signInWithPassword` calls).
 
 ## Parent
 
-This is the only nested `README.md` in this repo — see the root
-[README](../../../README.md) for the app overview.
+[lib](../README.md)

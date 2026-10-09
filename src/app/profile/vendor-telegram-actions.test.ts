@@ -120,3 +120,13 @@ describe("disconnectVendorTelegram", () => {
     expect(result.success).toBe(false);
   });
 });
+
+it("does not issue service writes after returned auth errors", async () => {
+  getUser.mockResolvedValue({
+    data: { user: { id: "stale" } },
+    error: { message: "expired" },
+  });
+  expect((await mintVendorTelegramConnectToken()).success).toBe(false);
+  expect((await disconnectVendorTelegram()).success).toBe(false);
+  expect(from).not.toHaveBeenCalled();
+});

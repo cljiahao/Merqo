@@ -25,8 +25,10 @@ export async function submitFeedbackAction(
   const supabase = await createServerClient();
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: "Please sign in first" };
+  if (authError || !user)
+    return { success: false, error: "Please sign in first" };
 
   const { error } = await supabase.from("feedback").insert({
     user_id: user.id,
