@@ -19,7 +19,7 @@ section; one or more kits gets the savings + per-kit overview.
   `dashboard_prefs.tour_seen_at` threaded through as `seen`. Also, if
   `tour_seen_at` is unset, calls `@/lib/tour-prefs`'s `stampTourSeen`
   directly, synchronously, as part of this request, before returning JSX —
-  the durable half of the onboarding-tour "stamp on start" fix; see
+  the server-side supplement to the onboarding-tour "stamp on start" fix; see
   `src/lib/README.md` and `tour-actions.ts` below for why the client-fired
   path alone isn't reliable.
 - `layout.test.tsx` — RTL coverage: logo link, account menu rendering, the
