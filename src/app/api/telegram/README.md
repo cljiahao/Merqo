@@ -1,27 +1,17 @@
 # telegram
 
-## Purpose
+Merqo's shared Telegram bot serves customer consent/notifications and vendor
+activity alerts. It replaces the retired per-kit vendor bots.
 
-The Telegram Bot API surface for merqo's own third Telegram bot (Phase
-B+D of `docs/superpowers/specs/2026-08-16-customer-telegram-connect-design.md`)
-— lets a customer connect once via a deep-link QR and receive
-transactional order/reward notifications from any Merqo kit they interact
-with. Distinct from qkit's and loopkit's own Phase A vendor-alert bots
-(own BotFather registration, own token, own webhook).
+`webhook/route.ts` receives Telegram updates after webhook-secret validation.
+Customer and vendor connect-token endpoints mint link tokens; the webhook
+consumes them and records the appropriate connection. Customer consent can be
+withdrawn with `/stop`. The bot must receive user contact before private alerts
+can be sent; reconnecting to the shared bot establishes that contact.
 
-## Contents
-
-- `webhook/` — the single registered webhook route Telegram POSTs every
-  `Update` to; see its own README.
-
-## Connectivity
-
-`webhook/route.ts` is called by Telegram's own servers, not by anything
-inside merqo — see `docs/DEPLOY.md` for the one-time `setWebhook`
-registration step. The link tokens it resolves are minted by
-`../merqo/customer-connect-token/route.ts` (called by a kit, currently
-qkit); the resulting `merqo.customers` row is what
-`../merqo/notify-customer/route.ts` sends to.
+See the [webhook README](webhook/README.md) for command and failure behavior,
+and deployment instructions for webhook registration. There is no local
+outbound call to this webhook.
 
 ## Parent
 

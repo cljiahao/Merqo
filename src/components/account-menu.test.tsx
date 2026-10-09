@@ -150,7 +150,7 @@ describe("AccountMenu", () => {
     ).toBeInTheDocument();
   });
 
-  it("opening Get help and submitting a category not in Merqo's own list falls back to 'other'", async () => {
+  it("opening Get help submits the selected billing category", async () => {
     const user = userEvent.setup();
     render(<AccountMenu email="vendor@business.sg" avatarUrl={null} />);
     await user.click(screen.getByRole("button", { name: /account menu/i }));

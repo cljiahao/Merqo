@@ -1,37 +1,40 @@
 # profile
 
-## Purpose
+Shared account settings for the vendor dashboard and team console. The page and
+mutating actions require a signed-in user; profile identity comes from the
+verified session, never a submitted user ID. The account menu's
+`/dashboard/profile` link redirects to this `/profile` route.
 
-Shared account-settings page — stall name, social links, profile icon,
-display name, and sign-in password, each saved independently through the
-channel that owns that data (shared `merqo.vendor_profile` for stall
-name/social links vs. the Supabase auth user for icon/display name/
-password). Reachable from both the vendor dashboard and the admin console;
-gated on "signed in" only. Follows the cross-kit standard at
-`docs/business/2026-07-21-profile-settings-page-standard.md`, the same
-pattern qkit/loopkit/paykit's `dashboard/profile/` implement.
+## Data ownership
 
-## Contents
+`actions.ts` validates stall-name and social-link input, then invokes the
+owner-scoped `patch_vendor_profile` RPC. Each save changes only its own column;
+concurrent edits to the other column survive. Missing shared rows are provisioned
+atomically. Empty social links clear links; omitted fields remain unchanged.
+The page reads the shared profile through `getOrCreateVendorProfile`.
 
-- `actions.ts` — `updateStallName(input)` and `updateSocialLinks(input)` server actions. Both validate with their Zod schema (`profileNameSchema`, `socialLinksSchema`), read the vendor's current shared profile via `getOrCreateVendorProfile`, then write the one changed field through `upsertVendorProfile` — both from `@/lib/merqo-vendor-profile`, which calls the shared `merqo.vendor_profile` table's RPC functions directly (merqo's own server client already defaults to the `merqo` schema — no cross-schema indirection needed here, unlike a dependent kit's copy of this file). Both `revalidatePath("/", "layout")` so the dashboard/admin headers and account menu immediately reflect the change. Display name, avatar, and password are explicitly **not** handled here — they live on the auth user and are set client-side via `supabase.auth.updateUser`.
-- `vendor-telegram-actions.ts` — `mintVendorTelegramConnectToken()` and `disconnectVendorTelegram()` server actions backing the vendor Telegram-connect section (Phase A2 of the cross-kit Telegram integration design). `mintVendorTelegramConnectToken` mints a `kind='vendor'` `merqo.telegram_link_tokens` row directly (no HTTP hop — merqo's own profile page is the same app as `src/app/api/merqo/vendor-connect-token/route.ts`, which does the same thing over HTTP for qkit/loopkit), renders a QR via `@merqo/ui`'s `qrSvg`, and returns `{ deepLink, qrSvgMarkup }`. `disconnectVendorTelegram` deletes the caller's own `merqo.vendor_telegram` row via the service-role client (that table grants `authenticated` SELECT only, no client write grant) and revalidates `/profile`. Both derive the caller's identity from the session (`createServerClient().auth.getUser()`), never a client-supplied id.
-- `vendor-telegram-connect.tsx` — `VendorTelegramConnect({ connected })` client component adapting `vendor-telegram-actions.ts`'s `ActionResult`-returning actions to `@merqo/ui`'s `VendorTelegramSection` throw-on-failure prop contract (same `res.success` → toast/throw pattern `profile-form.tsx` uses elsewhere on this page), and calling `router.refresh()` after a successful disconnect so the section re-renders from the fresh `page.tsx` query.
-- `page.tsx` — `ProfilePage()` (server, `revalidate = 0`): gates on a signed-in Supabase user, reads the vendor's shared profile via `getOrCreateVendorProfile`, reads `display_name`/`avatar_url` defensively off `user.user_metadata` (`@/lib/account`), queries `merqo.vendor_telegram` for the caller's own row (RLS-scoped — the session client, not the service client, since this is a plain own-row read), and renders `ProfileForm` plus `VendorTelegramConnect` (single-column, outside `ProfileForm`'s own `TwoColumnSections` shape) with the vendor's stall name, display name, email, id, avatar URL, social links, and Telegram connection status.
-- `profile-form.tsx` — `ProfileForm({ stallName, displayName, email, vendorId, avatarUrl, socialLinks })` client component with five independently-saved sections, each inside `@merqo/ui`'s `Section`, laid out via `@merqo/ui`'s `TwoColumnSections` (two independent `flex flex-col gap-5` stacks side by side on `md`+ — never a CSS grid, see the standard doc §2.3 for why). Column order is the cross-kit standard: left stacks stall name (`profileNameSchema` → `updateStallName` server action), profile icon (`@merqo/ui`'s `ImageUploader`, backed by `uploadVendorAvatar` from `@/lib/image-upload-adapter` → `supabase.auth.updateUser({ data: { avatar_url } })`), and change password (`passwordChangeSchema` → `supabase.auth.updateUser({ password })`, clearing the fields on success); right stacks display name (`displayNameSchema` → `supabase.auth.updateUser({ data: { display_name } })`) above social links (`SocialLinksFields` + `socialLinksSchema` → `updateSocialLinks` server action); email is shown read-only.
+`profile-form.tsx` uses the browser Supabase auth client for display name,
+avatar metadata and password. These fields are shared by the Supabase account,
+not kit-local records. Shared sections/social fields/image uploader come from
+`@merqo/ui`; `lib/image-upload-adapter.ts` owns Storage uploads and best-effort
+cleanup. Successful replacement cleans up the previous object; returned save
+errors restore the previous visible avatar and attempt unused-upload cleanup.
+An uncertain network outcome is not proof that a metadata write did not commit.
 
-## Connectivity
+## Vendor Telegram
 
-Reachable from `account-menu.tsx`'s "Profile" item (both `/dashboard` and `/admin` headers) — that link is `@merqo/ui`'s `AccountMenu` hardcoded route, `/dashboard/profile`, which `src/app/dashboard/profile/page.tsx` redirects here. `page.tsx` calls the server Supabase client directly (no `requireMerqoTeam()` gate — deliberately signed-in-only, see the comment in `page.tsx`) and renders `profile-form.tsx`, which calls the server actions `updateStallName`/`updateSocialLinks` in `actions.ts` for stall name/social links and the browser Supabase client (`@/lib/supabase/client`) directly for avatar/display-name/password, all validated against schemas in `@/lib/schemas`. Profile-icon uploads go through `@/lib/image-upload-adapter` to the `vendor-avatars` Storage bucket (`supabase/migrations/0015_vendor_avatars_bucket.sql`). `vendor-telegram-connect.tsx` renders `@merqo/ui`'s `VendorTelegramSection`, calling `vendor-telegram-actions.ts`'s two server actions, which write/read `merqo.telegram_link_tokens`/`merqo.vendor_telegram` (`supabase/migrations/0020_vendor_telegram.sql`) — the same tables `../api/telegram/webhook/route.ts`'s `/start` handler and `../api/merqo/{vendor-connect-token,notify-vendor}/route.ts` operate on for qkit/loopkit's own equivalent flow.
+`vendor-telegram-actions.ts` mints a vendor link token or disconnects the
+session user's own connection through the service client.
+`vendor-telegram-connect.tsx` adapts action results to the shared Telegram
+section's failure contract and refreshes after disconnect. The page reads the
+current connection with its own-row session/RLS client.
 
-## Shared package note
+## Verification
 
-The avatar upload's resize step now calls `@merqo/ui`'s `resizeToWebp` (v0.31.0). v0.31.1 also fixes a latent bug there: a filename with no dot used to yield the whole name as its extension.
-
-## Replaced-avatar cleanup
-
-The avatar save handler deletes the image it orphans: after a successful save, the previous avatar (including on Remove); after a failed save, the fresh upload, which is then referenced nowhere. On a failed save it also restores the previous avatar in state rather than keep showing an image that was never saved.
+Action tests cover validation, verified identity and field-specific patches.
+Form tests cover shared UI wiring, auth updates and error behavior. Database
+policy and cross-kit shared-session behavior need integration validation.
 
 ## Parent
 
-See the repo root [README.md](../../../README.md) for the full `src/app/`
-layout and how this page fits the rest of Merqo.
+[app](../README.md)

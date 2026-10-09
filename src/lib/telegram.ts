@@ -20,11 +20,12 @@ export async function sendTelegramMessage(
   try {
     await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
       method: "POST",
+      signal: AbortSignal.timeout(5000),
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ chat_id: chatId, text }),
     });
-  } catch (err) {
-    console.error("sendTelegramMessage failed", err);
+  } catch {
+    console.error("sendTelegramMessage failed");
   }
 }
 

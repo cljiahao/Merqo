@@ -22,11 +22,9 @@ map of what lives where.
   Supabase, not Drizzle).
 - `harness.json` — the templateCentral-seeded-file manifest (`origin_hash`
   per file, `templatecentral_version`), checked by `verify-harness.sh` on
-  every pre-push and in CI.
+  pre-push and in CI against committed HEAD blobs.
 - `verify-harness.sh` / `regen-harness.sh` — drift check / human-run baseline
-  regen for the files listed in `harness.json` (most recently re-run
-  2026-08-01 after the `.husky/lib/pre-commit.sh` `xargs -d` → `xargs -0`
-  portability fix).
+  regen for the files listed in `harness.json`.
 
 ## Parent
 

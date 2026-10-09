@@ -50,26 +50,30 @@ export function ActivateKitsButton({
 
   function activate(targetSlugs: string[]) {
     startTransition(async () => {
-      const res = await activateKitsAction(targetSlugs);
-      if (res.success) {
-        setError(null);
-        setResults((prev) => mergeResults(prev, res.results));
-        const byTargetSlug = new Map(res.results.map((r) => [r.slug, r]));
-        const allSucceeded = targetSlugs.every(
-          (slug) => byTargetSlug.get(slug)?.ok === true,
-        );
-        if (allSucceeded) {
-          const anyNeedsSetup = targetSlugs.some((slug) => {
-            const r = byTargetSlug.get(slug);
-            return r?.ok === true && r.needsSetup === true;
-          });
-          if (!anyNeedsSetup) {
-            toast.success(`Activated ${targetSlugs.join(", ")}`);
+      try {
+        const res = await activateKitsAction(targetSlugs);
+        if (res.success) {
+          setError(null);
+          setResults((prev) => mergeResults(prev, res.results));
+          const byTargetSlug = new Map(res.results.map((r) => [r.slug, r]));
+          const allSucceeded = targetSlugs.every(
+            (slug) => byTargetSlug.get(slug)?.ok === true,
+          );
+          if (allSucceeded) {
+            const anyNeedsSetup = targetSlugs.some((slug) => {
+              const r = byTargetSlug.get(slug);
+              return r?.ok === true && r.needsSetup === true;
+            });
+            if (!anyNeedsSetup) {
+              toast.success(`Activated ${targetSlugs.join(", ")}`);
+            }
+            router.refresh();
           }
-          router.refresh();
+        } else {
+          setError(res.error);
         }
-      } else {
-        setError(res.error);
+      } catch {
+        setError("Unable to activate kits. Please try again.");
       }
     });
   }

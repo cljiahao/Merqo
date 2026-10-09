@@ -1,0 +1,17 @@
+begin;
+select plan(7);
+select ok(not has_function_privilege('anon','merqo.get_or_create_vendor_profile(uuid,text)','execute'),'anonymous lazy provisioning denied');
+select ok(has_function_privilege('authenticated','merqo.get_or_create_vendor_profile(uuid,text)','execute'),'signed-in profile readers retained');
+select ok(has_function_privilege('service_role','merqo.get_or_create_vendor_profile(uuid,text)','execute'),'server public-page profile readers retained');
+insert into merqo.vendor_profile(vendor_id,stall_name) values('22222222-2222-2222-2222-222222222222','Existing');
+set local role authenticated;
+select set_config('request.jwt.claims','{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}',true);
+select lives_ok($$select merqo.get_or_create_vendor_profile('11111111-1111-1111-1111-111111111111','Own')$$,'owner provisions own missing profile');
+select throws_ok($$select merqo.get_or_create_vendor_profile('33333333-3333-3333-3333-333333333333','Foreign')$$,'P0001','not authorized to create profile','authenticated foreign missing profile denied');
+select lives_ok($$select merqo.get_or_create_vendor_profile('22222222-2222-2222-2222-222222222222',null)$$,'existing business profile read preserved');
+reset role;
+set local role service_role;
+select set_config('request.jwt.claims','{"role":"service_role"}',true);
+select lives_ok($$select merqo.get_or_create_vendor_profile('33333333-3333-3333-3333-333333333333','Administrative')$$,'service provisioning preserved');
+select * from finish();
+rollback;

@@ -13,8 +13,8 @@ export const revalidate = 0;
 // "signed in" only, not requireMerqoTeam()'s stricter check.
 export default async function ProfilePage() {
   const supabase = await createServerClient();
-  const { data } = await supabase.auth.getUser();
-  const user = data.user;
+  const { data, error } = await supabase.auth.getUser();
+  const user = error ? null : data.user;
   if (!user) redirect("/login");
 
   const profile = await getOrCreateVendorProfile(supabase, user.id, null);

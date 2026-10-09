@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { passwordChangeSchema } from "@/lib/schemas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,21 +21,30 @@ export default function ResetPasswordPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (busy) return;
     setError(null);
-    if (password !== confirm) {
-      setError("Passwords do not match.");
+    const parsed = passwordChangeSchema.safeParse({ password, confirm });
+    if (!parsed.success) {
+      setError(parsed.error.issues[0]?.message ?? "Check your password");
       return;
     }
     setBusy(true);
-    const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({ password });
-    setBusy(false);
-    if (error) {
-      setError(error.message);
-      return;
+    try {
+      const supabase = createClient();
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: parsed.data.password,
+      });
+      if (updateError) {
+        setError(updateError.message);
+        return;
+      }
+      router.push("/post-login");
+      router.refresh();
+    } catch {
+      setError("Could not update your password. Please try again.");
+    } finally {
+      setBusy(false);
     }
-    router.push("/post-login");
-    router.refresh();
   }
 
   return (

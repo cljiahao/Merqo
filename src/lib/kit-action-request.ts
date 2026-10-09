@@ -32,6 +32,7 @@ export async function fetchKitJson<T>(
     const res = await fetch(url, {
       ...init,
       cache: "no-store",
+      redirect: "error",
       signal: controller.signal,
     });
     if (!res.ok) return { ok: false, status: res.status, kind: "http" };

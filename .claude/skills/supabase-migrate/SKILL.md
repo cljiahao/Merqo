@@ -6,7 +6,7 @@ disable-model-invocation: true
 ---
 
 Merqo lives in the SHARED Supabase project (one project, schema per kit). Merqo's
-tables live in the `merqo` schema; qkit owns `public`. Migrations live in
+tables live in the `merqo` schema; qkit owns the `qkit` schema. Migrations live in
 `supabase/migrations/`.
 
 ## Apply schema

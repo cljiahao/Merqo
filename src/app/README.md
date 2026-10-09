@@ -9,7 +9,7 @@ console, auth, and shared account pages.
 
 - `actions/` — server actions shared across routes.
 - `admin/` — Merqo-team console: overview + vendors/, team/, products/, feedback/ (all auth-gated).
-- `api/` — route-handler API endpoints: merqo's own third Telegram bot's
+- `api/` — route-handler API endpoints: Merqo's shared Telegram bot's
   webhook, and the bearer-secret endpoints qkit/loopkit call INTO merqo
   for the customer Telegram-connect flow — the first kit → merqo HTTP
   direction in this codebase; see its own README.

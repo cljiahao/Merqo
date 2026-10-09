@@ -26,12 +26,17 @@ export function DowngradeButton({ slug }: { slug: string }) {
 
   function onConfirm() {
     startTransition(async () => {
-      const res = await requestDowngrade(slug);
-      if (res.success) {
-        setState("done");
-      } else {
+      try {
+        const res = await requestDowngrade(slug);
+        if (res.success) {
+          setState("done");
+        } else {
+          setState("error");
+          setError(res.error);
+        }
+      } catch {
         setState("error");
-        setError(res.error);
+        setError("Unable to cancel Pro. Please try again.");
       }
     });
   }

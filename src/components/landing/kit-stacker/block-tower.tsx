@@ -72,7 +72,7 @@ export function BlockTower({
                 live ? "text-primary-foreground/80" : "text-muted-foreground",
               )}
             >
-              {live
+              {slug === "qkit"
                 ? "Your live queue."
                 : queueLink(slug) || "Runs on its own."}
             </p>

@@ -1,4 +1,5 @@
 "use server";
+import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { requireMerqoTeam } from "@/lib/team";
 import { recordAudit } from "@/lib/admin";
@@ -34,6 +35,8 @@ export async function setBundleDiscountEnabledAction(
   enabled: boolean,
 ): Promise<ActionResult> {
   const { user } = await requireMerqoTeam();
+  const parsed = z.boolean().safeParse(enabled);
+  if (!parsed.success) return { success: false, error: "Invalid setting" };
   const supabase = await createServiceClient();
   const { error } = await supabase
     .from("billing_settings")

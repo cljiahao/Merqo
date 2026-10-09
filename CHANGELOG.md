@@ -21,6 +21,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Security
 
+- Restrict customer synchronization to trusted backends and owner triggers, and prevent direct calls to the founder notification helpers.
 - The public `vendor-avatars` bucket had no size or MIME limit, so the
   browser-side resize in `ImageUploader` was its only guard. A direct storage
   call with a signed-in JWT could upload an arbitrarily large file, or a
@@ -30,6 +31,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Improve small brand-text and input-boundary contrast in both themes while preserving primary button fills and decorative separators.
+
+- Compare the actual Terms, Privacy and Pilot versions from each locked shared-UI commit instead of rejecting harmless package-tag differences.
+- Grant the admin service the missing billing singleton read/update permissions.
 - Replacing or removing a profile icon no longer leaves the old image in storage.
   `ImageUploader` names every upload randomly and nothing ever deleted the object
   it replaced, so each change orphaned one file. The save handler now deletes the

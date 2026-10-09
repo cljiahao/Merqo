@@ -101,3 +101,12 @@ describe("resolveSupportMessageAction", () => {
     );
   });
 });
+
+it("rejects a forged non-boolean bundle flag before a service write", async () => {
+  vi.clearAllMocks();
+  requireMerqoTeamMock.mockResolvedValue({ user: { id: "operator" } });
+  expect(
+    await setBundleDiscountEnabledAction("true" as unknown as boolean),
+  ).toEqual({ success: false, error: "Invalid setting" });
+  expect(createServiceClientMock).not.toHaveBeenCalled();
+});

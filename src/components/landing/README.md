@@ -33,8 +33,7 @@ per file. Presentational only — no data fetching, no client state beyond the
   render.
 - `waitlist-form.tsx` — email capture for kits not yet live.
 - `wordmark.tsx` — the "Merqo" brand mark.
-- `back-to-top.tsx` — fixed-position scroll-to-top button (ported from
-  qkit), shown past a scroll threshold.
+- `BackToTop` — shared scroll-to-top control imported from `@merqo/ui`.
 
 ## Connectivity
 

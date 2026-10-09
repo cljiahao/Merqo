@@ -1,5 +1,7 @@
 # Merqo — Deploy & Attach Runbook
 
+The initial attach steps and default domains below record the original bootstrap. For an existing installation, do not repeat the registry INSERT or merge step. Apply every pending numbered migration before deploying dependent application code, and verify current domains and environment scopes in the deployment dashboard. The kit-local Phase A bots were retired in favor of Merqo's shared bot; existing installations reuse that bot rather than registering another one.
+
 One shared Supabase project (renamed **merqo**), schema per kit. merqo tables in
 `merqo.*`, qkit in `public.*`. merqo pulls qkit metrics over HTTP (bearer secret),
 never a direct cross-schema query.
@@ -151,7 +153,7 @@ of git — it lives only in Vercel env + the DB row.
      ```
      No app-side env var or Vercel deploy is needed for this feature — the
      trigger runs entirely inside Postgres via `pg_net`.
-  4. Verify by submitting any kit's Feedback or Get-help sheet, or running:
+  4. Verify by submitting a Feedback or Get-help sheet. A direct helper test is available only to the database owner in the SQL editor after migration `0034`; service and public RPC callers cannot invoke it:
      ```sql
      select merqo.notify_founder_telegram('test alert');
      ```

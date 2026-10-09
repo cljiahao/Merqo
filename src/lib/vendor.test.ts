@@ -13,7 +13,11 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
-import { tilesForLinks, requireVendorSession } from "./vendor";
+import {
+  tilesForLinks,
+  requireVendorSession,
+  loadVendorContext,
+} from "./vendor";
 import { LEGAL_VERSIONS } from "@merqo/ui";
 
 function mockMerqoTeamTable() {
@@ -24,16 +28,25 @@ function mockMerqoTeamTable() {
 function mockLegalAcceptancesTable(
   rows: { doc_type: string; doc_version: string; accepted_at?: string }[],
 ) {
-  const order = vi.fn((column: string, opts: { ascending: boolean }) => {
-    const sorted = [...rows].sort((a, b) => {
-      const av = String(a[column as keyof typeof a] ?? "");
-      const bv = String(b[column as keyof typeof b] ?? "");
-      const cmp = av.localeCompare(bv);
-      return opts.ascending ? cmp : -cmp;
-    });
-    return Promise.resolve({ data: sorted, error: null });
-  });
-  return { select: () => ({ eq: () => ({ order }) }) };
+  let document = "";
+  const query = {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn((column: string, value: string) => {
+      if (column === "doc_type") document = value;
+      return query;
+    }),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn(async (limit: number) => ({
+      data: rows
+        .filter((row) => row.doc_type === document)
+        .sort((a, b) =>
+          String(b.accepted_at).localeCompare(String(a.accepted_at)),
+        )
+        .slice(0, limit),
+      error: null,
+    })),
+  };
+  return query;
 }
 
 function mockVendorLinksTable() {
@@ -201,4 +214,18 @@ describe("tilesForLinks", () => {
     ]);
     expect(active[0].plan).toBe("pro");
   });
+});
+
+it("does not read vendor context when auth returns stale user data with an error", async () => {
+  fromMock.mockClear();
+  getUserMock.mockResolvedValue({
+    data: { user: { id: "stale", email: "stale@example.com" } },
+    error: { message: "expired" },
+  });
+  await expect(loadVendorContext()).resolves.toEqual({
+    user: null,
+    isTeam: false,
+    links: [],
+  });
+  expect(fromMock).not.toHaveBeenCalled();
 });

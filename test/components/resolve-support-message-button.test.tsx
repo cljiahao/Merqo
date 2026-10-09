@@ -21,3 +21,20 @@ describe("ResolveSupportMessageButton", () => {
     );
   });
 });
+
+it("recovers after a rejected action and permits retry", async () => {
+  vi.mocked(resolveSupportMessageAction).mockRejectedValueOnce(
+    new Error("offline"),
+  );
+  render(<ResolveSupportMessageButton id="m1" />);
+  fireEvent.click(screen.getByRole("button", { name: "Resolve" }));
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: "Resolve" })).toBeEnabled(),
+  );
+  vi.mocked(resolveSupportMessageAction).mockClear();
+  vi.mocked(resolveSupportMessageAction).mockResolvedValue({ success: true });
+  fireEvent.click(screen.getByRole("button", { name: "Resolve" }));
+  await waitFor(() =>
+    expect(resolveSupportMessageAction).toHaveBeenCalledTimes(1),
+  );
+});

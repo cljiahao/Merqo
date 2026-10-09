@@ -5,7 +5,8 @@ const { addToWaitlistMock } = vi.hoisted(() => ({
 }));
 vi.mock("@/lib/waitlist", () => ({ addToWaitlist: addToWaitlistMock }));
 
-import { joinKitWaitlist, WAITLIST_IDLE } from "@/app/actions/waitlist";
+import { joinKitWaitlist } from "@/app/actions/waitlist";
+import { WAITLIST_IDLE } from "@/lib/waitlist-state";
 
 function form(fields: Record<string, string>): FormData {
   const fd = new FormData();

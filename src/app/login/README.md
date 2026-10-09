@@ -13,18 +13,14 @@ Merqo kit.
   sign-in/sign-up via `react-hook-form` + `loginSchema` (`@/lib/schemas`),
   a "check your email" state for signup confirmation, and forgot-password
   via `resetPasswordForEmail`.
-- `google-mark.tsx` — `GoogleMark`: the Google "G" icon SVG, extracted out
-  of `page.tsx` so it matches the shared component used across every kit's
-  login page.
 
 ## Connectivity
 
 Uses `ElevatedCard` (`@merqo/ui`) for the card container.
-Successful sign-in/sign-up navigates to `/dashboard`.
+Successful sign-in/sign-up navigates to `/post-login`, which selects the
+account's vendor or team destination.
 
-## Shared package note
-
-`google-mark.tsx` moved to `@merqo/ui` (v0.31.0) as `GoogleMark` — it was byte-identical in all five repos.
+Google branding uses `GoogleMark` from `@merqo/ui`; no local copy remains.
 
 ## Parent
 

@@ -55,4 +55,12 @@ describe("removeReplacedAvatar", () => {
       removeReplacedAvatar(`${PUBLIC}/vendor-avatars/v1/old.webp`),
     ).resolves.toBeUndefined();
   });
+  it("contains synchronous storage setup failure after the profile save", async () => {
+    fromMock.mockImplementationOnce(() => {
+      throw new Error("storage unavailable");
+    });
+    await expect(
+      removeReplacedAvatar(`${PUBLIC}/vendor-avatars/v1/old.webp`),
+    ).resolves.toBeUndefined();
+  });
 });

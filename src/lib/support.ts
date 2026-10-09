@@ -1,3 +1,4 @@
+import { readAdminRows, adminEmailsById } from "./admin-read";
 import { createServiceClient } from "@/lib/supabase/server";
 
 export type OpenSupportMessage = {
@@ -9,30 +10,23 @@ export type OpenSupportMessage = {
   created_at: string;
 };
 
-/** Open support messages, oldest first, with the submitter's email resolved
- *  via the admin API (support_messages has no email column — same pattern
- *  as admin.ts's listTeamMembers). Gate callers with requireMerqoTeam().
- *  `category` is a plain string, not a fixed enum — since 2026-07-23 any
- *  kit can write its own category vocabulary through the shared
- *  submit_support_message RPC (see the cross-kit-support-messages design
- *  spec); this read model no longer assumes the hub's own 4 categories. */
+/** Complete open inbox with sender emails. Callers must require Merqo team access. */
 export async function listOpenSupportMessages(): Promise<OpenSupportMessage[]> {
   const supabase = await createServiceClient();
-  const [messagesRes, usersRes] = await Promise.all([
+  const messages = await readAdminRows("support messages read", (from, to) =>
     supabase
       .from("support_messages")
       .select("id, user_id, kit_slug, category, body, created_at")
       .eq("status", "open")
-      .order("created_at", { ascending: true }),
-    supabase.auth.admin.listUsers({ perPage: 1000 }),
-  ]);
-  if (messagesRes.error) {
-    throw new Error(`support messages read: ${messagesRes.error.message}`);
-  }
-  const emailById = new Map(
-    (usersRes.data?.users ?? []).map((u) => [u.id, u.email ?? null]),
+      .order("created_at", { ascending: true })
+      .order("id")
+      .range(from, to),
   );
-  return (messagesRes.data ?? []).map((m) => ({
+  const emailById = await adminEmailsById(
+    supabase,
+    messages.map((message) => message.user_id),
+  );
+  return messages.map((m) => ({
     id: m.id as string,
     email: emailById.get(m.user_id as string) ?? null,
     kit_slug: m.kit_slug as string | null,

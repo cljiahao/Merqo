@@ -121,10 +121,10 @@ enabled, own-row `select` policy (`vendor_id = (select auth.uid())`) plus a
 table-level `select` grant to `authenticated`, no client write grant — every
 write goes through the service-role client (the webhook route on link, the
 profile page's `disconnectVendorTelegram` action). No migration path for an
-already-linked vendor — a Telegram `chat_id` is scoped to a (bot, user) pair,
-so a vendor's old `chat_id` under qkit's/loopkit's now-retired bots is
-meaningless under merqo's bot; they see the connect flow again next time
-they visit `/profile`, same as a vendor who never linked.
+already-linked vendor — private Telegram chat IDs identify the user, but
+that user must initiate contact with each bot before it can message them.
+Vendors linked to qkit's/loopkit's retired bots reconnect to merqo's bot
+via `/profile`, establishing its permission to send alerts.
 
 **kit → merqo HTTP (new direction, 2026-08-16):** every other cross-kit call in
 this codebase flows merqo → kit (metrics pull, vendor-provision). The customer
@@ -171,18 +171,15 @@ and will break RLS.
 ## AI Harness
 
 Hook scripts live in `.claude/hooks/` (not inlined in `settings.json`):
-PreToolUse(Edit|Write) → `protect-files.sh` hard-blocks secret files (exit 2:
-`.env*` except `.env.example`, cert/credential files, CI/CD pipeline
-definitions, `secrets/**`) and asks for human approval on governance files
-(AGENTS.md/CLAUDE.md, `.claude/settings.json`, `.claude/hooks/*`,
-`.husky/*`, `.gitleaks.toml`, Dockerfile, etc). PreToolUse(Bash) →
-`block-no-verify.sh` blocks `--no-verify`/`-n`, hook-layer bypasses
-(`HUSKY=0`, `HUSKY_SKIP_HOOKS`, `core.hooksPath=…`), direct commits to `main`, force-pushes to
-`main`, `checkout`/`restore` of guard-layer files, and recursive-forced `rm`
-on source directories. App code, skills, specs unrestricted.
-UserPromptSubmit → `user-prompt-guard.cjs` pattern-checks prompts for
-injection phrases (OWASP LLM01) and embedded credentials (OWASP LLM02); exit
-2 blocks. PostToolUse(Edit|Write) → `post-edit-typecheck.sh` runs `tsc
+PreToolUse(Read|Edit|Write): normalize Windows and relative paths; hard-block
+secret-file reads and writes (environment files except the blank templates,
+secret directories and certificate/credential files). Governance and CI/CD
+writes require human approval; their reads are allowed. Ordinary application
+code, skills and specifications remain unrestricted. The Bash guard continues
+to block hook bypasses, protected-branch force pushes and destructive guard edits.
+UserPromptSubmit: credential-shaped input is blocked; injection-phrase matches
+produce advisory context so quoted security research can proceed.
+PostToolUse(Edit|Write) → `post-edit-typecheck.sh` runs `tsc
 --noEmit --incremental` on TS edits, feedback-only, and
 `post-edit-comment-check.sh` flags change-narration comments/oversized
 comment blocks on TS edits (patterns from
@@ -303,8 +300,8 @@ the git blob at HEAD on every pre-push and in CI.
   `TELEGRAM_WEBHOOK_SECRET` from Phase B+D. **Every vendor who'd previously
   linked qkit's or loopkit's own bot must reconnect once via merqo's profile
   page** — an expected, already-approved consequence of retiring those bots
-  (Telegram's `chat_id` is scoped to a (bot, user) pair, so the old link is
-  meaningless under a different bot), not a migration bug. See the "Data
+  because users must initiate contact with merqo's bot before it can send
+  alerts; the private chat ID itself remains the user ID. See the "Data
   model" section above and
   `docs/superpowers/specs/2026-08-16-vendor-telegram-connect-design.md`.
   This must merge and deploy before qkit's and loopkit's own Phase A2 plans

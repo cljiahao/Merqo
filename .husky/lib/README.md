@@ -11,8 +11,7 @@ lives here instead of directly in the hook files husky invokes.
 
 - `pre-commit.sh` — pre-commit body: `prettier --write` + `eslint --fix
 --max-warnings=0` on staged `.ts/.tsx/.js/.mjs/.cjs` (excluding
-  `.claude/hooks/*` and `.claude/.harness-base/**`, and re-staging with
-  `xargs -d '\n'` so filenames with spaces/quotes survive), `tsc --noEmit`,
+  `.claude/hooks/*` and `.claude/.harness-base/**`, and re-staging with NUL-delimited paths (`xargs -0`) so filenames with spaces/quotes survive), `tsc --noEmit`,
   a frozen-lockfile install check when `package.json` is staged, a gitleaks
   secret-scan on staged files (if gitleaks is installed), then the
   README-coupling (`readme-coupling.sh`) and comment-hygiene

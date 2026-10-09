@@ -108,10 +108,7 @@ folder is gated by `requireMerqoTeam()` (via `layout.tsx`).
   `AuditLogEntry` (`actor` = the resolved admin email, `target` = `target_id`,
   `detail` = the `detail` jsonb stringified) — plain, serializable data, passed
   to `activity-log.tsx`'s `ActivityLog` client component. `ActivityLog` wraps
-  `@merqo/ui`'s `AuditLogTable` (all of `@merqo/ui` is a Client Component,
-  so its `formatAction` prop — a plain function, not a Server Action — can't
-  be passed from the server `page.tsx` directly; `ActivityLog` owns that
-  function locally instead) with a `formatAction()` lookup from raw action
+  `@merqo/ui`'s `AuditLogTable` in a client wrapper that owns the `formatAction()` lookup from raw action
   strings (see the bullets above for the full list) to human labels.
 
 ## Connectivity

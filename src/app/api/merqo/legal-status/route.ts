@@ -1,4 +1,6 @@
+import { latestLegalVersions } from "@/lib/legal-versions";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { customerNotifySecretOk } from "@/lib/customer-notify-auth";
 import { createServiceClient } from "@/lib/supabase/server";
 
@@ -22,27 +24,31 @@ export async function GET(request: Request): Promise<Response> {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const email = new URL(request.url).searchParams.get("email");
-  if (!email) {
+  const email = z
+    .string()
+    .trim()
+    .email()
+    .safeParse(new URL(request.url).searchParams.get("email"));
+  if (!email.success) {
     return NextResponse.json({ error: "email is required" }, { status: 400 });
   }
 
-  const supabase = await createServiceClient();
-  const { data, error } = await supabase
-    .from("legal_acceptances")
-    .select("doc_type, doc_version, accepted_at")
-    .eq("vendor_email", email.toLowerCase())
-    .order("accepted_at", { ascending: false });
-
-  if (error) {
-    console.error("legal-status: read failed", error.message);
+  let status: LegalStatus;
+  try {
+    const supabase = await createServiceClient();
+    const versions = await latestLegalVersions(supabase, email.data, [
+      "terms",
+      "privacy",
+      "pilot",
+    ]);
+    status = {
+      terms: versions.terms ?? null,
+      privacy: versions.privacy ?? null,
+      pilot: versions.pilot ?? null,
+    };
+  } catch (error) {
+    console.error("legal-status: read failed", error);
     return NextResponse.json({ error: "read failed" }, { status: 500 });
-  }
-
-  const status: LegalStatus = { terms: null, privacy: null, pilot: null };
-  for (const row of data ?? []) {
-    const docType = row.doc_type as keyof LegalStatus;
-    if (!status[docType]) status[docType] = row.doc_version as string;
   }
   return NextResponse.json(status);
 }

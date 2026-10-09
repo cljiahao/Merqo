@@ -31,67 +31,78 @@ export default function LoginPage() {
   if (busy) submitLabel = "Please wait…";
 
   async function signInWithGoogle() {
+    if (busy) return;
     setBusy(true);
     setError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: { hl: "en" },
-      },
-    });
-    // On success the browser navigates to Google; only an early error lands here.
-    if (error) {
-      setError(error.message);
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: { hl: "en" },
+        },
+      });
+      // On success the browser navigates to Google; only an early error lands here.
+      if (error) {
+        setError(error.message);
+        setBusy(false);
+      }
+    } catch {
+      setError("Unable to sign in. Please try again.");
       setBusy(false);
     }
   }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (busy) return;
     setBusy(true);
     setError(null);
-    const supabase = createClient();
+    try {
+      const supabase = createClient();
 
-    if (mode === "signup") {
-      // Land the confirmation-email link back on merqo — the project's Site URL
-      // points at another kit (shared Supabase), so without this the confirm
-      // link would bounce the vendor to the wrong app.
-      const { data, error } = await supabase.auth.signUp({
+      if (mode === "signup") {
+        // Land the confirmation-email link back on merqo — the project's Site URL
+        // points at another kit (shared Supabase), so without this the confirm
+        // link would bounce the vendor to the wrong app.
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
+        });
+        if (error) {
+          setError(error.message);
+          return;
+        }
+        // Email confirmation on → no session yet. Show a "check your email" state
+        // instead of bouncing to a dashboard the user can't reach.
+        if (!data.session) {
+          setSent({ email, kind: "signup" });
+          return;
+        }
+        router.push("/post-login");
+        router.refresh();
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
       });
-      setBusy(false);
       if (error) {
         setError(error.message);
         return;
       }
-      // Email confirmation on → no session yet. Show a "check your email" state
-      // instead of bouncing to a dashboard the user can't reach.
-      if (!data.session) {
-        setSent({ email, kind: "signup" });
-        return;
-      }
       router.push("/post-login");
       router.refresh();
-      return;
+    } catch {
+      setError("Unable to sign in. Please try again.");
+    } finally {
+      setBusy(false);
     }
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    setBusy(false);
-    if (error) {
-      setError(error.message);
-      return;
-    }
-    router.push("/post-login");
-    router.refresh();
   }
 
   // Email a password-reset link. The link lands on /auth/callback, which
@@ -101,18 +112,24 @@ export default function LoginPage() {
       setError("Enter your email first.");
       return;
     }
+    if (busy) return;
     setBusy(true);
     setError(null);
-    const supabase = createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
-    });
-    setBusy(false);
-    if (error) {
-      setError(error.message);
-      return;
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+      });
+      if (error) {
+        setError(error.message);
+        return;
+      }
+      setSent({ email, kind: "reset" });
+    } catch {
+      setError("Unable to send a reset link. Please try again.");
+    } finally {
+      setBusy(false);
     }
-    setSent({ email, kind: "reset" });
   }
 
   if (sent) {

@@ -14,12 +14,17 @@ export function UpgradeButton({ slug }: { slug: string }) {
 
   function onClick() {
     startTransition(async () => {
-      const res = await requestUpgrade(slug);
-      if (res.success) {
-        setState("sent");
-      } else {
+      try {
+        const res = await requestUpgrade(slug);
+        if (res.success) {
+          setState("sent");
+        } else {
+          setState("error");
+          setError(res.error);
+        }
+      } catch {
         setState("error");
-        setError(res.error);
+        setError("Unable to request an upgrade. Please try again.");
       }
     });
   }

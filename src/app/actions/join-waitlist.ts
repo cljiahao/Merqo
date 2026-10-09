@@ -13,8 +13,8 @@ export async function joinWaitlistAction(slug: string): Promise<ActionResult> {
     return { success: false, error: "This kit isn't open for waitlist yet." };
   }
   const supabase = await createServerClient();
-  const { data } = await supabase.auth.getUser();
-  const email = data.user?.email;
+  const { data, error } = await supabase.auth.getUser();
+  const email = error ? null : data.user?.email;
   if (!email) return { success: false, error: "Sign in first." };
   try {
     await addToWaitlist(email, slug);

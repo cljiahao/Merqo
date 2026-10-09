@@ -23,8 +23,9 @@ export async function mintVendorTelegramConnectToken(): Promise<
   const supabase = await createServerClient();
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: "Not signed in" };
+  if (authError || !user) return { success: false, error: "Not signed in" };
 
   const botUsername = process.env.TELEGRAM_BOT_USERNAME;
   if (!botUsername) {
@@ -66,8 +67,9 @@ export async function disconnectVendorTelegram(): Promise<ActionResult> {
   const supabase = await createServerClient();
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: "Not signed in" };
+  if (authError || !user) return { success: false, error: "Not signed in" };
 
   const service = await createServiceClient();
   const { error } = await service

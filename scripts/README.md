@@ -2,19 +2,16 @@
 
 ## Purpose
 
-Founder-run maintenance scripts — not wired into CI or any hook, run by
-hand.
+Founder-run maintenance scripts, invoked manually.
 
 ## Contents
 
-- `check-legal-version-skew.mjs` — asserts all 6 app repos (`merqo` +
-  the 5 kits, siblings under the workspace root) pin the identical
-  `@merqo/ui` release tag. Guards the plan's own rule that a legal-doc
-  content bump must roll out to every repo the same day — a kit left on
-  an older tag would show a vendor different legal text than the one
-  they actually accepted. Exits `1` (with the mismatched versions
-  printed) if any repo disagrees, `0` if all match. Run via `pnpm run
-check:legal-versions`.
+- `check-legal-version-skew.mjs` compares the terms, privacy and pilot legal
+  versions at each app's exact locked `@merqo/ui` Git commit. Different UI
+  releases are allowed when their legal versions match. It uses the sibling
+  `merqo-ui` checkout; fetch missing locked commits before running
+  `pnpm check:legal-versions`. A missing commit or mismatched legal version
+  exits with an error.
 
 ## Parent
 

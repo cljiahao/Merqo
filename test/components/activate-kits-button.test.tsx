@@ -100,10 +100,13 @@ describe("ActivateKitsButton", () => {
     const retryButton = await screen.findByRole("button", {
       name: "Retry loopkit",
     });
+    await waitFor(() => expect(retryButton).toBeEnabled());
     fireEvent.click(retryButton);
-    await waitFor(() =>
-      expect(activateKitsAction).toHaveBeenLastCalledWith(["loopkit"]),
-    );
+    await waitFor(() => {
+      expect(activateKitsAction).toHaveBeenCalledTimes(2);
+      expect(activateKitsAction).toHaveBeenLastCalledWith(["loopkit"]);
+      expect(mockRefresh).toHaveBeenCalled();
+    });
   });
 
   it("shows a success toast and refreshes the router after a fully successful activation", async () => {
@@ -147,6 +150,7 @@ describe("ActivateKitsButton", () => {
       name: "Retry loopkit",
     });
     expect(toast.success).not.toHaveBeenCalled();
+    await waitFor(() => expect(retryButton).toBeEnabled());
     fireEvent.click(retryButton);
     // Longer timeout: the retry goes through startTransition's async
     // callback, adding extra microtask hops that can outrun waitFor's

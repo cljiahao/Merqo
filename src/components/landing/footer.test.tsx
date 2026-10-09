@@ -14,7 +14,9 @@ describe("Footer", () => {
     expect(
       screen.getByText("Simple tools for Singapore’s small sellers."),
     ).toBeInTheDocument();
-    expect(screen.getByText("© 2026 Merqo")).toBeInTheDocument();
+    expect(
+      screen.getByText(`© ${new Date().getFullYear()} Merqo`),
+    ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Sign in →" })).toHaveAttribute(
       "href",
       "/login",

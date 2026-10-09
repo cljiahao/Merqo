@@ -59,6 +59,7 @@ describe("fetchKitJson", () => {
     );
     const [, init] = fetchSpy.mock.calls[0] as [unknown, RequestInit];
     expect(init.method).toBe("POST");
+    expect(init.redirect).toBe("error");
     expect((init.headers as Record<string, string>).Authorization).toBe(
       "Bearer s",
     );

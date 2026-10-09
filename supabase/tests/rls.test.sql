@@ -478,9 +478,10 @@ select throws_ok(
   '42501', null,
   'vendor cannot UPDATE its own vendor_telegram row directly (no client write grant)');
 
-select lives_ok(
+select throws_ok(
   $$ select merqo.upsert_customer('00000000-0000-0000-0000-00000000000b', '+6598765432', 'A Customer') $$,
-  'vendor (authenticated, any vendor_id) can call upsert_customer - no ownership check, mirrors how a kit backend already resolves the real vendor_id server-side before calling this');
+  '42501', null,
+  'vendor cannot invoke the trusted-backend customer synchronization RPC');
 
 -- vendor_feedback has no self-scoped select policy — only the team-select
 -- policy exists — so a non-team vendor's own feedback row is filtered out

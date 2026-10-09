@@ -50,7 +50,7 @@ export default async function AdminFeedbackPage() {
       </div>
 
       <NpsCard
-        title="Vendor NPS · how vendors rate Merqo"
+        title="Vendor NPS · most recent 200 responses"
         scores={all.map((f) => f.nps as number)}
       />
 
@@ -89,7 +89,7 @@ export default async function AdminFeedbackPage() {
           Vendor feedback by kit
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          NPS submitted by vendors on loopkit, stockkit, and paykit.
+          NPS grouped by kit from the most recent 500 vendor responses.
         </p>
       </div>
 

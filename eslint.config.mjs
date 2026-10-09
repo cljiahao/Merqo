@@ -12,6 +12,20 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   {
+    files: ["**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ],
+      "sonarjs/no-unused-vars": "off",
+    },
+  },
+  {
     ...sonarjs.configs.recommended,
     rules: {
       ...sonarjs.configs.recommended.rules,

@@ -35,7 +35,7 @@ qkit/loopkit), for the legal-acceptance gate rather than Telegram.
 
 ## Connectivity
 
-All four routes are gated by `@/lib/customer-notify-auth`'s
+The Telegram and legal routes are gated by `@/lib/customer-notify-auth`'s
 `customerNotifySecretOk` — a constant-time comparison of
 `Authorization: Bearer <MERQO_CUSTOMER_SECRET>`, the SAME shared secret
 value known by merqo and every participating kit (not a per-kit-unique

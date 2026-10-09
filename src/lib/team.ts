@@ -13,8 +13,9 @@ export async function requireMerqoTeam(): Promise<{ user: User }> {
   try {
     const {
       data: { user: authUser },
+      error: authError,
     } = await supabase.auth.getUser();
-    user = authUser;
+    user = authError ? null : authUser;
   } catch {
     // Transient auth outage — degrade to signed-out rather than 500.
     redirect("/login");

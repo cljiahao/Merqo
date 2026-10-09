@@ -138,7 +138,6 @@ landing — a later migration corrects an earlier one.
   Safe to drop outright (not just nullable) — no real vendor has accepted
   anything on any kit yet.
 - `0029_founder_telegram_alerts.sql` — an AFTER INSERT trigger on
-- `0030_vendor_avatars_bucket_limits.sql` — gives the public `vendor-avatars` bucket a 5 MB `file_size_limit` and JPEG/PNG/WebP `allowed_mime_types`. It had neither, so the browser-side resize was the only guard and a signed-in JWT could upload an arbitrary file (including HTML) for the public bucket to serve. Matches the kits' image buckets; pinned by two pgTAP assertions.
   `support_messages`/`vendor_feedback`/`feedback` that pings a single
   fixed founder Telegram chat via `pg_net` (`net.http_post` to the Bot
   API) on every new row, regardless of which of the 6 kits' write paths
@@ -150,6 +149,20 @@ landing — a later migration corrects an earlier one.
   no-ops (never raises) when either secret is unset, same convention as
   `src/lib/telegram.ts`'s own missing-token no-op. See `../../docs/DEPLOY.md`
   for the one-time Vault setup this migration alone doesn't perform.
+
+- `0030_vendor_avatars_bucket_limits.sql` — caps public avatar uploads at 5 MB
+  and restricts MIME types to JPEG, PNG and WebP; browser resizing alone does
+  not constrain direct Storage requests.
+- `0031_metric_emitter_service_only.sql` — limits metric emission to the trusted
+  service role so browser callers cannot fabricate cross-kit events.
+- `0032_vendor_profile_partial_updates.sql` — adds scoped partial profile updates
+  and closes anonymous access to profile writes.
+- `0033_vendor_profile_reader_permissions.sql` — restricts profile creation to
+  the owner or trusted service while preserving authenticated profile reads.
+- `0034_private_customer_and_notification_helpers.sql` — restricts customer
+  synchronization to trusted service and owner-trigger paths, makes founder
+  notification helpers owner-only, and grants the admin service the missing
+  billing singleton read/update permissions.
 
 ## Connectivity
 

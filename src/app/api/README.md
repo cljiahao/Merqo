@@ -12,8 +12,8 @@ merqo's own pages.
   to run the customer Telegram-connect flow. The first kit → merqo HTTP
   direction in this codebase — every other cross-kit call (metrics pull,
   vendor-provision) flows merqo → kit; see its own README.
-- `telegram/` — merqo's own third Telegram bot's webhook (`webhook/route.ts`),
-  distinct from qkit's and loopkit's own Phase A vendor-alert bots; see its
+- `telegram/` — Merqo's shared Telegram bot webhook (`webhook/route.ts`),
+  serving customers and vendors after the per-kit bots were retired; see its
   own README.
 
 ## Connectivity

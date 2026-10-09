@@ -2,10 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerClient } from "@/lib/supabase/server";
-import {
-  getOrCreateVendorProfile,
-  upsertVendorProfile,
-} from "@/lib/merqo-vendor-profile";
+import { patchVendorProfile } from "@/lib/merqo-vendor-profile";
 import {
   profileNameSchema,
   socialLinksSchema,
@@ -16,7 +13,7 @@ import type { ActionResult } from "@/lib/action-result";
 
 /**
  * Update the vendor's stall name in the shared merqo.vendor_profile table
- * (supabase/migrations/0009_vendor_profile.sql) via the upsert_vendor_profile
+ * via the field-specific patch_vendor_profile
  * RPC — every kit reads/writes this one copy.
  */
 export async function updateStallName(
@@ -32,17 +29,14 @@ export async function updateStallName(
   const supabase = await createServerClient();
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: "Not signed in" };
+  if (authError || !user) return { success: false, error: "Not signed in" };
 
   try {
-    const current = await getOrCreateVendorProfile(supabase, user.id, null);
-    await upsertVendorProfile(
-      supabase,
-      user.id,
-      parsed.data.name,
-      current.social_links,
-    );
+    await patchVendorProfile(supabase, user.id, {
+      stallName: parsed.data.name,
+    });
   } catch (err) {
     console.error(
       "updateStallName failed",
@@ -74,17 +68,12 @@ export async function updateSocialLinks(
   const supabase = await createServerClient();
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
-  if (!user) return { success: false, error: "Not signed in" };
+  if (authError || !user) return { success: false, error: "Not signed in" };
 
   try {
-    const current = await getOrCreateVendorProfile(supabase, user.id, null);
-    await upsertVendorProfile(
-      supabase,
-      user.id,
-      current.stall_name,
-      parsed.data,
-    );
+    await patchVendorProfile(supabase, user.id, { socialLinks: parsed.data });
   } catch (err) {
     console.error(
       "updateSocialLinks failed",

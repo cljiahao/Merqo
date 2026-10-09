@@ -72,6 +72,7 @@ async function handleStop(chatId: number): Promise<void> {
       "telegram webhook: clear_customer_consent_by_telegram failed",
       error.message,
     );
+    throw new Error("Consent could not be cleared");
   }
   await sendTelegramMessage(
     chatId,
@@ -116,8 +117,9 @@ const updateSchema = z.object({
 /**
  * Resolves a `/start <token>` deep link: looks up the token (service-role —
  * merqo.telegram_link_tokens has no client-read policy at all), rejects
- * silently if missing/expired, otherwise links the chat and burns the
- * token. Branches on the token's `kind` (0020): `'customer'` links via the
+ * silently if missing/expired, otherwise atomically consumes the token before
+ * linking the chat. A failed link requires a fresh token.
+ * Branches on the token's `kind`: `'customer'` links via the
  * merqo.upsert_customer_telegram RPC, a distinct insert path from the
  * phone-keyed merqo.upsert_customer RPC — a customer connecting this way
  * has no phone yet, so the row is keyed purely on (vendor_id,
@@ -133,6 +135,7 @@ async function handleStart(
   chatId: number,
   origin: string,
 ): Promise<void> {
+  if (!token) return;
   const supabase = await createServiceClient();
 
   const { data: linkToken } = await supabase
@@ -143,6 +146,15 @@ async function handleStart(
 
   if (!linkToken) return;
   if (new Date(linkToken.expires_at).getTime() < Date.now()) return;
+
+  // A returning delete makes concurrent redemptions compete for one row.
+  const { data: claimed, error: claimError } = await supabase
+    .from("telegram_link_tokens")
+    .delete()
+    .eq("token", token)
+    .select("token")
+    .maybeSingle();
+  if (claimError || !claimed) return;
 
   if (linkToken.kind === "vendor") {
     const { error: upsertError } = await supabase
@@ -173,9 +185,6 @@ async function handleStart(
     }
   }
 
-  // Single-use — burn the token whether or not the confirmation send below
-  // succeeds (the account is already linked at this point).
-  await supabase.from("telegram_link_tokens").delete().eq("token", token);
   await sendTelegramMessage(
     chatId,
     linkToken.kind === "vendor"
@@ -204,8 +213,7 @@ export async function POST(request: Request): Promise<Response> {
   if (message?.text?.startsWith(START_PREFIX)) {
     const token = message.text.slice(START_PREFIX.length).trim();
     try {
-      if (token)
-        await handleStart(token, message.chat.id, new URL(request.url).origin);
+      await handleStart(token, message.chat.id, new URL(request.url).origin);
     } catch (err) {
       // Internal failure resolving/linking — log it, but Telegram retries
       // aggressively on any non-2xx, so this must never surface as one.
@@ -223,9 +231,11 @@ export async function POST(request: Request): Promise<Response> {
         await handleStop(message.chat.id);
       }
     } catch (err) {
-      // Same reason as /start above — a failed reply or consent-clear is
-      // logged, never a non-2xx that Telegram would retry.
+      // Consent changes are idempotent and must be retried until persisted.
       console.error(`telegram webhook: ${cmd} handling failed`, err);
+      if (cmd === "/stop") {
+        return NextResponse.json({ error: "Please retry" }, { status: 503 });
+      }
     }
   }
 
