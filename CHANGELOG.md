@@ -21,6 +21,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Security
 
+- Adopt the immutable audited shared UI commit for upload lifecycle, storage URL validation and safe money parsing fixes; constrain its build permission to the locked source URL.
+
 - Restrict customer synchronization to trusted backends and owner triggers, and prevent direct calls to the founder notification helpers.
 - The public `vendor-avatars` bucket had no size or MIME limit, so the
   browser-side resize in `ImageUploader` was its only guard. A direct storage
@@ -92,6 +94,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Security
 
+- Adopt the immutable audited shared UI commit for upload lifecycle, storage URL validation and safe money parsing fixes; constrain its build permission to the locked source URL.
+
 - Bumped `vitest` and `@vitest/coverage-v8` to `4.1.11` (from `3.2.6`).
   Clears GHSA-82fw-gwwq-j7x9 (`@vitest/mocker` path traversal / arbitrary
   file read, patched only in `4.1.11`). merqo has no Stryker, so the
@@ -101,6 +105,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [0.7.4] - 2026-09-09
 
 ### Security
+
+- Adopt the immutable audited shared UI commit for upload lifecycle, storage URL validation and safe money parsing fixes; constrain its build permission to the locked source URL.
 
 - Bumped `next` to `16.3.4` (`eslint-config-next` to match) and refreshed
   `browserslist` to `4.28.9`. Clears two critical Next.js RCE advisories

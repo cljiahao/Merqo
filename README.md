@@ -49,10 +49,7 @@ badge actually looks like — see
 (workspace root, cross-kit spec). The landing footer matches qkit's exactly
 (single-row wordmark/tagline/credit-line/sign-in link, no CTA band above it).
 
-Merqo runs on `@merqo/ui` (`github:merqo-io/merqo-ui#v0.27.0`, bumped
-2026-09-15 for `DashboardTours` — a route-matched multi-tour router for kits
-with more than one dashboard-page tour, qkit's first consumer; purely
-additive here), the shared component package for the kit family (see
+Merqo uses `@merqo/ui`, the shared component package for the kit family (see
 qkit/loopkit/paykit/stockkit for the same dependency). `/about`'s own story
 is now `@merqo/ui`'s shared
 `AboutMerqo` component (`v0.25.0`), the same content every kit's own
@@ -230,3 +227,5 @@ The legal rollout check reads each product's lockfile and uses the sibling
 any missing locked commit before running the check. Different UI releases are
 allowed when the legal document versions match. Git uses its standard installed
 path (Windows: `C:/Program Files/Git/cmd/git.exe`; Unix: `/usr/bin/git`).
+
+The shared UI dependency is pinned to immutable commit 989d934c1cc8d957ff383934debf8ef083b6b6a4, carrying the reviewed upload lifecycle, storage URL validation and safe money parsing fixes. pnpm 11.10 permits preparation only for that exact locked source URL; update the dependency and its build allowlist together.
