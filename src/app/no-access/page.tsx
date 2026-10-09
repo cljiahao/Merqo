@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createServerClient } from "@/lib/supabase/server";
 import { signOutAction } from "@/app/actions/auth";
-import { Wordmark } from "@/components/landing/wordmark";
+import { Wordmark } from "@/components/brand/wordmark";
 import { Button } from "@/components/ui/button";
 
 export const revalidate = 0;

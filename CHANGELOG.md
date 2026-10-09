@@ -8,6 +8,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Share health and trend presentation, isolate profile section saves, and keep one cross-feature brand mark; remove unused UI modules.
+
 - The repository moved from the `cljiahao` GitHub account to the `merqo-io` organization. `@merqo/ui` now installs from `github:merqo-io/merqo-ui` at the same tag, with the lockfile and tarball URLs updated to match.
 - The `secret scan (gitleaks)` CI job runs the pinned gitleaks release binary, verified against the release checksum, instead of `gitleaks-action`. The action is free only for personal-account repos and needs a paid license on organization-owned ones, so every run failed after the move to `merqo-io`. It scans the PR commits, or the pushed range on `main`.
 - Bumped `@merqo/ui` to `v0.32.0`, which adds `ImageUploader`'s
@@ -32,6 +34,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   pinned by two new pgTAP assertions.
 
 ### Fixed
+
+- Keep destructive admin confirmations open after returned failures or rejected requests, with pending controls and retry feedback.
 
 - Improve small brand-text and input-boundary contrast in both themes while preserving primary button fills and decorative separators.
 

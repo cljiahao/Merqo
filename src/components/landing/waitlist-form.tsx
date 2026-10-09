@@ -5,7 +5,7 @@ import { joinKitWaitlist } from "@/app/actions/waitlist";
 import { WAITLIST_IDLE } from "@/lib/waitlist-state";
 import { Button } from "@/components/ui/button";
 
-/** The only client component on the landing — a one-field email capture for a
+/** A one-field email capture for a
  *  "coming soon" kit. Progressive: works as a plain form action. */
 export function WaitlistForm({ slug }: { slug: string }) {
   const [state, action, pending] = useActionState(

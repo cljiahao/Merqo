@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Wordmark } from "@/components/landing/wordmark";
+import { Wordmark } from "@/components/brand/wordmark";
 import { Button } from "@/components/ui/button";
 
 /**

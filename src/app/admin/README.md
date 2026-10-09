@@ -128,3 +128,7 @@ from this folder's own components (`StatusBanner`, `OnboardingFunnelView`,
 
 See the repo root [README.md](../../../README.md) for the full `src/app/`
 layout and how this console fits the rest of Merqo.
+
+## Shared presentation and confirmations
+
+ProductTile and ProductHealthCard use ProductHealthBadge for consistent health labels. Their business and operational diagnostics remain distinct. RemoveMember and RevokeButton delegate their dialog state to ConfirmAdminAction; each adapter retains its own action arguments. Pending operations block dismissal, returned errors and rejected requests keep the confirmation available for retry, and successful operations close it.

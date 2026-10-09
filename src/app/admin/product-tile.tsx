@@ -1,18 +1,10 @@
-import { ArrowDown, ArrowUp, DollarSign, Users } from "lucide-react";
+import { ProductHealthBadge } from "./product-health-badge";
+import { DollarSign, Users } from "lucide-react";
 import type { MetricsResult } from "@/lib/metrics-client";
-import { classifyHealth, type HealthStatus } from "@/lib/health";
+import { classifyHealth } from "@/lib/health";
 import { money, computeTrend } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { TrendIndicator } from "@/components/dashboard/trend-indicator";
 import { Badge } from "@/components/ui/badge";
-
-const HEALTH: Record<
-  HealthStatus,
-  { label: string; variant: "success" | "gold" | "destructive" }
-> = {
-  reporting: { label: "Reporting", variant: "success" },
-  lagging: { label: "Lagging", variant: "gold" },
-  down: { label: "Down", variant: "destructive" },
-};
 
 const UNREACHABLE_LABEL: Record<
   Extract<MetricsResult, { ok: false }>["reason"],
@@ -49,7 +41,7 @@ export function ProductTile({
   }
 
   const d = result.data;
-  const badge = HEALTH[classifyHealth(result, now)];
+  const status = classifyHealth(result, now);
   const ordersTrend = computeTrend(d.orders_7d, d.orders_prev_7d);
   const chips: [string, string][] = [
     ["GMV (30d)", money(d.gmv_cents_30d)],
@@ -62,7 +54,7 @@ export function ProductTile({
     <div className="rounded-xl border bg-secondary/30 p-5">
       <div className="flex items-center justify-between gap-3">
         <h3 className="font-display text-lg font-bold">{name}</h3>
-        <Badge variant={badge.variant}>{badge.label}</Badge>
+        <ProductHealthBadge status={status} />
       </div>
 
       {d.pending_upgrade_requests > 0 && (
@@ -97,22 +89,7 @@ export function ProductTile({
         <span className="inline-flex items-center gap-1.5 rounded-full border bg-background px-2.5 py-1 text-xs">
           <span className="text-muted-foreground">Orders (7d)</span>
           <span className="font-medium tabular-nums">{d.orders_7d}</span>
-          {ordersTrend.pct !== null && (
-            <span
-              className={cn(
-                "flex items-center gap-0.5",
-                ordersTrend.direction === "up" && "text-primary",
-                ordersTrend.direction === "down" && "text-destructive",
-                ordersTrend.direction === "flat" && "text-muted-foreground",
-              )}
-            >
-              {ordersTrend.direction === "up" && <ArrowUp className="size-3" />}
-              {ordersTrend.direction === "down" && (
-                <ArrowDown className="size-3" />
-              )}
-              {ordersTrend.pct}%
-            </span>
-          )}
+          <TrendIndicator trend={ordersTrend} />
         </span>
         {chips.map(([k, v]) => (
           <span

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Footer as SharedFooter } from "@merqo/ui";
-import { Wordmark } from "./wordmark";
+import { Wordmark } from "@/components/brand/wordmark";
 
 /**
  * merqo's landing footer: `@merqo/ui`'s shared `Footer` plus this app's own

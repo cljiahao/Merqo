@@ -3,10 +3,7 @@
 import { useState, useTransition } from "react";
 import { requestUpgrade } from "@/app/actions/upgrade";
 
-/** Replaces the plain "Upgrade to Pro" link on a free-tier kit tile with a
- *  real action: files a monthly-Pro upgrade request without leaving Merqo.
- *  No toast (Merqo has none mounted) — inline text feedback, matching the
- *  existing waitlist form's convention. */
+/** Request monthly Pro without leaving the dashboard; show the result inline. */
 export function UpgradeButton({ slug }: { slug: string }) {
   const [pending, startTransition] = useTransition();
   const [state, setState] = useState<"idle" | "sent" | "error">("idle");

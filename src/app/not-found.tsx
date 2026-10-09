@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Wordmark } from "@/components/landing/wordmark";
+import { Wordmark } from "@/components/brand/wordmark";
 import { Button } from "@/components/ui/button";
 
 /** Branded 404 — reached e.g. from a stale or mistyped console URL. */

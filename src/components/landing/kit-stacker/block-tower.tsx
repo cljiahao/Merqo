@@ -1,4 +1,4 @@
-import { KIT_NODES, KIT_EDGES } from "@/lib/ecosystem";
+import { KIT_NODES, KIT_EDGES, nodeBySlug } from "@/lib/ecosystem";
 import { cn } from "@/lib/utils";
 
 // Bottom → top: qkit renders first if stacked, the rest follow in the same
@@ -7,8 +7,6 @@ const STACK_ORDER = [
   "qkit",
   ...KIT_NODES.map((n) => n.slug).filter((s) => s !== "qkit"),
 ];
-
-const nodeBy = (slug: string) => KIT_NODES.find((n) => n.slug === slug)!;
 
 // A kit's relationship to the queue (its edge touching qkit), if it has one.
 function queueLink(slug: string): string {
@@ -35,7 +33,7 @@ export function BlockTower({
   return (
     <div className="mx-auto flex w-full max-w-sm flex-col items-stretch">
       {blocks.map((slug) => {
-        const node = nodeBy(slug);
+        const node = nodeBySlug(slug)!;
         const live = node.status === "live";
         const hot = highlight === slug;
         const dim = highlight && !hot;
