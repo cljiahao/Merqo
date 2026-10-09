@@ -14,7 +14,7 @@ section; one or more kits gets the savings + per-kit overview.
 - `layout.tsx` — `DashboardLayout`. Resolves the signed-in vendor/team
   context via `requireVendorSession()` (signed-in only — team members reach
   here via the account-menu switch link and get a "Go to admin" item back),
-  renders the sticky header (`Wordmark` + `@/components/account-menu.tsx`'s
+  renders the sticky header (`components/brand/Wordmark` + `@/components/account-menu.tsx`'s
   `AccountMenu`), and mounts `DashboardTour` with the vendor's
   `dashboard_prefs.tour_seen_at` threaded through as `seen`. Also, if
   `tour_seen_at` is unset, calls `@/lib/tour-prefs`'s `stampTourSeen`
@@ -53,7 +53,7 @@ section; one or more kits gets the savings + per-kit overview.
 - `upgrade-button.tsx` / `downgrade-button.tsx` — `UpgradeButton`/
   `DowngradeButton({ slug })`: file a Free→Pro/Pro→Free plan-change request
   for one kit via `requestUpgrade`/`requestDowngrade`, with inline (no
-  toast) success/error feedback.
+  toast) success/error feedback. These controls intentionally retain their own inline feedback rather than the destructive admin confirmation contract.
 - `vendor-metric-list.tsx` — `VendorMetricList({ result, now })`: renders a
   kit's headline metric (in the "Harbour Control" theme's amber "value
   moment" accent, as of 2026-08-19) plus up to three supporting figures,
