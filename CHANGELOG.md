@@ -8,6 +8,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Pin `@merqo/ui` to commit `cb9dd39ab56d6bc2030d30edb7474ee8ebf60820` (tag `v0.32.1`) with matching build permission. The info icons on the dashboard's savings summary and kit cards now open on a tap as well as on hover and keyboard focus; a phone or tablet could not open them. `StatTile` and `InfoTooltip` also accept optional class overrides, unused here.
 - Share health and trend presentation, isolate profile section saves, and keep one cross-feature brand mark; remove unused UI modules.
 
 - The repository moved from the `cljiahao` GitHub account to the `merqo-io` organization. `@merqo/ui` now installs from `github:merqo-io/merqo-ui` at the same tag, with the lockfile and tarball URLs updated to match.
